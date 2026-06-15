@@ -10,28 +10,31 @@ import { Logo } from "@/components/ui/Logo";
 import { useSettings } from "@/context/SettingsContext";
 import { cn } from "@/lib/cn";
 
+// Auth pages render without the app chrome.
+const BARE_ROUTES = ["/login", "/register", "/onboarding"];
+
 /**
- * Top-level chrome: header (logo + quick settings), a desktop side
- * rail, and a mobile bottom nav. Redirects to onboarding until the
- * learner has a profile. Onboarding renders without the shell.
+ * Top-level chrome: header (logo + quick settings + sign out), a desktop
+ * side rail, and a mobile bottom nav. Unauthenticated users are redirected
+ * to /login; the login & register pages render bare.
  */
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { profile, ready } = useSettings();
+  const { ready, authenticated } = useSettings();
 
-  const isOnboarding = pathname === "/onboarding";
+  const isBare = BARE_ROUTES.some((p) => pathname === p || pathname.startsWith(p + "/"));
 
   useEffect(() => {
-    if (ready && !profile.onboarded && !isOnboarding) {
-      router.replace("/onboarding");
+    if (ready && !authenticated && !isBare) {
+      router.replace("/login");
     }
-  }, [ready, profile.onboarded, isOnboarding, router]);
+  }, [ready, authenticated, isBare, router]);
 
-  if (isOnboarding) return <>{children}</>;
+  if (isBare) return <>{children}</>;
 
-  // Avoid a flash of redirected content before hydration completes.
-  if (!ready || !profile.onboarded) {
+  // Avoid a flash of protected content before auth resolves.
+  if (!ready || !authenticated) {
     return (
       <div className="flex min-h-screen items-center justify-center text-ink-subtle">
         <Logo withWordmark={false} size={52} />
@@ -47,7 +50,10 @@ export function AppShell({ children }: { children: ReactNode }) {
           <Link href="/" aria-label="Molen English Classes home">
             <Logo size={52} />
           </Link>
-          <QuickSettings />
+          <div className="flex items-center gap-2">
+            <QuickSettings />
+            <SignOutButton />
+          </div>
         </div>
       </header>
 
@@ -93,6 +99,26 @@ export function AppShell({ children }: { children: ReactNode }) {
         </ul>
       </nav>
     </div>
+  );
+}
+
+function SignOutButton() {
+  const router = useRouter();
+  async function signOut() {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } finally {
+      window.location.href = "/login";
+    }
+  }
+  return (
+    <button
+      type="button"
+      onClick={signOut}
+      className="rounded-lg px-3 py-1.5 text-sm font-medium text-ink-muted transition-colors hover:bg-accent-soft hover:text-ink"
+    >
+      Sign out
+    </button>
   );
 }
 

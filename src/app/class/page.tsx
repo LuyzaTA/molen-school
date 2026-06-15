@@ -5,11 +5,7 @@ import Link from "next/link";
 import type { GeneratedClass } from "@/lib/types";
 import { generateClass } from "@/lib/classGenerator";
 import { buildHomework } from "@/lib/homework";
-import {
-  saveHomeworkForDay,
-  loadCurrentClass,
-  saveCurrentClass,
-} from "@/lib/storage";
+import { loadCurrentClass, saveCurrentClass } from "@/lib/storage";
 import { PtToggle } from "@/components/ui/PtToggle";
 import { useSettings } from "@/context/SettingsContext";
 import { useProgress } from "@/context/ProgressContext";
@@ -39,7 +35,7 @@ const STEP_LABELS = [
 
 export default function ClassPage() {
   const { profile } = useSettings();
-  const { progress, completeClass } = useProgress();
+  const { progress, completeClass, saveHomeworkForDay } = useProgress();
 
   const [phase, setPhase] = useState<Phase>("pick");
   const [klass, setKlass] = useState<GeneratedClass | null>(null);

@@ -4,42 +4,49 @@ import {
   createContext,
   useContext,
   useEffect,
+  useRef,
   useState,
   useCallback,
   type ReactNode,
 } from "react";
 import type { UserProfile } from "@/lib/types";
-import { loadProfile, saveProfile, DEFAULT_PROFILE } from "@/lib/storage";
+import { DEFAULT_PROFILE } from "@/lib/storage";
 
 interface SettingsContextValue {
   profile: UserProfile;
-  ready: boolean; // hydrated from localStorage
+  ready: boolean; // finished loading from the server
+  authenticated: boolean;
   update: (patch: Partial<UserProfile>) => void;
   toggleAutistic: () => void;
-  reset: () => void;
+  refresh: () => Promise<void>;
 }
 
 const SettingsContext = createContext<SettingsContextValue | null>(null);
 
+const SETTING_KEYS = [
+  "autisticMode",
+  "font",
+  "theme",
+  "motion",
+  "translatePt",
+] as const;
+
 /**
- * Applies the runtime theme attributes to <html> so the CSS-variable
- * design system swaps instantly, with no React re-render of the tree.
+ * Applies runtime theme attributes to <html> so the CSS-variable design system
+ * swaps instantly. Works with defaults even before the user is authenticated.
  */
 function applyDocumentAttributes(profile: UserProfile) {
   if (typeof document === "undefined") return;
   const root = document.documentElement;
-
   const resolvedTheme =
     profile.theme === "system"
       ? window.matchMedia("(prefers-color-scheme: dark)").matches
         ? "dark"
         : "light"
       : profile.theme;
-
   root.setAttribute("data-theme", resolvedTheme);
   root.setAttribute("data-autistic", profile.autisticMode ? "on" : "off");
   root.setAttribute("data-font", profile.font === "dyslexic" ? "dyslexic" : "inter");
-  // Autistic mode forces motion off regardless of the motion preference.
   root.setAttribute(
     "data-motion",
     profile.motion && !profile.autisticMode ? "on" : "off",
@@ -49,23 +56,35 @@ function applyDocumentAttributes(profile: UserProfile) {
 export function SettingsProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<UserProfile>(DEFAULT_PROFILE);
   const [ready, setReady] = useState(false);
+  const [authenticated, setAuthenticated] = useState(false);
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Hydrate once on mount.
-  useEffect(() => {
-    const loaded = loadProfile();
-    setProfile(loaded);
-    applyDocumentAttributes(loaded);
-    setReady(true);
+  const load = useCallback(async () => {
+    try {
+      const res = await fetch("/api/me", { cache: "no-store" });
+      if (res.ok) {
+        const data = await res.json();
+        const p = { ...DEFAULT_PROFILE, ...data.profile } as UserProfile;
+        setProfile(p);
+        applyDocumentAttributes(p);
+        setAuthenticated(true);
+      } else {
+        applyDocumentAttributes(DEFAULT_PROFILE);
+        setAuthenticated(false);
+      }
+    } catch {
+      applyDocumentAttributes(DEFAULT_PROFILE);
+      setAuthenticated(false);
+    } finally {
+      setReady(true);
+    }
   }, []);
 
-  // Re-apply attributes + persist whenever the profile changes.
   useEffect(() => {
-    if (!ready) return;
-    applyDocumentAttributes(profile);
-    saveProfile(profile);
-  }, [profile, ready]);
+    void load();
+  }, [load]);
 
-  // Track system theme changes when set to "system".
+  // Track OS theme changes when on "system".
   useEffect(() => {
     if (profile.theme !== "system") return;
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
@@ -74,21 +93,43 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     return () => mq.removeEventListener("change", handler);
   }, [profile]);
 
-  const update = useCallback((patch: Partial<UserProfile>) => {
-    setProfile((p) => ({ ...p, ...patch }));
-  }, []);
+  const persist = useCallback(
+    (next: UserProfile) => {
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+      saveTimer.current = setTimeout(() => {
+        const settings = Object.fromEntries(
+          SETTING_KEYS.map((k) => [k, next[k]]),
+        );
+        void fetch("/api/settings", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ level: next.level, settings }),
+        });
+      }, 500);
+    },
+    [],
+  );
 
-  const toggleAutistic = useCallback(() => {
-    setProfile((p) => ({ ...p, autisticMode: !p.autisticMode }));
-  }, []);
+  const update = useCallback(
+    (patch: Partial<UserProfile>) => {
+      setProfile((p) => {
+        const next = { ...p, ...patch };
+        applyDocumentAttributes(next);
+        if (authenticated) persist(next);
+        return next;
+      });
+    },
+    [authenticated, persist],
+  );
 
-  const reset = useCallback(() => {
-    setProfile({ ...DEFAULT_PROFILE, createdAt: new Date().toISOString() });
-  }, []);
+  const toggleAutistic = useCallback(
+    () => update({ autisticMode: !profile.autisticMode }),
+    [profile.autisticMode, update],
+  );
 
   return (
     <SettingsContext.Provider
-      value={{ profile, ready, update, toggleAutistic, reset }}
+      value={{ profile, ready, authenticated, update, toggleAutistic, refresh: load }}
     >
       {children}
     </SettingsContext.Provider>

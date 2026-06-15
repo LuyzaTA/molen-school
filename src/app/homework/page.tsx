@@ -8,14 +8,7 @@ import type {
   HomeworkSkill,
   WeeklyTask,
 } from "@/lib/types";
-import {
-  loadHomeworkForDay,
-  saveHomeworkForDay,
-  dayKey,
-  weekKey,
-  loadWeeklyDone,
-  setWeeklyDone,
-} from "@/lib/storage";
+import { dayKey, weekKey } from "@/lib/storage";
 import { getWeeklyPlan } from "@/lib/weeklyHomework";
 import { useProgress } from "@/context/ProgressContext";
 import { useSettings } from "@/context/SettingsContext";
@@ -95,14 +88,21 @@ function TabBtn({
 // ============================================================
 
 function TodayHomework() {
-  const { incrementHomework, decrementHomework } = useProgress();
+  const {
+    ready,
+    getHomeworkForDay,
+    saveHomeworkForDay,
+    incrementHomework,
+    decrementHomework,
+  } = useProgress();
   const [homework, setHomework] = useState<DailyHomework | null | undefined>(
     undefined,
   );
 
+  // Hydrate from server-backed state once it has loaded.
   useEffect(() => {
-    setHomework(loadHomeworkForDay(dayKey()));
-  }, []);
+    if (ready) setHomework(getHomeworkForDay(dayKey()));
+  }, [ready, getHomeworkForDay]);
 
   function persist(next: DailyHomework) {
     const allDone = next.tasks.every((t) => t.done);
@@ -244,20 +244,17 @@ function TaskCard({
 
 function WeeklyHomework() {
   const { profile } = useSettings();
+  const { weeklyDone: done, setWeeklyDone } = useProgress();
   const showPt = profile.level === "A1" && profile.translatePt;
   const plan = getWeeklyPlan(profile.level);
   const wk = weekKey();
-
-  const [done, setDone] = useState<Record<string, boolean>>({});
-  useEffect(() => setDone(loadWeeklyDone()), []);
 
   const keyFor = (dayIdx: number, taskIdx: number) =>
     `${profile.level}:${wk}:${dayIdx}:${taskIdx}`;
 
   function toggle(dayIdx: number, taskIdx: number) {
     const k = keyFor(dayIdx, taskIdx);
-    const next = !done[k];
-    setDone(setWeeklyDone(k, next));
+    setWeeklyDone(k, !done[k]);
   }
 
   const total = plan.days.reduce((n, d) => n + d.tasks.length, 0);

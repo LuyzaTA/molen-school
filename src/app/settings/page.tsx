@@ -1,28 +1,22 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useSettings } from "@/context/SettingsContext";
-import { useProgress } from "@/context/ProgressContext";
 import { CEFR_LEVELS } from "@/lib/cefr";
 import type { CEFRLevel, ThemePreference } from "@/lib/types";
-import { clearAll } from "@/lib/storage";
 import { Card, SectionHeading } from "@/components/ui/Card";
 import { Toggle } from "@/components/ui/Toggle";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/cn";
 
 export default function SettingsPage() {
-  const router = useRouter();
-  const { profile, update, reset } = useSettings();
-  const { reset: resetProgress } = useProgress();
-  const [confirmClear, setConfirmClear] = useState(false);
+  const { profile, update } = useSettings();
 
-  function clearEverything() {
-    clearAll();
-    resetProgress();
-    reset();
-    router.replace("/onboarding");
+  async function signOut() {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } finally {
+      window.location.href = "/login";
+    }
   }
 
   return (
@@ -134,32 +128,15 @@ export default function SettingsPage() {
         </div>
       </Card>
 
-      {/* Data */}
-      <Card className="border-danger/30">
+      {/* Account */}
+      <Card>
         <SectionHeading
-          title="Data"
-          description="Everything is stored locally in your browser. Nothing leaves this device in this version."
+          title="Account"
+          description="Your account, settings, and progress are stored securely in the cloud and sync whenever you sign in."
         />
-        {!confirmClear ? (
-          <Button variant="danger" onClick={() => setConfirmClear(true)}>
-            Reset all data
-          </Button>
-        ) : (
-          <div className="space-y-3">
-            <p className="text-sm text-ink-muted">
-              This deletes your profile, progress, vocabulary, and homework, and
-              restarts onboarding. This can&apos;t be undone.
-            </p>
-            <div className="flex gap-3">
-              <Button variant="danger" onClick={clearEverything}>
-                Yes, delete everything
-              </Button>
-              <Button variant="ghost" onClick={() => setConfirmClear(false)}>
-                Cancel
-              </Button>
-            </div>
-          </div>
-        )}
+        <Button variant="secondary" onClick={signOut}>
+          Sign out
+        </Button>
       </Card>
     </div>
   );
