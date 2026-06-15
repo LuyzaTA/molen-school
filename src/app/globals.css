@@ -1,0 +1,230 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   Molen English School design system
+   Tokens are RGB triplets so Tailwind's rgb(var(--x) / <alpha>)
+   can apply opacity. Themes swap via attributes on <html>:
+     [data-theme="light|dark"]   colour mode
+     [data-autistic="on"]        calm mode (overrides palette + motion)
+     [data-font="dyslexic"]      dyslexia-friendly typeface
+     [data-motion="off"]         disables all motion
+   ============================================================ */
+
+:root {
+  /* Light — heritage parchment + maroon/olive/gold ---------- */
+  --c-base: 240 232 213; /* #F0E8D5 warm parchment */
+  --c-surface: 251 246 235; /* #FBF6EB */
+  --c-surface-raised: 255 252 245; /* #FFFCF5 */
+  --c-border: 223 210 183; /* #DFD2B7 tan */
+  --c-ink: 43 47 40; /* #2B2F28 deep green-charcoal */
+  --c-ink-muted: 104 98 84; /* #686254 */
+  --c-ink-subtle: 150 140 120; /* #968C78 */
+  --c-accent: 124 35 51; /* #7C2333 maroon / burgundy */
+  --c-accent-soft: 240 223 220; /* #F0DFDC */
+  --c-accent-ink: 251 246 235; /* cream */
+  /* Brand secondaries — olive green + heritage gold */
+  --c-green: 93 107 53; /* #5D6B35 olive */
+  --c-green-soft: 230 230 206; /* #E6E6CE */
+  --c-gold: 199 154 75; /* #C79A4B antique gold */
+  --c-gold-soft: 243 232 207; /* #F3E8CF */
+  --c-mark: 46 58 48; /* #2E3A30 windmill tile */
+  --c-success: 93 122 70; /* #5D7A46 */
+  --c-warning: 176 122 18; /* #B07A12 */
+  --c-danger: 163 58 51; /* #A33A33 */
+
+  --radius-card: 20px;
+
+  /* Motion durations (overridable) -------------------------- */
+  --motion-fast: 140ms;
+  --motion-med: 280ms;
+}
+
+[data-theme="dark"] {
+  --c-base: 30 31 26; /* #1E1F1A warm charcoal */
+  --c-surface: 40 42 35; /* #282A23 */
+  --c-surface-raised: 48 50 42; /* #30322A */
+  --c-border: 66 68 56; /* #424438 */
+  --c-ink: 236 230 214; /* #ECE6D6 warm cream */
+  --c-ink-muted: 179 172 152; /* #B3AC98 */
+  --c-ink-subtle: 132 125 107; /* #847D6B */
+  --c-accent: 201 122 134; /* #C97A86 lifted maroon */
+  --c-accent-soft: 58 42 45; /* #3A2A2D */
+  --c-accent-ink: 26 20 16; /* #1A1410 */
+  --c-green: 155 174 99; /* #9BAE63 */
+  --c-green-soft: 46 51 34; /* #2E3322 */
+  --c-gold: 216 180 112; /* #D8B470 */
+  --c-gold-soft: 58 51 31; /* #3A331F */
+  --c-mark: 46 58 48;
+  --c-success: 155 174 99;
+  --c-warning: 216 180 112;
+  --c-danger: 217 138 130;
+}
+
+/* ------------------------------------------------------------
+   Autistic / calm mode — lower contrast, lower saturation,
+   muted accent, no animation. Applies on top of either theme.
+   ------------------------------------------------------------ */
+[data-autistic="on"] {
+  --c-accent: 122 96 100; /* muted mauve, no flash */
+  --c-accent-soft: 230 224 220;
+  --c-accent-ink: 251 246 235;
+  --c-green: 124 130 104; /* muted olive */
+  --c-green-soft: 230 230 222;
+  --c-gold: 168 150 112;
+  --c-gold-soft: 236 230 218;
+  --c-success: 110 124 100;
+  --c-warning: 158 138 100;
+  --c-danger: 150 104 100;
+  --radius-card: 14px;
+  --motion-fast: 0ms;
+  --motion-med: 0ms;
+}
+
+[data-theme="dark"][data-autistic="on"] {
+  --c-base: 28 29 25;
+  --c-surface: 38 40 34;
+  --c-surface-raised: 46 48 40;
+  --c-ink: 222 217 203; /* slightly lower contrast than normal dark */
+  --c-ink-muted: 168 162 144;
+  --c-accent: 178 138 144;
+  --c-accent-soft: 52 44 44;
+  --c-accent-ink: 22 18 14;
+}
+
+/* Disable motion when requested or when the OS prefers it ---- */
+[data-motion="off"],
+[data-autistic="on"] {
+  --motion-fast: 0ms;
+  --motion-med: 0ms;
+}
+[data-motion="off"] *,
+[data-autistic="on"] * {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Fonts ------------------------------------------------------ */
+:root {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+[data-font="dyslexic"] {
+  /* Comic Sans MS / Verdana are widely cited as dyslexia-friendly
+     fallbacks available cross-platform without a webfont download. */
+  --font-sans: "Comic Sans MS", "Trebuchet MS", Verdana, sans-serif;
+  letter-spacing: 0.012em;
+  word-spacing: 0.06em;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: rgb(var(--c-base));
+  color: rgb(var(--c-ink));
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Accessible focus ring everywhere -------------------------- */
+*:focus-visible {
+  outline: 2px solid rgb(var(--c-accent));
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Reusable component classes -------------------------------- */
+@layer components {
+  .card {
+    @apply bg-surface border border-border rounded-card shadow-[0_1px_2px_rgba(20,30,40,0.04),0_8px_24px_-12px_rgba(20,30,40,0.10)];
+  }
+  .input-field {
+    @apply w-full rounded-xl border border-border bg-surface px-4 py-3 text-ink
+           placeholder:text-ink-subtle focus:border-accent outline-none transition-colors;
+  }
+}
+
+/* ------------------------------------------------------------
+   Expressive surface — gradients, decorative blobs, gradient text.
+   These give the "inspired to learn" feel in normal mode and are
+   flattened to calm solids when Autistic / Calm mode is on.
+   ------------------------------------------------------------ */
+.hero-grad {
+  background-image: linear-gradient(
+    135deg,
+    rgb(var(--c-accent)) 0%,
+    rgb(var(--c-green)) 100%
+  );
+}
+.surface-grad {
+  background-image: linear-gradient(
+    155deg,
+    rgb(var(--c-accent-soft)) 0%,
+    rgb(var(--c-green-soft)) 100%
+  );
+}
+.gold-grad {
+  background-image: linear-gradient(
+    140deg,
+    rgb(var(--c-gold-soft)) 0%,
+    rgb(var(--c-accent-soft)) 100%
+  );
+}
+.text-grad {
+  background-image: linear-gradient(
+    115deg,
+    rgb(var(--c-accent)),
+    rgb(var(--c-green))
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Soft floating colour blobs for hero backgrounds */
+.decor {
+  pointer-events: none;
+  filter: blur(40px);
+  opacity: 0.5;
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-14px) scale(1.05); }
+}
+.animate-float { animation: float 9s ease-in-out infinite; }
+.animate-float-slow { animation: float 13s ease-in-out infinite; }
+
+/* Calm-mode neutralisation: flatten everything expressive ----- */
+[data-autistic="on"] .hero-grad {
+  background-image: none;
+  background-color: rgb(var(--c-accent));
+}
+[data-autistic="on"] .surface-grad,
+[data-autistic="on"] .gold-grad {
+  background-image: none;
+  background-color: rgb(var(--c-surface));
+}
+[data-autistic="on"] .text-grad {
+  background-image: none;
+  -webkit-text-fill-color: currentColor;
+  color: rgb(var(--c-ink));
+}
+[data-autistic="on"] .decor {
+  display: none !important;
+}
+[data-autistic="on"] .card {
+  box-shadow: none;
+}
