@@ -54,9 +54,10 @@ export default function DashboardPage() {
           </p>
 
           <Link href="/class" className="mt-7 inline-block">
-            {/* Dark tile colour from the logo (--c-mark); text inherits the
-                hero's cream (text-accent-ink), matching the rest of the hero. */}
-            <span className="inline-flex items-center gap-2 rounded-xl bg-mark px-7 py-3.5 text-base font-bold text-accent-ink shadow-lg transition-transform hover:-translate-y-0.5">
+            {/* Dark tile colour from the logo (--c-mark). The tile is the same
+                in light & dark, so pin the text to a fixed cream (not the
+                theme-dependent accent-ink) to stay readable in both modes. */}
+            <span className="inline-flex items-center gap-2 rounded-xl bg-mark px-7 py-3.5 text-base font-bold text-[#FBF4E6] shadow-lg transition-transform hover:-translate-y-0.5">
               Start today&apos;s class
               <span aria-hidden>→</span>
             </span>
