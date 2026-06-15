@@ -11,3 +11,6 @@ npm-debug.log*
 *.tsbuildinfo
 next-env.d.ts
 backup_*.tgz
+
+# Local-only Claude Code settings (personal hooks/overrides)
+.claude/settings.local.json
