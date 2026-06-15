@@ -166,14 +166,14 @@ function ControlCard({
         </span>
         <span
           className={cn(
-            "relative h-7 w-12 shrink-0 rounded-pill border transition-colors",
-            active ? "border-accent bg-accent" : "border-border bg-surface",
+            "inline-flex h-7 w-[52px] shrink-0 items-center rounded-full px-0.5 transition-colors",
+            active ? "bg-accent" : "bg-ink-subtle/35",
           )}
         >
           <span
             className={cn(
-              "absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform",
-              active ? "translate-x-[22px]" : "translate-x-0.5",
+              "inline-block h-6 w-6 rounded-full bg-white shadow-sm ring-1 ring-black/5 transition-transform",
+              active ? "translate-x-[22px]" : "translate-x-0",
             )}
           />
         </span>
