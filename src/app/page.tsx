@@ -54,7 +54,9 @@ export default function DashboardPage() {
           </p>
 
           <Link href="/class" className="mt-7 inline-block">
-            <span className="inline-flex items-center gap-2 rounded-xl bg-white px-7 py-3.5 text-base font-bold text-accent shadow-lg transition-transform hover:-translate-y-0.5">
+            {/* Dark tile colour from the logo (--c-mark); text inherits the
+                hero's cream (text-accent-ink), matching the rest of the hero. */}
+            <span className="inline-flex items-center gap-2 rounded-xl bg-mark px-7 py-3.5 text-base font-bold text-accent-ink shadow-lg transition-transform hover:-translate-y-0.5">
               Start today&apos;s class
               <span aria-hidden>→</span>
             </span>
