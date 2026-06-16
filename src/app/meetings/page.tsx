@@ -1,12 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { ConversationCircle, BookingSlot } from "@/lib/types";
-import {
-  CONVERSATION_CIRCLES,
-  BOOKING_SLOTS,
-  speakerById,
-} from "@/lib/mockData";
+import { speakerById } from "@/lib/mockData";
 import { useSettings } from "@/context/SettingsContext";
 import { useProgress } from "@/context/ProgressContext";
 import { useIsClient } from "@/hooks/useIsClient";
@@ -19,6 +15,19 @@ type Tab = "circles" | "book";
 
 export default function MeetingsPage() {
   const [tab, setTab] = useState<Tab>("circles");
+  const [circles, setCircles] = useState<ConversationCircle[]>([]);
+  const [slots, setSlots] = useState<BookingSlot[]>([]);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/meetings", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : { circles: [], slots: [] }))
+      .then((d) => {
+        setCircles(d.circles ?? []);
+        setSlots(d.slots ?? []);
+      })
+      .finally(() => setLoaded(true));
+  }, []);
 
   return (
     <div className="mx-auto max-w-content space-y-6">
@@ -40,7 +49,13 @@ export default function MeetingsPage() {
         </TabButton>
       </div>
 
-      {tab === "circles" ? <CirclesFeed /> : <BookingList />}
+      {!loaded ? (
+        <p className="py-12 text-center text-ink-subtle">Loading…</p>
+      ) : tab === "circles" ? (
+        <CirclesFeed circles={circles} />
+      ) : (
+        <BookingList slots={slots} />
+      )}
     </div>
   );
 }
@@ -70,10 +85,17 @@ function TabButton({
 
 // ---- Conversation Circles ----------------------------------
 
-function CirclesFeed() {
-  const sorted = [...CONVERSATION_CIRCLES].sort(
+function CirclesFeed({ circles }: { circles: ConversationCircle[] }) {
+  const sorted = [...circles].sort(
     (a, b) => +new Date(a.dateTime) - +new Date(b.dateTime),
   );
+  if (sorted.length === 0) {
+    return (
+      <Card className="text-center text-ink-muted">
+        No Conversation Circles scheduled yet. Check back soon.
+      </Card>
+    );
+  }
   return (
     <div className="space-y-4">
       {sorted.map((c) => (
@@ -185,7 +207,7 @@ function Detail({ label, children }: { label: string; children: React.ReactNode 
 
 // ---- On-demand booking -------------------------------------
 
-function BookingList() {
+function BookingList({ slots }: { slots: BookingSlot[] }) {
   const { attendMeeting } = useProgress();
   const isClient = useIsClient();
   const [booked, setBooked] = useState<Set<string>>(new Set());
@@ -195,6 +217,10 @@ function BookingList() {
     attendMeeting();
   }
 
+  if (slots.length === 0) {
+    return <Card className="text-center text-ink-muted">No sessions available to book yet.</Card>;
+  }
+
   return (
     <Card>
       <SectionHeading
@@ -202,8 +228,8 @@ function BookingList() {
         description="Pick a time with a speaker. 1:1 or small group."
       />
       <ul className="divide-y divide-border">
-        {BOOKING_SLOTS.map((slot) => {
-          const speaker = speakerById(slot.speakerId);
+        {slots.map((slot) => {
+          const speaker = slot.speaker ?? speakerById(slot.speakerId);
           const isBooked = booked.has(slot.id);
           const full = slot.booked >= slot.capacity;
           return (
@@ -243,7 +269,7 @@ function BookingList() {
         })}
       </ul>
       <p className="mt-4 text-xs text-ink-subtle">
-        Demo booking — speakers and slots are sample data in this version.
+        Booking marks your attendance. Slots are managed by your school.
       </p>
     </Card>
   );

@@ -175,11 +175,18 @@ export interface ConversationCircle {
 export interface BookingSlot {
   id: string;
   speakerId: string;
+  speaker?: Speaker; // embedded so admin-created slots resolve without a table
   dateTime: string; // ISO
   durationMin: number;
   kind: "1:1" | "small-group";
   capacity: number;
   booked: number;
+}
+
+/** Admin-managed meetings shown to students on the Meetings page. */
+export interface MeetingsConfig {
+  circles: ConversationCircle[];
+  slots: BookingSlot[];
 }
 
 // ---- Resources --------------------------------------------

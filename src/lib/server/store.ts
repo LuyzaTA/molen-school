@@ -12,6 +12,7 @@ import type {
   CEFRLevel,
   ProgressState,
   DailyHomework,
+  MeetingsConfig,
 } from "../types";
 
 // ---- Records ----------------------------------------------
@@ -177,4 +178,16 @@ export async function getPricing(): Promise<PricingMap> {
 
 export async function savePricing(pricing: PricingMap): Promise<void> {
   await kvSet(PRICING_KEY, pricing);
+}
+
+// ---- Meetings (admin-managed; shown to students) -----------
+
+const MEETINGS_KEY = "config/meetings";
+
+export async function getMeetings(): Promise<MeetingsConfig | null> {
+  return kvGet<MeetingsConfig>(MEETINGS_KEY);
+}
+
+export async function saveMeetings(meetings: MeetingsConfig): Promise<void> {
+  await kvSet(MEETINGS_KEY, meetings);
 }
