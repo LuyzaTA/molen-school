@@ -36,6 +36,7 @@ const DEFAULT_PROGRESS: ProgressState = {
   homeworkCompleted: 0,
   meetingsAttended: 0,
   learnedVocab: [],
+  learnedGrammar: [],
   history: [],
 };
 
@@ -64,6 +65,19 @@ function dayDiff(a: string, b: string): number {
   const da = new Date(a + "T00:00:00").getTime();
   const db = new Date(b + "T00:00:00").getTime();
   return Math.round((db - da) / 86_400_000);
+}
+
+function mergeGrammar(existing: string[], incoming: string[]): string[] {
+  const seen = new Set(existing.map((g) => g.toLowerCase()));
+  const merged = [...existing];
+  for (const g of incoming ?? []) {
+    const key = g.trim().toLowerCase();
+    if (key && !seen.has(key)) {
+      merged.push(g.trim());
+      seen.add(key);
+    }
+  }
+  return merged;
 }
 
 function mergeVocab(existing: VocabItem[], incoming: VocabItem[]): VocabItem[] {
@@ -152,6 +166,7 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
             ...p,
             classesCompleted: p.classesCompleted + 1,
             learnedVocab: mergeVocab(p.learnedVocab, klass.targetLanguage.vocab),
+            learnedGrammar: mergeGrammar(p.learnedGrammar ?? [], klass.grammar ?? []),
             history: [
               { date: dayKey(), topic: klass.topic, level: klass.level },
               ...p.history,

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { PRESET_TOPICS } from "@/lib/topics";
+import { PRESET_TOPICS, BUSINESS_TOPICS } from "@/lib/topics";
 import { Chip } from "@/components/ui/Chip";
 import { Button } from "@/components/ui/Button";
 import { Card, SectionHeading } from "@/components/ui/Card";
@@ -18,16 +18,21 @@ export function TopicPicker({
   const [custom, setCustom] = useState("");
 
   const info = getCEFRInfo(profile.level);
+  const business = profile.track === "business";
+  const topics = business ? BUSINESS_TOPICS : PRESET_TOPICS;
   const chosen = custom.trim() || selected;
 
   return (
     <div className="mx-auto max-w-content space-y-6">
       <header className="pt-2">
         <p className="text-sm font-medium text-ink-subtle">
-          {profile.level} · {info.name} · ~{Math.round(info.speakingRatio * 100)}% speaking
+          {business ? "Business Vocabulary" : `${profile.level} · ${info.name}`} · ~
+          {Math.round(info.speakingRatio * 100)}% speaking
         </p>
         <h1 className="mt-1 text-2xl font-bold tracking-tight text-ink sm:text-3xl">
-          What do you want to talk about today?
+          {business
+            ? "Which work situation do you want to practise?"
+            : "What do you want to talk about today?"}
         </h1>
         <p className="mt-2 text-[15px] text-ink-muted">
           Pick anything. A special interest you could talk about for hours works
@@ -36,9 +41,9 @@ export function TopicPicker({
       </header>
 
       <Card>
-        <SectionHeading title="Popular topics" />
+        <SectionHeading title={business ? "Business topics" : "Popular topics"} />
         <div className="flex flex-wrap gap-2">
-          {PRESET_TOPICS.map((t) => (
+          {topics.map((t) => (
             <Chip
               key={t}
               selected={selected === t && !custom.trim()}

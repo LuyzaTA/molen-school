@@ -59,6 +59,7 @@ export default function ClassPage() {
       topic,
       level: profile.level,
       autisticMode: profile.autisticMode,
+      track: profile.track,
       // Spiral review: pass previously learned terms so the AI can reuse them.
       knownVocab: progress.learnedVocab.map((v) => v.term),
     });

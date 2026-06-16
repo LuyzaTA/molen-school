@@ -116,6 +116,7 @@ export function buildClassSchema(level: CEFRLevel) {
       },
       required: ["intro", "checklist", "commonErrors"],
     },
+    grammar: { type: "array", items: { type: "string" } },
   },
   required: [
     "speakingRatio",
@@ -126,6 +127,7 @@ export function buildClassSchema(level: CEFRLevel) {
     "guidedProduction",
     "freeProduction",
     "feedback",
+    "grammar",
   ],
   } as const;
 }
@@ -165,6 +167,15 @@ Also fill warmUp.questionsPt with Brazilian-Portuguese translations of each warm
 question, in the same order. Keep the English itself simple and short.`
       : "";
 
+  const businessFocus =
+    input.track === "business"
+      ? `
+BUSINESS VOCABULARY TRACK: this class is part of a Business English programme.
+Focus the vocabulary, examples, role-plays, and prompts on professional/workplace
+contexts (meetings, emails, negotiations, presentations, networking, finance,
+projects). Keep it practical for someone using English at work.`
+      : "";
+
   return `You are an expert English-as-a-foreign-language teacher who designs SPEAKING-FIRST
 classes for Brazilian learners. Your learners understand English but freeze when
 speaking, so every class is built around getting them to talk.
@@ -176,7 +187,7 @@ Target speaking ratio: about ${speakingPct}% of class time is the learner speaki
 Set the "speakingRatio" field to ${info.speakingRatio}.
 
 Calibrate vocabulary difficulty, sentence length, and abstraction to ${input.level}.
-${autisticGuidance}${spiral}${ptGuidance}
+${autisticGuidance}${spiral}${ptGuidance}${businessFocus}
 
 Content requirements:
 - warmUp.questions: exactly 3 personal, easy-to-answer questions to break the ice.
@@ -190,6 +201,8 @@ Content requirements:
 - feedback: a short intro, a 4–6 item self-correction checklist, and 3–5 concrete
   common errors Brazilian learners make on this topic to listen for.
 - agenda: 5 short human-readable labels, one per stage, for an at-a-glance preview.
+- grammar: 3–5 named grammar points the class practises (e.g. "Past simple",
+  "Possessive pronouns", "Present perfect", "Comparatives"). Short labels only.
 
 Return ONLY the structured JSON. Be encouraging, practical, and concrete.`;
 }

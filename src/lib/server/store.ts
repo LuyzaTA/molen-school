@@ -13,6 +13,7 @@ import type {
   ProgressState,
   DailyHomework,
   MeetingsConfig,
+  ResourceItem,
 } from "../types";
 
 // ---- Records ----------------------------------------------
@@ -51,6 +52,7 @@ export const DEFAULT_PROGRESS: ProgressState = {
   homeworkCompleted: 0,
   meetingsAttended: 0,
   learnedVocab: [],
+  learnedGrammar: [],
   history: [],
 };
 
@@ -190,4 +192,16 @@ export async function getMeetings(): Promise<MeetingsConfig | null> {
 
 export async function saveMeetings(meetings: MeetingsConfig): Promise<void> {
   await kvSet(MEETINGS_KEY, meetings);
+}
+
+// ---- Resources (admin-managed; shown to students) ----------
+
+const RESOURCES_KEY = "config/resources";
+
+export async function getResources(): Promise<ResourceItem[] | null> {
+  return kvGet<ResourceItem[]>(RESOURCES_KEY);
+}
+
+export async function saveResources(resources: ResourceItem[]): Promise<void> {
+  await kvSet(RESOURCES_KEY, resources);
 }

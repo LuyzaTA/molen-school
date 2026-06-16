@@ -1,4 +1,4 @@
-import type { CEFRLevel, FontPreference, ThemePreference } from "./types";
+import type { CEFRLevel, FontPreference, ThemePreference, LearningTrack } from "./types";
 
 // ============================================================
 // Account / registration types shared between client and server.
@@ -59,6 +59,7 @@ export interface AccountSettings {
   theme: ThemePreference;
   motion: boolean;
   translatePt: boolean;
+  track: LearningTrack;
 }
 
 /** Personal data collected at registration (sent to the server). */
@@ -129,6 +130,7 @@ export const DEFAULT_SETTINGS: AccountSettings = {
   theme: "system",
   motion: true,
   translatePt: false,
+  track: "general",
 };
 
 // ---- Validation helpers (shared) ---------------------------

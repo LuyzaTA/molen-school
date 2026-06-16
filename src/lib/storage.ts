@@ -48,6 +48,7 @@ export const DEFAULT_PROFILE: UserProfile = {
   theme: "system",
   motion: true,
   translatePt: false,
+  track: "general",
   createdAt: new Date().toISOString(),
   onboarded: false,
 };
@@ -69,6 +70,7 @@ export const DEFAULT_PROGRESS: ProgressState = {
   homeworkCompleted: 0,
   meetingsAttended: 0,
   learnedVocab: [],
+  learnedGrammar: [],
   history: [],
 };
 

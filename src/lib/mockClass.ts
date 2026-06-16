@@ -16,6 +16,33 @@ function isAdvanced(level: string) {
   return level === "C1" || level === "C2";
 }
 
+function buildGrammar(beginner: boolean, advanced: boolean, business: boolean): string[] {
+  const base = beginner
+    ? ["Present simple", "Personal pronouns", "Possessive adjectives"]
+    : advanced
+      ? ["Present perfect", "Conditionals (2nd & 3rd)", "Relative clauses"]
+      : ["Past simple", "Comparatives & superlatives", "Linking words"];
+  if (business) {
+    return [...base, "Polite requests (could / would)", "Future plans (going to / will)"].slice(0, 5);
+  }
+  return base;
+}
+
+function buildBusinessVocab(topic: string): VocabItem[] {
+  return [
+    { term: "to touch base", meaning: "to make brief contact to share an update", meaningPt: "entrar em contato rapidamente", example: `Let's touch base about ${topic} on Monday.`, isIdiom: true, literalMeaning: "Not about a physical base — it means a quick check-in." },
+    { term: "deadline", meaning: "the latest time something must be finished", meaningPt: "prazo final", example: `The deadline for ${topic} is Friday.`, isIdiom: false },
+    { term: "to follow up", meaning: "to check on progress after something", meaningPt: "dar seguimento / acompanhar", example: `I'll follow up on ${topic} by email.`, isIdiom: true, literalMeaning: "Not following a person — it means continuing the matter." },
+    { term: "stakeholder", meaning: "a person with an interest in a project", meaningPt: "parte interessada", example: `Every stakeholder cares about ${topic}.`, isIdiom: false },
+    { term: "to be on the same page", meaning: "to share the same understanding", meaningPt: "estar de acordo / alinhado(a)", example: `Are we on the same page about ${topic}?`, isIdiom: true, literalMeaning: "Not a real page — it means agreeing." },
+    { term: "deliverable", meaning: "a concrete result you must produce", meaningPt: "entregável", example: `The first deliverable for ${topic} is a draft.`, isIdiom: false },
+    { term: "to reach out", meaning: "to contact someone", meaningPt: "entrar em contato", example: `Reach out if ${topic} is unclear.`, isIdiom: true, literalMeaning: "Not stretching your arm — it means contacting." },
+    { term: "bandwidth", meaning: "the time/capacity to take on work", meaningPt: "capacidade / tempo disponível", example: `I don't have the bandwidth for ${topic} this week.`, isIdiom: true, literalMeaning: "Not internet speed — it means availability." },
+    { term: "to circle back", meaning: "to return to a topic later", meaningPt: "retomar o assunto depois", example: `Let's circle back to ${topic} next call.`, isIdiom: true, literalMeaning: "Not moving in a circle — it means revisiting later." },
+    { term: "key takeaway", meaning: "the most important point to remember", meaningPt: "principal conclusão", example: `The key takeaway about ${topic} is to plan early.`, isIdiom: false },
+  ];
+}
+
 function buildVocab(topic: string): VocabItem[] {
   return [
     {
@@ -101,6 +128,7 @@ export function buildMockClass(input: ClassGenInput): GeneratedClass {
   const t = input.topic.trim() || "everyday life";
   const beginner = isBeginner(input.level);
   const advanced = isAdvanced(input.level);
+  const business = input.track === "business";
 
   const format = beginner ? "storytelling" : advanced ? "debate" : "discussion";
 
@@ -108,6 +136,8 @@ export function buildMockClass(input: ClassGenInput): GeneratedClass {
     topic: t,
     level: input.level,
     autisticMode: input.autisticMode,
+    track: input.track ?? "general",
+    grammar: buildGrammar(beginner, advanced, business),
     speakingRatio: info.speakingRatio,
     estimatedMinutes: beginner ? 45 : advanced ? 60 : 50,
     generatedBy: "mock",
@@ -131,7 +161,7 @@ export function buildMockClass(input: ClassGenInput): GeneratedClass {
       ],
     },
     targetLanguage: {
-      vocab: buildVocab(t),
+      vocab: business ? buildBusinessVocab(t) : buildVocab(t),
       structures: [
         {
           pattern: beginner ? "I like ___ because ___" : "I'd say (that) + opinion",

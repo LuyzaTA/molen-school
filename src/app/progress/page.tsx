@@ -21,6 +21,7 @@ export default function ProgressPage() {
         homeworkCompleted: 0,
         meetingsAttended: 0,
         learnedVocab: [],
+        learnedGrammar: [],
         history: [],
       };
 
@@ -39,6 +40,7 @@ export default function ProgressPage() {
         <Metric label="Day streak" value={p.streak} hint="consecutive days" />
         <Metric label="Classes" value={p.classesCompleted} hint="completed" />
         <Metric label="Words learned" value={p.learnedVocab.length} hint="in your pool" />
+        <Metric label="Grammar" value={p.learnedGrammar.length} hint="points covered" />
         <Metric label="Homework" value={p.homeworkCompleted} hint="days finished" />
         <Metric label="Meetings" value={p.meetingsAttended} hint="attended" />
         <Metric
@@ -67,6 +69,31 @@ export default function ProgressPage() {
                 <Badge key={v.term} tone="neutral">
                   {v.term}
                 </Badge>
+              ))}
+          </div>
+        )}
+      </Card>
+
+      {/* Grammar covered (built up from classes, like vocabulary) */}
+      <Card>
+        <SectionHeading
+          title="Grammar"
+          description="Grammar points you've practised across your classes."
+        />
+        {p.learnedGrammar.length === 0 ? (
+          <EmptyHint text="No grammar yet — each class adds the grammar points it practises." />
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            {p.learnedGrammar
+              .slice()
+              .reverse()
+              .map((g) => (
+                <span
+                  key={g}
+                  className="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm font-medium text-ink"
+                >
+                  {g}
+                </span>
               ))}
           </div>
         )}

@@ -37,6 +37,7 @@ const SETTING_KEYS = [
   "theme",
   "motion",
   "translatePt",
+  "track",
 ] as const;
 
 /**

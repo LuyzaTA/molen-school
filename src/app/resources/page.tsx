@@ -1,8 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import type { ResourceCategory } from "@/lib/types";
-import { RESOURCES } from "@/lib/mockData";
+import { useEffect, useMemo, useState } from "react";
+import type { ResourceCategory, ResourceItem } from "@/lib/types";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Chip } from "@/components/ui/Chip";
@@ -17,10 +16,17 @@ const CATEGORIES: { key: ResourceCategory | "all"; label: string }[] = [
 export default function ResourcesPage() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<ResourceCategory | "all">("all");
+  const [resources, setResources] = useState<ResourceItem[]>([]);
+
+  useEffect(() => {
+    fetch("/api/resources", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : { resources: [] }))
+      .then((d) => setResources(d.resources ?? []));
+  }, []);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return RESOURCES.filter((r) => {
+    return resources.filter((r) => {
       const matchesCat = category === "all" || r.category === category;
       const matchesQuery =
         !q ||
@@ -28,7 +34,7 @@ export default function ResourcesPage() {
         r.description.toLowerCase().includes(q);
       return matchesCat && matchesQuery;
     });
-  }, [query, category]);
+  }, [query, category, resources]);
 
   return (
     <div className="mx-auto max-w-content space-y-6">

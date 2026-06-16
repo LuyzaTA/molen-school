@@ -18,6 +18,8 @@ export interface UserProfile {
   // A1 learners only: show Brazilian-Portuguese translations alongside content.
   // Ignored (and hidden) at every other level — they work in English only.
   translatePt: boolean;
+  // Active learning track: general CEFR English or Business Vocabulary.
+  track: LearningTrack;
   createdAt: string; // ISO date
   onboarded: boolean;
 }
@@ -74,13 +76,18 @@ export interface GeneratedClass {
   guidedProduction: GuidedProductionStep;
   freeProduction: FreeProductionStep;
   feedback: FeedbackStep;
+  grammar: string[]; // named grammar points practised (e.g. "Possessive pronouns")
+  track?: LearningTrack; // "general" (CEFR) or "business" vocabulary focus
   generatedBy: "ai" | "mock"; // provenance, so UI can flag offline fallback
 }
+
+export type LearningTrack = "general" | "business";
 
 export interface ClassGenInput {
   topic: string;
   level: CEFRLevel;
   autisticMode: boolean;
+  track?: LearningTrack;
   knownVocab?: string[]; // spiral review: surface earlier vocab
 }
 
@@ -140,6 +147,7 @@ export interface ProgressState {
   homeworkCompleted: number;
   meetingsAttended: number;
   learnedVocab: VocabItem[]; // spiral review pool
+  learnedGrammar: string[]; // grammar points covered across classes
   history: ClassHistoryEntry[];
 }
 

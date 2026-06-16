@@ -11,10 +11,11 @@ import { CONVERSATION_CIRCLES } from "@/lib/mockData";
 import { cn } from "@/lib/cn";
 
 export default function DashboardPage() {
-  const { profile } = useSettings();
+  const { profile, update } = useSettings();
   const { progress } = useProgress();
   const isClient = useIsClient();
 
+  const business = profile.track === "business";
   const info = getCEFRInfo(profile.level);
   const nextCircle = [...CONVERSATION_CIRCLES].sort(
     (a, b) => +new Date(a.dateTime) - +new Date(b.dateTime),
@@ -33,31 +34,51 @@ export default function DashboardPage() {
           className="decor animate-float-slow absolute -bottom-16 -left-10 h-56 w-56 rounded-full bg-green/40"
         />
         <div className="relative">
-          <div className="mb-6 flex items-center gap-3">
+          <div className="mb-6 flex flex-wrap items-center gap-3">
             <WindmillMark size={64} className="drop-shadow-md" />
             <span className="rounded-pill bg-white/20 px-3 py-1 text-xs font-bold uppercase tracking-wider backdrop-blur">
-              {profile.level} · {info.name}
+              {business ? "Business Vocabulary" : `${profile.level} · ${info.name}`}
             </span>
+          </div>
+
+          {/* Learning track switcher */}
+          <div className="mb-5 inline-flex rounded-pill bg-white/15 p-1 backdrop-blur">
+            <TrackBtn active={!business} onClick={() => update({ track: "general" })}>
+              General English
+            </TrackBtn>
+            <TrackBtn active={business} onClick={() => update({ track: "business" })}>
+              Business Vocabulary
+            </TrackBtn>
           </div>
 
           <p className="text-sm font-medium text-accent-ink/80">
             {greeting()}, {profile.name || "there"}.
           </p>
           <h1 className="mt-1 text-3xl font-extrabold leading-tight tracking-tight sm:text-[2.6rem]">
-            Today is a great day
-            <br />
-            to speak English.
+            {business ? (
+              <>
+                Today is a great day
+                <br />
+                to speak Business English.
+              </>
+            ) : (
+              <>
+                Today is a great day
+                <br />
+                to speak English.
+              </>
+            )}
           </h1>
           <p className="mt-3 max-w-md text-[15px] leading-relaxed text-accent-ink/90">
-            You already understand it. Pick something you love, and we&apos;ll build
-            a class that gets the words out of your head and into the air.
+            {business
+              ? "Build confidence for meetings, emails, and negotiations. Pick a work situation and we'll turn it into a speaking class."
+              : "You already understand it. Pick something you love, and we'll build a class that gets the words out of your head and into the air."}
           </p>
 
           <Link href="/class" className="mt-7 inline-block">
-            {/* Dark tile colour from the logo (--c-mark). The tile is the same
-                in light & dark, so pin the text to a fixed cream (not the
-                theme-dependent accent-ink) to stay readable in both modes. */}
-            <span className="inline-flex items-center gap-2 rounded-xl bg-mark px-7 py-3.5 text-base font-bold text-[#FBF4E6] shadow-lg transition-transform hover:-translate-y-0.5">
+            {/* Light: dark mill-tile button with cream text. Dark mode: invert
+                to a cream button with dark text (better contrast on the dark hero). */}
+            <span className="inline-flex items-center gap-2 rounded-xl bg-mark px-7 py-3.5 text-base font-bold text-[#FBF4E6] shadow-lg transition-transform hover:-translate-y-0.5 dark:bg-[#F4ECDA] dark:text-mark">
               Start today&apos;s class
               <span aria-hidden>→</span>
             </span>
@@ -201,6 +222,29 @@ function FeatureCard({
         <span className="mt-4 text-sm font-semibold text-accent">{cta} →</span>
       </Card>
     </Link>
+  );
+}
+
+function TrackBtn({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "rounded-pill px-3.5 py-1.5 text-xs font-bold transition-colors",
+        active ? "bg-white text-mark shadow-sm" : "text-accent-ink/80 hover:text-accent-ink",
+      )}
+    >
+      {children}
+    </button>
   );
 }
 

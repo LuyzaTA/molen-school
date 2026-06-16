@@ -18,3 +18,21 @@ export const PRESET_TOPICS: string[] = [
   "Books & reading",
   "Money & shopping",
 ];
+
+// Business Vocabulary track presets.
+export const BUSINESS_TOPICS: string[] = [
+  "Meetings & agendas",
+  "Emails & messages",
+  "Negotiations",
+  "Presentations",
+  "Networking & small talk",
+  "Job interviews",
+  "Project management",
+  "Giving feedback",
+  "Sales & clients",
+  "Finance & budgets",
+  "Remote work & calls",
+  "Deadlines & priorities",
+  "Reports & data",
+  "Leadership & teams",
+];

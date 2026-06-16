@@ -32,6 +32,7 @@ export async function POST(req: NextRequest) {
       topic: body.topic.slice(0, 200),
       level: body.level,
       autisticMode: !!body.autisticMode,
+      track: body.track === "business" ? "business" : "general",
       knownVocab: Array.isArray(body.knownVocab)
         ? (body.knownVocab as string[]).slice(0, 40)
         : [],
@@ -82,6 +83,8 @@ export async function POST(req: NextRequest) {
       guidedProduction: parsed.guidedProduction!,
       freeProduction: parsed.freeProduction!,
       feedback: parsed.feedback!,
+      grammar: parsed.grammar ?? [],
+      track: input.track ?? "general",
       generatedBy: "ai",
     };
 
