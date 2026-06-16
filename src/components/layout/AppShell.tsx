@@ -18,6 +18,7 @@ type NavItem = { href: string; label: string; icon: ReactNode };
 
 const ADMIN_NAV: NavItem[] = [
   { href: "/admin", label: "Dashboard", icon: <span aria-hidden>📊</span> },
+  { href: "/admin/report", label: "Report", icon: <span aria-hidden>📈</span> },
   { href: "/admin/users", label: "Users", icon: <span aria-hidden>👥</span> },
   { href: "/admin/schedule", label: "Schedule", icon: <span aria-hidden>🗓️</span> },
   { href: "/admin/meetings", label: "Meetings", icon: <span aria-hidden>🎙️</span> },
