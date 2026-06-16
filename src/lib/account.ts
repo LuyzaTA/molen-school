@@ -24,6 +24,8 @@ export interface AccountSettings {
 
 /** Personal data collected at registration (sent to the server). */
 export interface RegistrationInput {
+  userId: string; // auto-generated "M######" (read-only on the form)
+  isAdmin: boolean;
   name: string;
   rg: string;
   cpf: string;
@@ -38,8 +40,19 @@ export interface RegistrationInput {
   settings: AccountSettings;
 }
 
+/** Auto-generated student ID: "M" followed by 6 digits. */
+export function genUserId(): string {
+  return "M" + String(Math.floor(Math.random() * 1_000_000)).padStart(6, "0");
+}
+
+export function isValidUserId(s: string | undefined): boolean {
+  return !!s && /^M\d{6}$/.test(s);
+}
+
 /** Non-sensitive account fields safe to return to the browser. */
 export interface AccountPublic {
+  userId: string;
+  isAdmin: boolean;
   name: string;
   cpfMasked: string; // e.g. "***.***.**9-10"
   city: string;

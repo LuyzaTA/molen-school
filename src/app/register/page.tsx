@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Logo } from "@/components/ui/Logo";
 import { Button } from "@/components/ui/Button";
@@ -18,6 +18,8 @@ import {
 import { cn } from "@/lib/cn";
 
 interface FormState {
+  userId: string;
+  isAdmin: boolean;
   name: string;
   rg: string;
   cpf: string;
@@ -33,6 +35,8 @@ interface FormState {
 }
 
 const INITIAL: FormState = {
+  userId: "",
+  isAdmin: false,
   name: "",
   rg: "",
   cpf: "",
@@ -51,6 +55,20 @@ export default function RegisterPage() {
   const [form, setForm] = useState<FormState>(INITIAL);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  // Fetch a unique, read-only student ID for display.
+  useEffect(() => {
+    let active = true;
+    fetch("/api/next-user-id")
+      .then((r) => r.json())
+      .then((d) => {
+        if (active && d.userId) setForm((f) => ({ ...f, userId: d.userId }));
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
@@ -97,8 +115,10 @@ export default function RegisterPage() {
         setBusy(false);
         return;
       }
-      // Per spec: after registration, go to the login page.
-      window.location.assign("/login?registered=1");
+      // Per spec: after registration, go to the login page. Pass the final
+      // (server-assigned) student ID so the login page can show it once.
+      const uid = data.userId || form.userId;
+      window.location.assign(`/login?registered=1&uid=${encodeURIComponent(uid)}`);
     } catch {
       setError("Network error. Please try again.");
       setBusy(false);
@@ -124,6 +144,18 @@ export default function RegisterPage() {
         {/* Personal data */}
         <Section title="Personal data">
           <Grid>
+            <Field label="User ID" className="sm:col-span-2">
+              <input
+                className="input-field cursor-not-allowed bg-base/60 font-semibold tracking-wide text-ink-muted"
+                value={form.userId || "Generating…"}
+                readOnly
+                aria-readonly
+                tabIndex={-1}
+              />
+              <span className="mt-1 block text-xs text-ink-subtle">
+                Your unique student ID. Generated automatically — you can&apos;t change it.
+              </span>
+            </Field>
             <Field label="Full name" className="sm:col-span-2">
               <input className="input-field" value={form.name} onChange={(e) => set("name", e.target.value)} autoComplete="name" />
             </Field>
@@ -153,6 +185,16 @@ export default function RegisterPage() {
               </select>
             </Field>
           </Grid>
+        </Section>
+
+        {/* Role */}
+        <Section title="Role">
+          <Toggle
+            label="Administrator"
+            description="Mark this account as an administrator."
+            checked={form.isAdmin}
+            onChange={(v) => set("isAdmin", v)}
+          />
         </Section>
 
         {/* CEFR level */}

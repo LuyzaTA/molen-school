@@ -26,6 +26,8 @@ export async function GET() {
       onboarded: true,
     },
     account: {
+      userId: account.userId,
+      isAdmin: account.isAdmin === true,
       cpfMasked: maskCPF(account.cpf),
       city: account.city,
       state: account.state,

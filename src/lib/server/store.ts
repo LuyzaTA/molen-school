@@ -2,7 +2,7 @@ import "server-only";
 import { createHash } from "crypto";
 import { kvGet, kvSet, kvExists } from "./blobKV";
 import type { AccountSettings, PaymentMethod } from "../account";
-import { digitsOnly } from "../account";
+import { digitsOnly, genUserId } from "../account";
 import type {
   CEFRLevel,
   ProgressState,
@@ -12,6 +12,8 @@ import type {
 // ---- Records ----------------------------------------------
 
 export interface AccountRecord {
+  userId: string; // "M######" — unique, auto-generated
+  isAdmin: boolean;
   name: string;
   rg: string;
   cpf: string; // digits only
@@ -60,6 +62,28 @@ export function cpfToSub(cpf: string): string {
 
 const userKey = (sub: string) => `users/${sub}`;
 const stateKey = (sub: string) => `state/${sub}`;
+const userIdKey = (userId: string) => `userid/${userId}`;
+
+// ---- User ID (M######) uniqueness --------------------------
+
+export async function userIdExists(userId: string): Promise<boolean> {
+  return kvExists(userIdKey(userId));
+}
+
+/** Reserve a userId -> account-sub mapping so the ID stays unique. */
+export async function reserveUserId(userId: string, sub: string): Promise<void> {
+  await kvSet(userIdKey(userId), { sub });
+}
+
+/** Generate a unique "M######" id, retrying on the rare collision. */
+export async function generateUniqueUserId(): Promise<string> {
+  for (let i = 0; i < 20; i++) {
+    const id = genUserId();
+    if (!(await userIdExists(id))) return id;
+  }
+  // Extremely unlikely; fall back to a timestamp-based suffix.
+  return "M" + String(Date.now() % 1_000_000).padStart(6, "0");
+}
 
 // ---- Account CRUD -----------------------------------------
 

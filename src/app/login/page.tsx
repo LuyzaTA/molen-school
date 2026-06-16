@@ -19,6 +19,8 @@ export default function LoginPage() {
 function LoginInner() {
   const params = useSearchParams();
   const next = params.get("next") || "/";
+  const justRegistered = params.get("registered") === "1";
+  const newUserId = params.get("uid");
 
   const [cpf, setCpf] = useState("");
   const [password, setPassword] = useState("");
@@ -63,6 +65,19 @@ function LoginInner() {
           <h1 className="text-2xl font-bold tracking-tight text-ink">Welcome back</h1>
           <p className="mt-1 text-sm text-ink-muted">Sign in to continue your classes.</p>
         </div>
+
+        {justRegistered && (
+          <div className="rounded-xl border border-accent/40 bg-accent-soft p-4">
+            <p className="text-sm font-semibold text-ink">Account created! 🎉</p>
+            {newUserId && (
+              <p className="mt-1 text-sm text-ink-muted">
+                Your student ID is{" "}
+                <span className="font-bold tracking-wide text-accent">{newUserId}</span>.
+                Keep it safe. Now sign in with your CPF and password.
+              </p>
+            )}
+          </div>
+        )}
 
         <form onSubmit={onSubmit} className="space-y-4">
           <Field label="CPF">

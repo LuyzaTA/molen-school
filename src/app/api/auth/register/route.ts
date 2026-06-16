@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { isValidCPF, digitsOnly, DEFAULT_SETTINGS } from "@/lib/account";
+import {
+  isValidCPF,
+  isValidUserId,
+  digitsOnly,
+  DEFAULT_SETTINGS,
+} from "@/lib/account";
 import type { RegistrationInput, PaymentMethod } from "@/lib/account";
 import { hashPassword } from "@/lib/server/auth";
 import {
@@ -8,6 +13,9 @@ import {
   saveState,
   defaultState,
   cpfToSub,
+  userIdExists,
+  generateUniqueUserId,
+  reserveUserId,
   type AccountRecord,
 } from "@/lib/server/store";
 import { CEFR_LEVELS } from "@/lib/cefr";
@@ -66,7 +74,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Honour the read-only client id if it's still valid & free; otherwise
+    // assign a fresh unique one server-side.
+    let userId = body.userId as string;
+    if (!isValidUserId(userId) || (await userIdExists(userId))) {
+      userId = await generateUniqueUserId();
+    }
+
     const record: AccountRecord = {
+      userId,
+      isAdmin: body.isAdmin === true,
       name: (body.name as string).trim(),
       rg: (body.rg as string).trim(),
       cpf: digitsOnly(body.cpf as string),
@@ -84,9 +101,10 @@ export async function POST(req: NextRequest) {
     const sub = cpfToSub(record.cpf);
     await saveAccount(sub, record);
     await saveState(sub, defaultState());
+    await reserveUserId(userId, sub);
 
     // Per spec: do NOT auto-login. The client redirects to /login.
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, userId });
   } catch (err) {
     console.error("register error:", err);
     return NextResponse.json(
