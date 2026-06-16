@@ -11,6 +11,8 @@ import type { CEFRLevel } from "@/lib/types";
 import {
   PAYMENT_METHODS,
   DEFAULT_SETTINGS,
+  formatCPF,
+  formatRG,
   type PaymentMethod,
   type AccountSettings,
 } from "@/lib/account";
@@ -158,10 +160,23 @@ export default function RegisterPage() {
               <input className="input-field" value={form.name} onChange={(e) => set("name", e.target.value)} autoComplete="name" />
             </Field>
             <Field label="RG">
-              <input className="input-field" value={form.rg} onChange={(e) => set("rg", e.target.value)} />
+              <input
+                className="input-field"
+                placeholder="00.000.000-0"
+                maxLength={12}
+                value={form.rg}
+                onChange={(e) => set("rg", formatRG(e.target.value))}
+              />
             </Field>
             <Field label="CPF">
-              <input className="input-field" inputMode="numeric" placeholder="000.000.000-00" value={form.cpf} onChange={(e) => set("cpf", e.target.value)} />
+              <input
+                className="input-field"
+                inputMode="numeric"
+                placeholder="000.000.000-00"
+                maxLength={14}
+                value={form.cpf}
+                onChange={(e) => set("cpf", formatCPF(e.target.value))}
+              />
             </Field>
             <Field label="Address" className="sm:col-span-2">
               <input className="input-field" value={form.address} onChange={(e) => set("address", e.target.value)} autoComplete="street-address" />

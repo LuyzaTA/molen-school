@@ -1,6 +1,6 @@
 import "server-only";
 import { createHash } from "crypto";
-import { kvGet, kvSet, kvExists, kvList } from "./blobKV";
+import { kvGet, kvSet, kvExists, kvList, kvDelete } from "./blobKV";
 import type { AccountSettings, PaymentMethod, ClassSchedule } from "../account";
 import { digitsOnly, genUserId } from "../account";
 import type {
@@ -134,6 +134,16 @@ export async function updateAccountByUserId(
   patch(account);
   await saveAccount(sub, account);
   return account;
+}
+
+/** Permanently delete an account, its state, and its userId index. */
+export async function deleteAccountByUserId(userId: string): Promise<boolean> {
+  const sub = await getSubByUserId(userId);
+  if (!sub) return false;
+  await kvDelete(userKey(sub));
+  await kvDelete(stateKey(sub));
+  await kvDelete(userIdKey(userId));
+  return true;
 }
 
 // ---- Per-user state ---------------------------------------

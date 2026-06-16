@@ -94,7 +94,9 @@ export interface AdminUserRow {
   approved: boolean;
   active: boolean;
   city: string;
+  state: string;
   country: string;
+  paymentMethod: PaymentMethod;
   createdAt: string;
   schedule: ClassSchedule | null;
 }
@@ -126,6 +128,33 @@ export function isValidCPF(raw: string): boolean {
     return d === 10 ? 0 : d;
   };
   return calc(9) === parseInt(cpf[9]) && calc(10) === parseInt(cpf[10]);
+}
+
+/** Live input mask for CPF: 000.000.000-00 */
+export function formatCPF(v: string): string {
+  const d = digitsOnly(v).slice(0, 11);
+  if (d.length > 9) return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`;
+  if (d.length > 6) return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6)}`;
+  if (d.length > 3) return `${d.slice(0, 3)}.${d.slice(3)}`;
+  return d;
+}
+
+/** Live input mask for RG: 00.000.000-0 (last position may be a digit or X). */
+export function formatRG(v: string): string {
+  const chars = v.toUpperCase().replace(/[^0-9X]/g, "");
+  let out = "";
+  for (const c of chars) {
+    if (out.length < 8) {
+      if (c >= "0" && c <= "9") out += c;
+    } else if (out.length === 8) {
+      if ((c >= "0" && c <= "9") || c === "X") out += c;
+    }
+    if (out.length >= 9) break;
+  }
+  if (out.length > 8) return `${out.slice(0, 2)}.${out.slice(2, 5)}.${out.slice(5, 8)}-${out.slice(8)}`;
+  if (out.length > 5) return `${out.slice(0, 2)}.${out.slice(2, 5)}.${out.slice(5)}`;
+  if (out.length > 2) return `${out.slice(0, 2)}.${out.slice(2)}`;
+  return out;
 }
 
 export function maskCPF(raw: string): string {

@@ -4,16 +4,30 @@ import { useEffect, useMemo, useState } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-import type { AdminUserRow } from "@/lib/account";
+import { PAYMENT_METHODS, type AdminUserRow, type PaymentMethod } from "@/lib/account";
+import { CEFR_LEVELS } from "@/lib/cefr";
+import type { CEFRLevel } from "@/lib/types";
 import { cn } from "@/lib/cn";
 
 type Action = "approve" | "revoke" | "activate" | "deactivate";
+
+interface EditDraft {
+  name: string;
+  level: CEFRLevel;
+  city: string;
+  state: string;
+  country: string;
+  paymentMethod: PaymentMethod;
+}
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<AdminUserRow[] | null>(null);
   const [query, setQuery] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "pending">("all");
+  const [editId, setEditId] = useState<string | null>(null);
+  const [draft, setDraft] = useState<EditDraft | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/admin/users", { cache: "no-store" })
@@ -26,12 +40,7 @@ export default function AdminUsersPage() {
     const q = query.trim().toLowerCase();
     return users
       .filter((u) => (filter === "pending" ? !u.approved && !u.isAdmin : true))
-      .filter(
-        (u) =>
-          !q ||
-          u.name.toLowerCase().includes(q) ||
-          u.userId.toLowerCase().includes(q),
-      );
+      .filter((u) => !q || u.name.toLowerCase().includes(q) || u.userId.toLowerCase().includes(q));
   }, [users, query, filter]);
 
   async function act(userId: string, action: Action) {
@@ -55,6 +64,53 @@ export default function AdminUsersPage() {
     }
   }
 
+  function startEdit(u: AdminUserRow) {
+    setConfirmDeleteId(null);
+    setEditId(u.userId);
+    setDraft({
+      name: u.name,
+      level: u.level,
+      city: u.city,
+      state: u.state,
+      country: u.country,
+      paymentMethod: u.paymentMethod,
+    });
+  }
+
+  async function saveEdit(userId: string) {
+    if (!draft) return;
+    setBusyId(userId);
+    try {
+      const res = await fetch("/api/admin/user-update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, patch: draft }),
+      });
+      if (res.ok) {
+        setUsers((prev) => (prev ?? []).map((u) => (u.userId === userId ? { ...u, ...draft } : u)));
+        setEditId(null);
+        setDraft(null);
+      }
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function remove(userId: string) {
+    setBusyId(userId);
+    try {
+      const res = await fetch("/api/admin/user-delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      });
+      if (res.ok) setUsers((prev) => (prev ?? []).filter((u) => u.userId !== userId));
+    } finally {
+      setBusyId(null);
+      setConfirmDeleteId(null);
+    }
+  }
+
   const pendingCount = users?.filter((u) => !u.approved && !u.isAdmin).length ?? 0;
 
   return (
@@ -63,7 +119,7 @@ export default function AdminUsersPage() {
         <p className="text-xs font-semibold uppercase tracking-wider text-accent">Administration</p>
         <h1 className="mt-1 text-2xl font-bold tracking-tight text-ink sm:text-3xl">Users</h1>
         <p className="mt-2 text-[15px] text-ink-muted">
-          Approve new registrations and manage student access.
+          Approve registrations, edit details, and manage access.
         </p>
       </header>
 
@@ -87,9 +143,7 @@ export default function AdminUsersPage() {
             >
               {f}
               {f === "pending" && pendingCount > 0 && (
-                <span className="ml-1.5 rounded-full bg-gold px-1.5 text-xs text-white">
-                  {pendingCount}
-                </span>
+                <span className="ml-1.5 rounded-full bg-gold px-1.5 text-xs text-white">{pendingCount}</span>
               )}
             </button>
           ))}
@@ -103,41 +157,106 @@ export default function AdminUsersPage() {
       ) : (
         <div className="space-y-3">
           {filtered.map((u) => (
-            <Card key={u.userId} className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-semibold text-ink">{u.name}</span>
-                  <span className="font-mono text-xs text-ink-subtle">{u.userId}</span>
-                  {u.isAdmin && <Badge tone="accent">Admin</Badge>}
-                  {!u.isAdmin && !u.approved && <Badge tone="warning">Pending</Badge>}
-                  {!u.isAdmin && u.approved && <Badge tone="success">Approved</Badge>}
-                  {!u.active && <Badge tone="danger">Inactive</Badge>}
+            <Card key={u.userId} className="space-y-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-semibold text-ink">{u.name}</span>
+                    <span className="font-mono text-xs text-ink-subtle">{u.userId}</span>
+                    {u.isAdmin && <Badge tone="accent">Admin</Badge>}
+                    {!u.isAdmin && !u.approved && <Badge tone="warning">Pending</Badge>}
+                    {!u.isAdmin && u.approved && <Badge tone="success">Approved</Badge>}
+                    {!u.active && <Badge tone="danger">Inactive</Badge>}
+                  </div>
+                  <p className="mt-1 text-sm text-ink-muted">
+                    {u.level} · {u.city}, {u.state}, {u.country} · joined {u.createdAt.slice(0, 10)}
+                  </p>
                 </div>
-                <p className="mt-1 text-sm text-ink-muted">
-                  {u.level} · {u.city}, {u.country} · joined {u.createdAt.slice(0, 10)}
-                </p>
+
+                {!u.isAdmin && (
+                  <div className="flex shrink-0 flex-wrap gap-2">
+                    {!u.approved ? (
+                      <Button size="sm" disabled={busyId === u.userId} onClick={() => act(u.userId, "approve")}>
+                        Approve
+                      </Button>
+                    ) : (
+                      <Button size="sm" variant="secondary" disabled={busyId === u.userId} onClick={() => act(u.userId, "revoke")}>
+                        Revoke
+                      </Button>
+                    )}
+                    {u.active ? (
+                      <Button size="sm" variant="secondary" disabled={busyId === u.userId} onClick={() => act(u.userId, "deactivate")}>
+                        Deactivate
+                      </Button>
+                    ) : (
+                      <Button size="sm" variant="secondary" disabled={busyId === u.userId} onClick={() => act(u.userId, "activate")}>
+                        Activate
+                      </Button>
+                    )}
+                    <Button size="sm" variant="ghost" onClick={() => (editId === u.userId ? setEditId(null) : startEdit(u))}>
+                      {editId === u.userId ? "Close" : "Edit"}
+                    </Button>
+                    <Button size="sm" variant="danger" disabled={busyId === u.userId} onClick={() => setConfirmDeleteId(u.userId)}>
+                      Remove
+                    </Button>
+                  </div>
+                )}
               </div>
 
-              {!u.isAdmin && (
-                <div className="flex shrink-0 flex-wrap gap-2">
-                  {!u.approved ? (
-                    <Button size="sm" disabled={busyId === u.userId} onClick={() => act(u.userId, "approve")}>
-                      Approve
+              {/* Inline edit */}
+              {editId === u.userId && draft && (
+                <div className="grid gap-3 rounded-xl border border-border bg-base/50 p-4 sm:grid-cols-2">
+                  <EditField label="Name">
+                    <input className="input-field" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
+                  </EditField>
+                  <EditField label="Level">
+                    <select className="input-field" value={draft.level} onChange={(e) => setDraft({ ...draft, level: e.target.value as CEFRLevel })}>
+                      {CEFR_LEVELS.map((l) => (
+                        <option key={l.level} value={l.level}>{l.level} · {l.name}</option>
+                      ))}
+                    </select>
+                  </EditField>
+                  <EditField label="City">
+                    <input className="input-field" value={draft.city} onChange={(e) => setDraft({ ...draft, city: e.target.value })} />
+                  </EditField>
+                  <EditField label="State / Province">
+                    <input className="input-field" value={draft.state} onChange={(e) => setDraft({ ...draft, state: e.target.value })} />
+                  </EditField>
+                  <EditField label="Country">
+                    <input className="input-field" value={draft.country} onChange={(e) => setDraft({ ...draft, country: e.target.value })} />
+                  </EditField>
+                  <EditField label="Payment method">
+                    <select className="input-field" value={draft.paymentMethod} onChange={(e) => setDraft({ ...draft, paymentMethod: e.target.value as PaymentMethod })}>
+                      {PAYMENT_METHODS.map((p) => (
+                        <option key={p.value} value={p.value}>{p.label}</option>
+                      ))}
+                    </select>
+                  </EditField>
+                  <div className="flex gap-2 sm:col-span-2">
+                    <Button size="sm" disabled={busyId === u.userId} onClick={() => saveEdit(u.userId)}>
+                      {busyId === u.userId ? "Saving…" : "Save changes"}
                     </Button>
-                  ) : (
-                    <Button size="sm" variant="secondary" disabled={busyId === u.userId} onClick={() => act(u.userId, "revoke")}>
-                      Revoke
+                    <Button size="sm" variant="ghost" onClick={() => { setEditId(null); setDraft(null); }}>
+                      Cancel
                     </Button>
-                  )}
-                  {u.active ? (
-                    <Button size="sm" variant="danger" disabled={busyId === u.userId} onClick={() => act(u.userId, "deactivate")}>
-                      Deactivate
+                  </div>
+                </div>
+              )}
+
+              {/* Delete confirm */}
+              {confirmDeleteId === u.userId && (
+                <div className="flex flex-wrap items-center gap-3 rounded-xl border border-danger/40 bg-danger/5 p-4">
+                  <p className="text-sm text-ink">
+                    Permanently remove <span className="font-semibold">{u.name}</span> ({u.userId})? This deletes their account and progress.
+                  </p>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="danger" disabled={busyId === u.userId} onClick={() => remove(u.userId)}>
+                      {busyId === u.userId ? "Removing…" : "Yes, remove"}
                     </Button>
-                  ) : (
-                    <Button size="sm" variant="secondary" disabled={busyId === u.userId} onClick={() => act(u.userId, "activate")}>
-                      Activate
+                    <Button size="sm" variant="ghost" onClick={() => setConfirmDeleteId(null)}>
+                      Cancel
                     </Button>
-                  )}
+                  </div>
                 </div>
               )}
             </Card>
@@ -145,5 +264,14 @@ export default function AdminUsersPage() {
         </div>
       )}
     </div>
+  );
+}
+
+function EditField({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label className="block">
+      <span className="mb-1.5 block text-sm font-medium text-ink">{label}</span>
+      {children}
+    </label>
   );
 }

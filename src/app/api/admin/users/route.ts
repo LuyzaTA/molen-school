@@ -19,7 +19,9 @@ export async function GET() {
     approved: a.approved !== false,
     active: a.active !== false,
     city: a.city,
+    state: a.state,
     country: a.country,
+    paymentMethod: a.paymentMethod,
     createdAt: a.createdAt,
     schedule: a.schedule ?? null,
   }));
