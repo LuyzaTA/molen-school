@@ -28,6 +28,10 @@ export async function GET() {
     account: {
       userId: account.userId,
       isAdmin: account.isAdmin === true,
+      // Legacy accounts (created before approvals) default to approved.
+      approved: account.approved !== false,
+      active: account.active !== false,
+      schedule: account.schedule ?? null,
       cpfMasked: maskCPF(account.cpf),
       city: account.city,
       state: account.state,

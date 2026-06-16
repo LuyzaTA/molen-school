@@ -7,6 +7,23 @@ import type { CEFRLevel, FontPreference, ThemePreference } from "./types";
 
 export type PaymentMethod = "pix" | "credit_card" | "boleto";
 
+/** Recurring weekly class schedule for a student (set by an admin). */
+export interface ClassSchedule {
+  days: number[]; // 0=Sun … 6=Sat
+  time: string; // "HH:MM"
+}
+
+export const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+export const WEEKDAYS_LONG = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
+
 export const PAYMENT_METHODS: { value: PaymentMethod; label: string }[] = [
   { value: "pix", label: "Pix" },
   { value: "credit_card", label: "Credit card" },
@@ -53,6 +70,8 @@ export function isValidUserId(s: string | undefined): boolean {
 export interface AccountPublic {
   userId: string;
   isAdmin: boolean;
+  approved: boolean;
+  active: boolean;
   name: string;
   cpfMasked: string; // e.g. "***.***.**9-10"
   city: string;
@@ -61,7 +80,23 @@ export interface AccountPublic {
   paymentMethod: PaymentMethod;
   level: CEFRLevel;
   settings: AccountSettings;
+  schedule: ClassSchedule | null;
   createdAt: string;
+}
+
+/** Row returned by the admin user list (non-sensitive). */
+export interface AdminUserRow {
+  userId: string;
+  name: string;
+  cpfMasked: string;
+  level: CEFRLevel;
+  isAdmin: boolean;
+  approved: boolean;
+  active: boolean;
+  city: string;
+  country: string;
+  createdAt: string;
+  schedule: ClassSchedule | null;
 }
 
 export const DEFAULT_SETTINGS: AccountSettings = {

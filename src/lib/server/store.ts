@@ -1,7 +1,7 @@
 import "server-only";
 import { createHash } from "crypto";
-import { kvGet, kvSet, kvExists } from "./blobKV";
-import type { AccountSettings, PaymentMethod } from "../account";
+import { kvGet, kvSet, kvExists, kvList } from "./blobKV";
+import type { AccountSettings, PaymentMethod, ClassSchedule } from "../account";
 import { digitsOnly, genUserId } from "../account";
 import type {
   CEFRLevel,
@@ -25,6 +25,9 @@ export interface AccountRecord {
   passwordHash: string;
   level: CEFRLevel;
   settings: AccountSettings;
+  approved: boolean; // admin must approve before platform access
+  active: boolean; // admin can deactivate a student
+  schedule: ClassSchedule | null; // recurring weekly classes (admin-managed)
   createdAt: string;
 }
 
@@ -99,6 +102,40 @@ export async function saveAccount(sub: string, record: AccountRecord): Promise<v
   await kvSet(userKey(sub), record);
 }
 
+/** All accounts (admin only). Newest first. */
+export async function listAccounts(): Promise<AccountRecord[]> {
+  const rows = await kvList<AccountRecord>("users/");
+  return rows.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+}
+
+export async function countAdmins(): Promise<number> {
+  return (await listAccounts()).filter((a) => a.isAdmin).length;
+}
+
+async function getSubByUserId(userId: string): Promise<string | null> {
+  const idx = await kvGet<{ sub: string }>(userIdKey(userId));
+  return idx?.sub ?? null;
+}
+
+export async function getAccountByUserId(userId: string): Promise<AccountRecord | null> {
+  const sub = await getSubByUserId(userId);
+  return sub ? getAccount(sub) : null;
+}
+
+/** Apply a mutation to an account looked up by userId. Returns the updated record. */
+export async function updateAccountByUserId(
+  userId: string,
+  patch: (a: AccountRecord) => void,
+): Promise<AccountRecord | null> {
+  const sub = await getSubByUserId(userId);
+  if (!sub) return null;
+  const account = await getAccount(sub);
+  if (!account) return null;
+  patch(account);
+  await saveAccount(sub, account);
+  return account;
+}
+
 // ---- Per-user state ---------------------------------------
 
 export async function getState(sub: string): Promise<AppState> {
@@ -107,4 +144,9 @@ export async function getState(sub: string): Promise<AppState> {
 
 export async function saveState(sub: string, state: AppState): Promise<void> {
   await kvSet(stateKey(sub), state);
+}
+
+/** Every user's state (admin analytics only). */
+export async function listAllStates(): Promise<AppState[]> {
+  return kvList<AppState>("state/");
 }

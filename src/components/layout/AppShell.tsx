@@ -7,33 +7,52 @@ import { NAV_ITEMS } from "./navItems";
 import { QuickSettings } from "./QuickSettings";
 import { SiteFooter } from "./SiteFooter";
 import { Logo } from "@/components/ui/Logo";
+import { Card } from "@/components/ui/Card";
 import { useSettings } from "@/context/SettingsContext";
 import { cn } from "@/lib/cn";
 
 // Auth pages render without the app chrome.
 const BARE_ROUTES = ["/login", "/register", "/onboarding"];
 
+type NavItem = { href: string; label: string; icon: ReactNode };
+
+const ADMIN_NAV: NavItem[] = [
+  { href: "/admin", label: "Dashboard", icon: <span aria-hidden>📊</span> },
+  { href: "/admin/users", label: "Users", icon: <span aria-hidden>👥</span> },
+  { href: "/admin/schedule", label: "Schedule", icon: <span aria-hidden>🗓️</span> },
+];
+
 /**
- * Top-level chrome: header (logo + quick settings + sign out), a desktop
- * side rail, and a mobile bottom nav. Unauthenticated users are redirected
- * to /login; the login & register pages render bare.
+ * Top-level chrome. Routes by role:
+ *  - admin → analytical mode (admin nav; home redirects to /admin)
+ *  - student not yet approved / deactivated → access gate
+ *  - approved student → normal app
  */
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { ready, authenticated } = useSettings();
+  const { ready, authenticated, account } = useSettings();
 
   const isBare = BARE_ROUTES.some((p) => pathname === p || pathname.startsWith(p + "/"));
+  const isAdminPath = pathname === "/admin" || pathname.startsWith("/admin/");
+  const isAdmin = !!account?.isAdmin;
+  const approved = account?.approved !== false;
+  const active = account?.active !== false;
 
   useEffect(() => {
-    if (ready && !authenticated && !isBare) {
+    if (!ready || isBare) return;
+    if (!authenticated) {
       router.replace("/login");
+    } else if (isAdmin && !isAdminPath) {
+      // Admin sign-in moves the platform into analytical mode.
+      router.replace("/admin");
+    } else if (!isAdmin && isAdminPath) {
+      router.replace("/");
     }
-  }, [ready, authenticated, isBare, router]);
+  }, [ready, authenticated, isAdmin, isAdminPath, isBare, router]);
 
   if (isBare) return <>{children}</>;
 
-  // Avoid a flash of protected content before auth resolves.
   if (!ready || !authenticated) {
     return (
       <div className="flex min-h-screen items-center justify-center text-ink-subtle">
@@ -42,43 +61,54 @@ export function AppShell({ children }: { children: ReactNode }) {
     );
   }
 
+  // Student access gate (pending approval or deactivated).
+  if (!isAdmin && (!approved || !active)) {
+    return <AccessGate approved={approved} active={active} />;
+  }
+
+  const navItems: NavItem[] = isAdmin ? ADMIN_NAV : NAV_ITEMS;
+  const homeHref = isAdmin ? "/admin" : "/";
+
   return (
     <div className="min-h-screen">
-      {/* Header */}
       <header className="sticky top-0 z-40 border-b border-border bg-base/80 backdrop-blur">
         <div className="mx-auto flex h-20 max-w-wide items-center justify-between px-4 sm:px-6">
-          <Link href="/" aria-label="Molen English Classes home">
+          <Link href={homeHref} aria-label="Molen English Classes home" className="flex items-center gap-3">
             <Logo size={52} />
+            {isAdmin && (
+              <span className="hidden rounded-pill bg-accent-soft px-3 py-1 text-xs font-bold uppercase tracking-wider text-accent sm:inline">
+                Admin
+              </span>
+            )}
           </Link>
           <div className="flex items-center gap-2">
-            <QuickSettings />
+            {!isAdmin && <QuickSettings />}
             <SignOutButton />
           </div>
         </div>
       </header>
 
       <div className="mx-auto flex max-w-wide gap-8 px-4 sm:px-6">
-        {/* Desktop side nav */}
         <nav className="sticky top-20 hidden h-[calc(100vh-5rem)] w-52 shrink-0 flex-col gap-1 py-6 md:flex">
-          {NAV_ITEMS.map((item) => (
+          {navItems.map((item) => (
             <NavLink key={item.href} item={item} active={isActive(pathname, item.href)} />
           ))}
-          <SettingsNavLink active={pathname === "/settings"} />
+          {!isAdmin && <SettingsNavLink active={pathname === "/settings"} />}
         </nav>
 
-        {/* Main content */}
         <main className="min-w-0 flex-1 py-6">{children}</main>
       </div>
 
-      {/* Accessibility / neurodivergent-needs footer */}
-      <div className="pb-24 md:pb-0">
-        <SiteFooter />
-      </div>
+      {!isAdmin && (
+        <div className="pb-24 md:pb-0">
+          <SiteFooter />
+        </div>
+      )}
 
       {/* Mobile bottom nav */}
       <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/95 backdrop-blur md:hidden">
         <ul className="mx-auto flex max-w-wide items-stretch justify-around">
-          {NAV_ITEMS.slice(0, 5).map((item) => {
+          {navItems.slice(0, 5).map((item) => {
             const active = isActive(pathname, item.href);
             return (
               <li key={item.href} className="flex-1">
@@ -102,8 +132,28 @@ export function AppShell({ children }: { children: ReactNode }) {
   );
 }
 
+function AccessGate({ approved, active }: { approved: boolean; active: boolean }) {
+  const pending = !approved;
+  return (
+    <div className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-5 text-center">
+      <Logo size={64} />
+      <Card className="mt-8 w-full space-y-3">
+        <div className="text-4xl">{pending ? "⏳" : "🔒"}</div>
+        <h1 className="text-xl font-bold text-ink">
+          {pending ? "Awaiting approval" : "Account deactivated"}
+        </h1>
+        <p className="text-[15px] text-ink-muted">
+          {pending
+            ? "Your registration was received. An administrator needs to approve your account before you can start classes. Please check back soon."
+            : "Your account is currently inactive. Please contact your administrator to reactivate it."}
+        </p>
+        <SignOutButton />
+      </Card>
+    </div>
+  );
+}
+
 function SignOutButton() {
-  const router = useRouter();
   async function signOut() {
     try {
       await fetch("/api/auth/logout", { method: "POST" });
@@ -123,11 +173,11 @@ function SignOutButton() {
 }
 
 function isActive(pathname: string, href: string): boolean {
-  if (href === "/") return pathname === "/";
+  if (href === "/" || href === "/admin") return pathname === href;
   return pathname.startsWith(href);
 }
 
-function NavLink({ item, active }: { item: (typeof NAV_ITEMS)[number]; active: boolean }) {
+function NavLink({ item, active }: { item: NavItem; active: boolean }) {
   return (
     <Link
       href={item.href}

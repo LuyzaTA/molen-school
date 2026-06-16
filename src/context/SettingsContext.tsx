@@ -12,8 +12,16 @@ import {
 import type { UserProfile } from "@/lib/types";
 import { DEFAULT_PROFILE } from "@/lib/storage";
 
+export interface AccountMeta {
+  userId: string;
+  isAdmin: boolean;
+  approved: boolean;
+  active: boolean;
+}
+
 interface SettingsContextValue {
   profile: UserProfile;
+  account: AccountMeta | null;
   ready: boolean; // finished loading from the server
   authenticated: boolean;
   update: (patch: Partial<UserProfile>) => void;
@@ -55,6 +63,7 @@ function applyDocumentAttributes(profile: UserProfile) {
 
 export function SettingsProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<UserProfile>(DEFAULT_PROFILE);
+  const [account, setAccount] = useState<AccountMeta | null>(null);
   const [ready, setReady] = useState(false);
   const [authenticated, setAuthenticated] = useState(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -67,13 +76,25 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         const p = { ...DEFAULT_PROFILE, ...data.profile } as UserProfile;
         setProfile(p);
         applyDocumentAttributes(p);
+        setAccount(
+          data.account
+            ? {
+                userId: data.account.userId,
+                isAdmin: !!data.account.isAdmin,
+                approved: data.account.approved !== false,
+                active: data.account.active !== false,
+              }
+            : null,
+        );
         setAuthenticated(true);
       } else {
         applyDocumentAttributes(DEFAULT_PROFILE);
+        setAccount(null);
         setAuthenticated(false);
       }
     } catch {
       applyDocumentAttributes(DEFAULT_PROFILE);
+      setAccount(null);
       setAuthenticated(false);
     } finally {
       setReady(true);
@@ -129,7 +150,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
   return (
     <SettingsContext.Provider
-      value={{ profile, ready, authenticated, update, toggleAutistic, refresh: load }}
+      value={{ profile, account, ready, authenticated, update, toggleAutistic, refresh: load }}
     >
       {children}
     </SettingsContext.Provider>

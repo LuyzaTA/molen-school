@@ -16,6 +16,7 @@ import {
   userIdExists,
   generateUniqueUserId,
   reserveUserId,
+  countAdmins,
   type AccountRecord,
 } from "@/lib/server/store";
 import { CEFR_LEVELS } from "@/lib/cefr";
@@ -74,6 +75,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const isAdmin = body.isAdmin === true;
+
+    // Rule: only ONE administrator account may exist. Re-validated on every
+    // new registration, so the constraint holds as users are added.
+    if (isAdmin && (await countAdmins()) >= 1) {
+      return NextResponse.json(
+        { error: "An administrator account already exists. Only one is allowed." },
+        { status: 409 },
+      );
+    }
+
     // Honour the read-only client id if it's still valid & free; otherwise
     // assign a fresh unique one server-side.
     let userId = body.userId as string;
@@ -83,7 +95,12 @@ export async function POST(req: NextRequest) {
 
     const record: AccountRecord = {
       userId,
-      isAdmin: body.isAdmin === true,
+      isAdmin,
+      // Admins are auto-approved (they approve everyone else); students start
+      // pending until an admin approves them. Everyone starts active.
+      approved: isAdmin,
+      active: true,
+      schedule: null,
       name: (body.name as string).trim(),
       rg: (body.rg as string).trim(),
       cpf: digitsOnly(body.cpf as string),

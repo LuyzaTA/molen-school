@@ -41,6 +41,17 @@ export async function kvSet<T>(key: string, value: T): Promise<void> {
   });
 }
 
+/** Fetch and parse every blob under a prefix (admin/list operations). */
+export async function kvList<T>(prefix: string): Promise<T[]> {
+  const { blobs } = await list({ prefix, limit: 1000 });
+  const out: T[] = [];
+  for (const b of blobs) {
+    const res = await fetch(b.url, { cache: "no-store" });
+    if (res.ok) out.push((await res.json()) as T);
+  }
+  return out;
+}
+
 export async function kvDelete(key: string): Promise<void> {
   const { blobs } = await list({ prefix: key, limit: 100 });
   const urls = blobs.filter((b) => matches(b.pathname, key)).map((b) => b.url);
