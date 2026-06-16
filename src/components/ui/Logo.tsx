@@ -6,7 +6,7 @@ const SERIF = "Georgia, 'Iowan Old Style', 'Times New Roman', serif";
 
 /**
  * Molen English Classes brand lockup: the crisp windmill mark plus a
- * theme-aware serif wordmark (maroon "Molen" over olive "English Classes").
+ * theme-aware serif wordmark (dark "Molen" over green "English Classes").
  * `size` is the mark height in px; the wordmark scales with it.
  */
 export function Logo({
@@ -24,7 +24,7 @@ export function Logo({
       {withWordmark && (
         <span className="flex flex-col justify-center leading-none">
           <span
-            className="font-bold text-accent"
+            className="font-bold text-ink"
             style={{ fontFamily: SERIF, fontSize: size * 0.62, letterSpacing: "-0.01em" }}
           >
             Molen

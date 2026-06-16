@@ -21,8 +21,8 @@
   --c-ink: 42 45 40; /* #2A2D28 dark slate (tile) */
   --c-ink-muted: 106 98 83; /* #6A6253 */
   --c-ink-subtle: 151 139 116; /* #978B74 */
-  --c-accent: 110 34 48; /* #6E2230 wine / maroon (logo "Molen") */
-  --c-accent-soft: 236 215 211; /* #ECD7D3 */
+  --c-accent: 76 106 46; /* #4C6A2E windmill green (primary) */
+  --c-accent-soft: 228 233 207; /* #E4E9CF soft green */
   --c-accent-ink: 251 244 230; /* cream */
   /* Brand secondaries — olive green + antique gold (logo blades & frame) */
   --c-green: 107 106 47; /* #6B6A2F olive */
@@ -49,8 +49,8 @@
   --c-ink: 236 227 210; /* #ECE3D2 warm cream */
   --c-ink-muted: 181 172 151; /* #B5AC97 */
   --c-ink-subtle: 132 124 106; /* #847C6A */
-  --c-accent: 204 134 148; /* #CC8694 lifted wine */
-  --c-accent-soft: 58 42 45; /* #3A2A2D */
+  --c-accent: 154 184 104; /* #9AB868 lifted green */
+  --c-accent-soft: 46 56 32; /* #2E3820 */
   --c-accent-ink: 26 20 16; /* #1A1410 */
   --c-green: 182 180 99; /* #B6B463 lifted olive */
   --c-green-soft: 46 47 28; /* #2E2F1C */
@@ -67,8 +67,8 @@
    muted accent, no animation. Applies on top of either theme.
    ------------------------------------------------------------ */
 [data-autistic="on"] {
-  --c-accent: 122 96 100; /* muted mauve, no flash */
-  --c-accent-soft: 230 224 220;
+  --c-accent: 108 124 92; /* muted green, no flash */
+  --c-accent-soft: 226 230 220;
   --c-accent-ink: 251 246 235;
   --c-green: 124 130 104; /* muted olive */
   --c-green-soft: 230 230 222;
@@ -88,8 +88,8 @@
   --c-surface-raised: 46 48 40;
   --c-ink: 222 217 203; /* slightly lower contrast than normal dark */
   --c-ink-muted: 168 162 144;
-  --c-accent: 178 138 144;
-  --c-accent-soft: 52 44 44;
+  --c-accent: 150 168 120;
+  --c-accent-soft: 48 54 36;
   --c-accent-ink: 22 18 14;
 }
 
