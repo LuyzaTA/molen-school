@@ -1,29 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
-import { isValidCPF } from "@/lib/account";
 import { verifyPassword, setSessionCookie } from "@/lib/server/auth";
-import { getAccount, cpfToSub } from "@/lib/server/store";
+import { getAccountByUserId, cpfToSub } from "@/lib/server/store";
 
 export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
-  let body: { cpf?: string; password?: string };
+  let body: { userId?: string; password?: string };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
-  if (!body.cpf || !body.password || !isValidCPF(body.cpf)) {
-    return NextResponse.json({ error: "Invalid CPF or password." }, { status: 400 });
+
+  const userId = (body.userId || "").trim().toUpperCase();
+  if (!userId || !body.password) {
+    return NextResponse.json({ error: "Enter your User ID and password." }, { status: 400 });
   }
 
   try {
-    const sub = cpfToSub(body.cpf);
-    const account = await getAccount(sub);
-    // Same generic error whether the account is missing or the password is
-    // wrong, so we don't reveal which CPFs are registered.
+    const account = await getAccountByUserId(userId);
+    // Same generic error whether the user is missing or the password is wrong.
     if (!account || !verifyPassword(body.password, account.passwordHash)) {
-      return NextResponse.json({ error: "Invalid CPF or password." }, { status: 401 });
+      return NextResponse.json({ error: "Invalid User ID or password." }, { status: 401 });
     }
+    const sub = cpfToSub(account.cpf);
     await setSessionCookie(sub, account.name);
     return NextResponse.json({ ok: true, name: account.name });
   } catch (err) {

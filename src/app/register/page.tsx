@@ -11,7 +11,6 @@ import type { CEFRLevel } from "@/lib/types";
 import {
   PAYMENT_METHODS,
   DEFAULT_SETTINGS,
-  isValidCPF,
   type PaymentMethod,
   type AccountSettings,
 } from "@/lib/account";
@@ -88,7 +87,6 @@ export default function RegisterPage() {
     for (const [k, label] of req) {
       if (!String(form[k]).trim()) return `${label} is required.`;
     }
-    if (!isValidCPF(form.cpf)) return "Please enter a valid CPF.";
     if (form.password.length < 6) return "Password must be at least 6 characters.";
     if (form.password !== form.repeatPassword) return "Passwords do not match.";
     return null;
@@ -187,33 +185,40 @@ export default function RegisterPage() {
           </Grid>
         </Section>
 
-        {/* Role */}
-        <Section title="Role">
-          <Toggle
-            label="Administrator"
-            description="Mark this account as an administrator."
-            checked={form.isAdmin}
-            onChange={(v) => set("isAdmin", v)}
-          />
-        </Section>
-
-        {/* CEFR level */}
+        {/* English level — or Platform Administrator */}
         <Section title="Your English level" hint="Pick the level that feels right — you can change it later.">
           <div className="grid gap-2 sm:grid-cols-2">
-            {CEFR_LEVELS.map((l) => (
-              <button
-                type="button"
-                key={l.level}
-                onClick={() => set("level", l.level)}
-                className={cn(
-                  "rounded-xl border p-3 text-left transition-colors",
-                  form.level === l.level ? "border-accent bg-accent-soft" : "border-border hover:border-accent/60",
-                )}
-              >
-                <span className="font-semibold text-ink">{l.level} · {l.name}</span>
-                <span className="mt-0.5 block text-sm text-ink-muted">{l.canDo}</span>
-              </button>
-            ))}
+            {CEFR_LEVELS.map((l) => {
+              const selected = !form.isAdmin && form.level === l.level;
+              return (
+                <button
+                  type="button"
+                  key={l.level}
+                  onClick={() => setForm((f) => ({ ...f, level: l.level, isAdmin: false }))}
+                  className={cn(
+                    "rounded-xl border p-3 text-left transition-colors",
+                    selected ? "border-accent bg-accent-soft" : "border-border hover:border-accent/60",
+                  )}
+                >
+                  <span className="font-semibold text-ink">{l.level} · {l.name}</span>
+                  <span className="mt-0.5 block text-sm text-ink-muted">{l.canDo}</span>
+                </button>
+              );
+            })}
+            <button
+              type="button"
+              onClick={() => setForm((f) => ({ ...f, isAdmin: true }))}
+              className={cn(
+                "rounded-xl border p-3 text-left transition-colors sm:col-span-2",
+                form.isAdmin ? "border-accent bg-accent-soft" : "border-border hover:border-accent/60",
+              )}
+            >
+              <span className="font-semibold text-ink">🛡️ Platform Administrator</span>
+              <span className="mt-0.5 block text-sm text-ink-muted">
+                Manage students, approvals, analytics, and class schedules. Only one
+                administrator can exist.
+              </span>
+            </button>
           </div>
         </Section>
 

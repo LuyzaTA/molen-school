@@ -1,10 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  isValidCPF,
-  isValidUserId,
-  digitsOnly,
-  DEFAULT_SETTINGS,
-} from "@/lib/account";
+import { isValidUserId, digitsOnly, DEFAULT_SETTINGS } from "@/lib/account";
 import type { RegistrationInput, PaymentMethod } from "@/lib/account";
 import { hashPassword } from "@/lib/server/auth";
 import {
@@ -49,9 +44,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: `Missing field: ${f}` }, { status: 400 });
     }
   }
-  if (!isValidCPF(body.cpf as string)) {
-    return NextResponse.json({ error: "Invalid CPF." }, { status: 400 });
-  }
+  // CPF checksum validation intentionally skipped for now (presence is still
+  // required above). CPF is used as the unique account key.
   if ((body.password as string).length < 6) {
     return NextResponse.json(
       { error: "Password must be at least 6 characters." },

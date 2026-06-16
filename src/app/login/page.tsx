@@ -6,7 +6,6 @@ import { useSearchParams } from "next/navigation";
 import { Logo } from "@/components/ui/Logo";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { isValidCPF } from "@/lib/account";
 
 export default function LoginPage() {
   return (
@@ -22,7 +21,7 @@ function LoginInner() {
   const justRegistered = params.get("registered") === "1";
   const newUserId = params.get("uid");
 
-  const [cpf, setCpf] = useState("");
+  const [userId, setUserId] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -30,8 +29,8 @@ function LoginInner() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (!isValidCPF(cpf)) {
-      setError("Please enter a valid CPF.");
+    if (!userId.trim()) {
+      setError("Please enter your User ID.");
       return;
     }
     setBusy(true);
@@ -39,7 +38,7 @@ function LoginInner() {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cpf, password }),
+        body: JSON.stringify({ userId, password }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -71,23 +70,22 @@ function LoginInner() {
             <p className="text-sm font-semibold text-ink">Account created! 🎉</p>
             {newUserId && (
               <p className="mt-1 text-sm text-ink-muted">
-                Your student ID is{" "}
+                Your User ID is{" "}
                 <span className="font-bold tracking-wide text-accent">{newUserId}</span>.
-                Keep it safe. Now sign in with your CPF and password.
+                Use it to sign in (with your password). Keep it safe.
               </p>
             )}
           </div>
         )}
 
         <form onSubmit={onSubmit} className="space-y-4">
-          <Field label="CPF">
+          <Field label="User ID">
             <input
-              className="input-field"
-              inputMode="numeric"
+              className="input-field font-semibold tracking-wide"
               autoComplete="username"
-              placeholder="000.000.000-00"
-              value={cpf}
-              onChange={(e) => setCpf(e.target.value)}
+              placeholder="M000000"
+              value={userId}
+              onChange={(e) => setUserId(e.target.value)}
             />
           </Field>
           <Field label="Password">
