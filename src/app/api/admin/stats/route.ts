@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { getAdmin } from "@/lib/server/adminGuard";
-import { listAccounts, listAllStates } from "@/lib/server/store";
+import { listAccounts, listAllStates, getPricing } from "@/lib/server/store";
 import { CEFR_LEVELS } from "@/lib/cefr";
 import { weekKey } from "@/lib/storage";
+import { WEEKS_PER_MONTH } from "@/lib/account";
 
 export const runtime = "nodejs";
 
@@ -50,6 +51,22 @@ export async function GET() {
     }
   }
 
+  // Expected income from recurring scheduled classes (active students only).
+  const pricing = await getPricing();
+  let weeklyClasses = 0;
+  let weeklyIncome = 0;
+  const incomeByLevel: Record<string, number> = {};
+  for (const l of CEFR_LEVELS) incomeByLevel[l.level] = 0;
+  for (const s of students) {
+    if (s.active === false) continue;
+    const n = s.schedule?.days?.length ?? 0;
+    if (!n) continue;
+    const price = pricing[s.level] ?? 0;
+    weeklyClasses += n;
+    weeklyIncome += n * price;
+    incomeByLevel[s.level] += n * price * WEEKS_PER_MONTH;
+  }
+
   const first = byDateAsc[0];
   const last = byDateAsc[byDateAsc.length - 1];
   const pick = (a?: (typeof students)[number]) =>
@@ -68,5 +85,11 @@ export async function GET() {
     classesByDay: days.map((d) => ({ date: d, count: classByDay[d] })),
     classesTotal,
     classesThisWeek,
+    pricing,
+    weeklyClasses,
+    monthlyClasses: Math.round(weeklyClasses * WEEKS_PER_MONTH),
+    weeklyIncome,
+    monthlyIncome: weeklyIncome * WEEKS_PER_MONTH,
+    incomeByLevel,
   });
 }

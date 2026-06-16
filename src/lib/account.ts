@@ -13,6 +13,28 @@ export interface ClassSchedule {
   time: string; // "HH:MM"
 }
 
+/** Class price per CEFR level (in BRL). Admin-configurable, platform-wide. */
+export type PricingMap = Record<CEFRLevel, number>;
+
+export const DEFAULT_PRICING: PricingMap = {
+  A1: 50,
+  A2: 55,
+  B1: 65,
+  B2: 75,
+  C1: 90,
+  C2: 110,
+};
+
+/** Average weeks per month — used to project weekly schedules to monthly income. */
+export const WEEKS_PER_MONTH = 52 / 12;
+
+export function formatBRL(n: number): string {
+  return "R$ " + (n || 0).toLocaleString("pt-BR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
 export const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 export const WEEKDAYS_LONG = [
   "Sunday",

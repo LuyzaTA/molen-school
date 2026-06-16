@@ -1,8 +1,13 @@
 import "server-only";
 import { createHash } from "crypto";
 import { kvGet, kvSet, kvExists, kvList, kvDelete } from "./blobKV";
-import type { AccountSettings, PaymentMethod, ClassSchedule } from "../account";
-import { digitsOnly, genUserId } from "../account";
+import type {
+  AccountSettings,
+  PaymentMethod,
+  ClassSchedule,
+  PricingMap,
+} from "../account";
+import { digitsOnly, genUserId, DEFAULT_PRICING } from "../account";
 import type {
   CEFRLevel,
   ProgressState,
@@ -159,4 +164,17 @@ export async function saveState(sub: string, state: AppState): Promise<void> {
 /** Every user's state (admin analytics only). */
 export async function listAllStates(): Promise<AppState[]> {
   return kvList<AppState>("state/");
+}
+
+// ---- Class pricing (platform-wide config) ------------------
+
+const PRICING_KEY = "config/pricing";
+
+export async function getPricing(): Promise<PricingMap> {
+  const stored = await kvGet<Partial<PricingMap>>(PRICING_KEY);
+  return { ...DEFAULT_PRICING, ...(stored ?? {}) };
+}
+
+export async function savePricing(pricing: PricingMap): Promise<void> {
+  await kvSet(PRICING_KEY, pricing);
 }

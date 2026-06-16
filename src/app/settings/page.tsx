@@ -6,10 +6,11 @@ import type { CEFRLevel, ThemePreference } from "@/lib/types";
 import { Card, SectionHeading } from "@/components/ui/Card";
 import { Toggle } from "@/components/ui/Toggle";
 import { Button } from "@/components/ui/Button";
+import { PricingSection } from "@/components/admin/PricingSection";
 import { cn } from "@/lib/cn";
 
 export default function SettingsPage() {
-  const { profile, update } = useSettings();
+  const { profile, account, update } = useSettings();
 
   async function signOut() {
     try {
@@ -26,6 +27,9 @@ export default function SettingsPage() {
           Settings
         </h1>
       </header>
+
+      {/* Admin-only: class pricing */}
+      {account?.isAdmin && <PricingSection />}
 
       {/* Profile */}
       <Card>

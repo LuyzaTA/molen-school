@@ -5,6 +5,8 @@ import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { HBarChart, ColumnChart } from "@/components/admin/Charts";
 import { useSettings } from "@/context/SettingsContext";
+import { formatBRL } from "@/lib/account";
+import { CEFR_LEVELS } from "@/lib/cefr";
 import { cn } from "@/lib/cn";
 
 interface Stats {
@@ -20,6 +22,12 @@ interface Stats {
   classesByDay: { date: string; count: number }[];
   classesTotal: number;
   classesThisWeek: number;
+  pricing: Record<string, number>;
+  weeklyClasses: number;
+  monthlyClasses: number;
+  weeklyIncome: number;
+  monthlyIncome: number;
+  incomeByLevel: Record<string, number>;
 }
 
 export default function AdminDashboard() {
@@ -73,6 +81,41 @@ export default function AdminDashboard() {
           </Link>
         </Card>
       )}
+
+      {/* Expected income from scheduled classes */}
+      <Card className="surface-grad">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-accent">
+              Expected monthly income
+            </p>
+            <p className="mt-1 text-3xl font-extrabold text-ink sm:text-4xl">
+              {formatBRL(stats.monthlyIncome)}
+            </p>
+            <p className="mt-1 text-sm text-ink-muted">
+              From {stats.weeklyClasses} scheduled class
+              {stats.weeklyClasses === 1 ? "" : "es"}/week (~{stats.monthlyClasses}/month) ·{" "}
+              {formatBRL(stats.weeklyIncome)}/week
+            </p>
+          </div>
+          <Link href="/settings" className="text-sm font-semibold text-accent hover:underline">
+            Set class prices →
+          </Link>
+        </div>
+
+        <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          {CEFR_LEVELS.map((l) => (
+            <div key={l.level} className="rounded-xl bg-surface/70 p-3">
+              <div className="text-sm font-bold text-ink">{l.level}</div>
+              <div className="text-xs text-ink-subtle">{formatBRL(stats.pricing[l.level] ?? 0)}/class</div>
+              <div className="mt-1 text-sm font-semibold text-accent">
+                {formatBRL(stats.incomeByLevel[l.level] ?? 0)}
+              </div>
+              <div className="text-[10px] uppercase tracking-wide text-ink-subtle">/month</div>
+            </div>
+          ))}
+        </div>
+      </Card>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
