@@ -20,6 +20,7 @@ const ADMIN_NAV: NavItem[] = [
   { href: "/admin", label: "Dashboard", icon: <span aria-hidden>📊</span> },
   { href: "/admin/users", label: "Users", icon: <span aria-hidden>👥</span> },
   { href: "/admin/schedule", label: "Schedule", icon: <span aria-hidden>🗓️</span> },
+  { href: "/settings", label: "Settings", icon: <span aria-hidden>⚙️</span> },
 ];
 
 /**
@@ -35,6 +36,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   const isBare = BARE_ROUTES.some((p) => pathname === p || pathname.startsWith(p + "/"));
   const isAdminPath = pathname === "/admin" || pathname.startsWith("/admin/");
+  const isSettings = pathname === "/settings";
   const isAdmin = !!account?.isAdmin;
   const approved = account?.approved !== false;
   const active = account?.active !== false;
@@ -43,13 +45,13 @@ export function AppShell({ children }: { children: ReactNode }) {
     if (!ready || isBare) return;
     if (!authenticated) {
       router.replace("/login");
-    } else if (isAdmin && !isAdminPath) {
-      // Admin sign-in moves the platform into analytical mode.
+    } else if (isAdmin && !isAdminPath && !isSettings) {
+      // Admin sign-in moves the platform into analytical mode (Settings allowed).
       router.replace("/admin");
     } else if (!isAdmin && isAdminPath) {
       router.replace("/");
     }
-  }, [ready, authenticated, isAdmin, isAdminPath, isBare, router]);
+  }, [ready, authenticated, isAdmin, isAdminPath, isSettings, isBare, router]);
 
   if (isBare) return <>{children}</>;
 
@@ -82,7 +84,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             )}
           </Link>
           <div className="flex items-center gap-2">
-            {!isAdmin && <QuickSettings />}
+            <QuickSettings />
             <SignOutButton />
           </div>
         </div>

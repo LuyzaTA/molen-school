@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { HBarChart, ColumnChart } from "@/components/admin/Charts";
+import { useSettings } from "@/context/SettingsContext";
 import { cn } from "@/lib/cn";
 
 interface Stats {
@@ -22,6 +23,7 @@ interface Stats {
 }
 
 export default function AdminDashboard() {
+  const { account } = useSettings();
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -42,9 +44,13 @@ export default function AdminDashboard() {
       <header className="pt-2">
         <p className="text-xs font-semibold uppercase tracking-wider text-accent">Analytics</p>
         <h1 className="mt-1 text-2xl font-bold tracking-tight text-ink sm:text-3xl">Overview</h1>
-        <p className="mt-2 text-[15px] text-ink-muted">
-          Platform statistics across all students.
-        </p>
+        <p className="mt-2 text-[15px] text-ink-muted">Platform statistics across all students.</p>
+        {account && (
+          <p className="mt-2 text-sm text-ink-subtle">
+            Signed in as <span className="font-semibold text-ink">{account.userId}</span>
+            {" "}· administrator
+          </p>
+        )}
       </header>
 
       {/* Stat cards */}
