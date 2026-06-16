@@ -13,7 +13,6 @@ type Action = "approve" | "revoke" | "activate" | "deactivate";
 
 interface EditDraft {
   name: string;
-  level: CEFRLevel;
   city: string;
   state: string;
   country: string;
@@ -69,7 +68,6 @@ export default function AdminUsersPage() {
     setEditId(u.userId);
     setDraft({
       name: u.name,
-      level: u.level,
       city: u.city,
       state: u.state,
       country: u.country,
@@ -90,6 +88,22 @@ export default function AdminUsersPage() {
         setUsers((prev) => (prev ?? []).map((u) => (u.userId === userId ? { ...u, ...draft } : u)));
         setEditId(null);
         setDraft(null);
+      }
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function changeLevel(userId: string, level: CEFRLevel) {
+    setBusyId(userId);
+    try {
+      const res = await fetch("/api/admin/user-update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, patch: { level } }),
+      });
+      if (res.ok) {
+        setUsers((prev) => (prev ?? []).map((u) => (u.userId === userId ? { ...u, level } : u)));
       }
     } finally {
       setBusyId(null);
@@ -169,8 +183,25 @@ export default function AdminUsersPage() {
                     {!u.active && <Badge tone="danger">Inactive</Badge>}
                   </div>
                   <p className="mt-1 text-sm text-ink-muted">
-                    {u.level} · {u.city}, {u.state}, {u.country} · joined {u.createdAt.slice(0, 10)}
+                    {u.city}, {u.state}, {u.country} · joined {u.createdAt.slice(0, 10)}
                   </p>
+                  {!u.isAdmin && (
+                    <label className="mt-2 inline-flex items-center gap-2 text-sm">
+                      <span className="font-medium text-ink-muted">CEFR level</span>
+                      <select
+                        className="rounded-lg border border-border bg-surface px-2 py-1 text-sm font-semibold text-ink"
+                        value={u.level}
+                        disabled={busyId === u.userId}
+                        onChange={(e) => changeLevel(u.userId, e.target.value as CEFRLevel)}
+                      >
+                        {CEFR_LEVELS.map((l) => (
+                          <option key={l.level} value={l.level}>
+                            {l.level} · {l.name}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  )}
                 </div>
 
                 {!u.isAdmin && (
@@ -208,13 +239,6 @@ export default function AdminUsersPage() {
                 <div className="grid gap-3 rounded-xl border border-border bg-base/50 p-4 sm:grid-cols-2">
                   <EditField label="Name">
                     <input className="input-field" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
-                  </EditField>
-                  <EditField label="Level">
-                    <select className="input-field" value={draft.level} onChange={(e) => setDraft({ ...draft, level: e.target.value as CEFRLevel })}>
-                      {CEFR_LEVELS.map((l) => (
-                        <option key={l.level} value={l.level}>{l.level} · {l.name}</option>
-                      ))}
-                    </select>
                   </EditField>
                   <EditField label="City">
                     <input className="input-field" value={draft.city} onChange={(e) => setDraft({ ...draft, city: e.target.value })} />
