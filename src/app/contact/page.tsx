@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 
 const P = {
@@ -132,7 +133,7 @@ export default function ContactPage() {
         {status === "sent" ? (
           /* ── Success state ── */
           <div style={{ textAlign: "center", paddingTop: 40 }}>
-            <div style={{ fontSize: 52, marginBottom: 20 }}>🎉</div>
+            <Image src="/logoing.png" alt="Molen" width={96} height={96} style={{ margin: "0 auto 20px", display: "block" }} />
             <h1 style={{ fontFamily: SERIF, fontWeight: 700, fontSize: "2rem", color: P.ink, marginBottom: 16 }}>
               {s(C.successTitle)}
             </h1>
