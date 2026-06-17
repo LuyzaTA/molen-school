@@ -24,7 +24,7 @@ const I = (path: ReactNode) => (
 
 export const NAV_ITEMS: NavItem[] = [
   {
-    href: "/",
+    href: "/dashboard",
     label: "Today",
     icon: I(
       <>

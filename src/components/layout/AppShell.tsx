@@ -12,7 +12,7 @@ import { useSettings } from "@/context/SettingsContext";
 import { cn } from "@/lib/cn";
 
 // Auth pages render without the app chrome.
-const BARE_ROUTES = ["/login", "/register", "/onboarding"];
+const BARE_ROUTES = ["/", "/login", "/register", "/onboarding"];
 
 type NavItem = { href: string; label: string; icon: ReactNode };
 
@@ -38,7 +38,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const router = useRouter();
   const { ready, authenticated, account } = useSettings();
 
-  const isBare = BARE_ROUTES.some((p) => pathname === p || pathname.startsWith(p + "/"));
+  const isBare = BARE_ROUTES.some((p) => p === "/" ? pathname === "/" : pathname === p || pathname.startsWith(p + "/"));
   const isAdminPath = pathname === "/admin" || pathname.startsWith("/admin/");
   const isSettings = pathname === "/settings";
   const isAdmin = !!account?.isAdmin;
@@ -53,7 +53,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       // Admin sign-in moves the platform into analytical mode (Settings allowed).
       router.replace("/admin");
     } else if (!isAdmin && isAdminPath) {
-      router.replace("/");
+      router.replace("/dashboard");
     }
   }, [ready, authenticated, isAdmin, isAdminPath, isSettings, isBare, router]);
 
@@ -73,7 +73,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   }
 
   const navItems: NavItem[] = isAdmin ? ADMIN_NAV : NAV_ITEMS;
-  const homeHref = isAdmin ? "/admin" : "/";
+  const homeHref = isAdmin ? "/admin" : "/dashboard";
 
   return (
     <div className="min-h-screen">
@@ -179,7 +179,7 @@ function SignOutButton() {
 }
 
 function isActive(pathname: string, href: string): boolean {
-  if (href === "/" || href === "/admin") return pathname === href;
+  if (href === "/" || href === "/admin" || href === "/dashboard") return pathname === href;
   return pathname.startsWith(href);
 }
 

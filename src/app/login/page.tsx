@@ -17,7 +17,7 @@ export default function LoginPage() {
 
 function LoginInner() {
   const params = useSearchParams();
-  const next = params.get("next") || "/";
+  const next = params.get("next") || "/dashboard";
   const justRegistered = params.get("registered") === "1";
   const newUserId = params.get("uid");
 
