@@ -119,7 +119,7 @@ export default function ContactPage() {
                 Get in touch
               </p>
               <h1 style={{ fontFamily: SERIF, fontWeight: 700, fontSize: "clamp(1.8rem, 5vw, 2.5rem)", color: P.ink, lineHeight: 1.15, marginBottom: 12 }}>
-                Ready to find your voice?
+                Ready to find your English voice?
               </h1>
               <p style={{ fontSize: 15, lineHeight: 1.7, color: P.inkMuted }}>
                 Have a question before starting? Fill in the form and I&rsquo;ll get back to you within 24 hours.

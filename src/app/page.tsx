@@ -404,7 +404,7 @@ export default function LandingPage() {
             fontSize: "clamp(1.8rem, 4vw, 2.4rem)",
             color: P.parchment, marginBottom: 18, lineHeight: 1.2,
           }}>
-            Ready to find your voice?
+            Ready to find your English voice?
           </h2>
           <p style={{
             fontSize: 15, lineHeight: 1.75,
