@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 
 const P = {
@@ -20,11 +20,47 @@ const P = {
 const SERIF = "Georgia, 'Iowan Old Style', 'Times New Roman', serif";
 
 type Status = "idle" | "sending" | "sent" | "error";
+type Lang = "en" | "pt";
+
+const C = {
+  signIn:       { en: "Sign in",    pt: "Entrar"    },
+  eyebrow:      { en: "Get in touch", pt: "Entre em contato" },
+  headline:     { en: "Ready to find your English voice?", pt: "Pronto(a) para encontrar a sua voz em inglês?" },
+  subhead:      { en: "Have a question before starting? Fill in the form and I'll get back to you within 24 hours.", pt: "Tem alguma dúvida antes de começar? Preencha o formulário e retorno em até 24 horas." },
+  labelName:    { en: "Your name *",                pt: "Seu nome *"                    },
+  labelEmail:   { en: "E-mail *",                   pt: "E-mail *"                      },
+  labelPhone:   { en: "Phone / WhatsApp (optional)", pt: "Telefone / WhatsApp (opcional)" },
+  labelMsg:     { en: "Message *",                  pt: "Mensagem *"                    },
+  phName:       { en: "Maria Silva",                pt: "Maria Silva"                   },
+  phPhone:      { en: "+55 11 9 0000-0000",         pt: "+55 11 9 0000-0000"            },
+  phMsg:        { en: "Tell me a bit about yourself and what you're looking for...", pt: "Conte um pouco sobre você e o que está buscando..." },
+  send:         { en: "Send message",               pt: "Enviar mensagem"               },
+  sending:      { en: "Sending…",                   pt: "Enviando…"                     },
+  emailDirect:  { en: "Or email directly:",         pt: "Ou envie por e-mail para:"     },
+  successTitle: { en: "Message sent!",              pt: "Mensagem enviada!"             },
+  successBody:  { en: "Thank you for reaching out. I'll get back to you as soon as possible — usually within 24 hours.", pt: "Obrigada pelo contato. Retorno assim que possível — geralmente em até 24 horas." },
+  backHome:     { en: "← Back to home",             pt: "← Voltar ao início"            },
+} as const;
 
 export default function ContactPage() {
   const [form, setForm] = useState({ name: "", email: "", phone: "", message: "" });
   const [status, setStatus] = useState<Status>("idle");
   const [serverError, setServerError] = useState<string | null>(null);
+  const [lang, setLangState] = useState<Lang>("pt");
+
+  useEffect(() => {
+    try {
+      const s = localStorage.getItem("molen.lang") as Lang | null;
+      if (s === "en" || s === "pt") setLangState(s);
+    } catch {}
+  }, []);
+
+  function setLang(l: Lang) {
+    setLangState(l);
+    try { localStorage.setItem("molen.lang", l); } catch {}
+  }
+
+  const s = (bi: { en: string; pt: string }) => bi[lang];
 
   const set = (field: keyof typeof form) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
@@ -75,14 +111,18 @@ export default function ContactPage() {
               English Classes
             </div>
           </Link>
-          <Link href="https://molen-school.vercel.app/login" style={{
-            padding: "7px 20px", borderRadius: 999,
-            fontSize: 14, fontWeight: 600,
-            color: P.ink, textDecoration: "none",
-            border: `1px solid ${P.tan}`,
-          }}>
-            Sign in
-          </Link>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 2, border: `1px solid ${P.tan}`, borderRadius: 999, padding: "2px 3px" }}>
+              {(["pt", "en"] as Lang[]).map((l) => (
+                <button key={l} onClick={() => setLang(l)} style={{ padding: "4px 11px", borderRadius: 999, border: "none", fontSize: 12, fontWeight: 700, cursor: "pointer", letterSpacing: "0.05em", backgroundColor: lang === l ? P.ink : "transparent", color: lang === l ? P.parchment : P.inkMuted, transition: "all 150ms" }}>
+                  {l.toUpperCase()}
+                </button>
+              ))}
+            </div>
+            <Link href="https://molen-school.vercel.app/login" style={{ padding: "7px 20px", borderRadius: 999, fontSize: 14, fontWeight: 600, color: P.ink, textDecoration: "none", border: `1px solid ${P.tan}` }}>
+              {s(C.signIn)}
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -94,19 +134,13 @@ export default function ContactPage() {
           <div style={{ textAlign: "center", paddingTop: 40 }}>
             <div style={{ fontSize: 52, marginBottom: 20 }}>🎉</div>
             <h1 style={{ fontFamily: SERIF, fontWeight: 700, fontSize: "2rem", color: P.ink, marginBottom: 16 }}>
-              Message sent!
+              {s(C.successTitle)}
             </h1>
             <p style={{ fontSize: 15, lineHeight: 1.7, color: P.inkMuted, marginBottom: 32 }}>
-              Thank you for reaching out. I&rsquo;ll get back to you as soon as possible —
-              usually within 24 hours.
+              {s(C.successBody)}
             </p>
-            <Link href="/" style={{
-              display: "inline-flex", alignItems: "center", gap: 8,
-              padding: "11px 26px", borderRadius: 999,
-              backgroundColor: P.green, color: P.cream,
-              fontSize: 14, fontWeight: 700, textDecoration: "none",
-            }}>
-              ← Back to home
+            <Link href="/" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 26px", borderRadius: 999, backgroundColor: P.green, color: P.cream, fontSize: 14, fontWeight: 700, textDecoration: "none" }}>
+              {s(C.backHome)}
             </Link>
           </div>
         ) : (
@@ -116,19 +150,19 @@ export default function ContactPage() {
                 fontSize: 11, fontWeight: 700, letterSpacing: "0.22em",
                 textTransform: "uppercase", color: P.green, marginBottom: 10,
               }}>
-                Get in touch
+                {s(C.eyebrow)}
               </p>
               <h1 style={{ fontFamily: SERIF, fontWeight: 700, fontSize: "clamp(1.8rem, 5vw, 2.5rem)", color: P.ink, lineHeight: 1.15, marginBottom: 12 }}>
-                Ready to find your English voice?
+                {s(C.headline)}
               </h1>
               <p style={{ fontSize: 15, lineHeight: 1.7, color: P.inkMuted }}>
-                Have a question before starting? Fill in the form and I&rsquo;ll get back to you within 24 hours.
+                {s(C.subhead)}
               </p>
             </div>
 
             <form onSubmit={onSubmit} style={{ display: "flex", flexDirection: "column", gap: 20 }}>
               {/* Name */}
-              <Field label="Your name *">
+              <Field label={s(C.labelName)}>
                 <input
                   type="text"
                   required
@@ -140,7 +174,7 @@ export default function ContactPage() {
               </Field>
 
               {/* Email */}
-              <Field label="E-mail *">
+              <Field label={s(C.labelEmail)}>
                 <input
                   type="email"
                   required
@@ -152,7 +186,7 @@ export default function ContactPage() {
               </Field>
 
               {/* Phone */}
-              <Field label="Phone / WhatsApp (optional)">
+              <Field label={s(C.labelPhone)}>
                 <input
                   type="tel"
                   placeholder="+55 11 9 0000-0000"
@@ -163,11 +197,11 @@ export default function ContactPage() {
               </Field>
 
               {/* Message */}
-              <Field label="Message *">
+              <Field label={s(C.labelMsg)}>
                 <textarea
                   required
                   rows={5}
-                  placeholder="Tell me a bit about yourself and what you're looking for..."
+                  placeholder={s(C.phMsg)}
                   value={form.message}
                   onChange={set("message")}
                   style={{ ...inputStyle, resize: "vertical", minHeight: 120 }}
@@ -191,11 +225,11 @@ export default function ContactPage() {
                   transition: "opacity 150ms",
                 }}
               >
-                {status === "sending" ? "Sending…" : "Send message"}
+                {status === "sending" ? s(C.sending) : s(C.send)}
               </button>
 
               <p style={{ textAlign: "center", fontSize: 13, color: P.inkSubtle }}>
-                Or email directly:{" "}
+                {s(C.emailDirect)}{" "}
                 <a href="mailto:alexandre.t.luyza@gmail.com" style={{ color: P.green, fontWeight: 600, textDecoration: "none" }}>
                   alexandre.t.luyza@gmail.com
                 </a>
