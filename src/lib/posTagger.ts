@@ -23,7 +23,7 @@ function getTag(raw: string): string {
   const w = raw.toLowerCase();
 
   // Contractions
-  if (w.endsWith("n't")) return "Verb";
+  if (w.endsWith("n't")) return "Aux. verb";
   if (w.endsWith("'m") || w.endsWith("'re") || w.endsWith("'ve") || w.endsWith("'ll") || w.endsWith("'d")) return "Contraction";
   if (w.endsWith("'s")) return w.length <= 4 ? "Contraction" : "Noun";  // it's / someone's
 
@@ -33,7 +33,7 @@ function getTag(raw: string): string {
   if (WH_WORDS.has(w))      return "Question word";
   if (PRONOUNS.has(w))      return "Pronoun";
   if (POSSESSIVES.has(w))   return "Possessive adj.";
-  if (AUX_VERBS.has(w))     return "Verb";
+  if (AUX_VERBS.has(w))     return "Aux. verb";
   if (MAIN_VERBS.has(w))    return "Verb";
   if (PREPOSITIONS.has(w))  return "Preposition";
   if (CONJUNCTIONS.has(w))  return "Conjunction";
