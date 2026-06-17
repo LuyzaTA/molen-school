@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { list } from "@vercel/blob";
 import { hashPassword } from "@/lib/server/auth";
 import { listAccounts, saveAccount, cpfToSub } from "@/lib/server/store";
+import { kvGet } from "@/lib/server/blobKV";
 
 export const runtime = "nodejs";
 
@@ -12,11 +13,31 @@ export async function GET(req: NextRequest) {
   if (!secret || auth !== `Bearer ${secret}`) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
-  // List ALL blobs to see what prefixes exist
-  const { blobs } = await list({ limit: 100 });
-  const pathnames = blobs.map((b) => b.pathname);
-  const accounts = await listAccounts();
-  return NextResponse.json({ blobCount: blobs.length, pathnames, accountCount: accounts.length });
+  const { blobs: allBlobs } = await list({ limit: 100 });
+  const { blobs: userBlobs } = await list({ prefix: "users/", limit: 100 });
+
+  // Try to fetch the first user blob directly
+  let fetchTest: { url: string; status: number; body?: unknown } | null = null;
+  if (userBlobs[0]) {
+    const res = await fetch(userBlobs[0].url, { cache: "no-store" });
+    fetchTest = { url: userBlobs[0].url, status: res.status, body: res.ok ? await res.json() : await res.text() };
+  }
+
+  const sub1 = "7c4e5aff23ad38e64042ab040ccb0381";
+  const sub2 = "7d1d4fa6e25915b00f1ee20d90cc4d46";
+  const [acc1, acc2] = await Promise.all([
+    kvGet(`users/${sub1}`),
+    kvGet(`users/${sub2}`),
+  ]);
+
+  return NextResponse.json({
+    allBlobCount: allBlobs.length,
+    userBlobCount: userBlobs.length,
+    userBlobPathnames: userBlobs.map((b) => b.pathname),
+    fetchTest,
+    acc1: acc1 ? { userId: (acc1 as { userId?: string }).userId, isAdmin: (acc1 as { isAdmin?: boolean }).isAdmin } : null,
+    acc2: acc2 ? { userId: (acc2 as { userId?: string }).userId, isAdmin: (acc2 as { isAdmin?: boolean }).isAdmin } : null,
+  });
 }
 
 export async function POST(req: NextRequest) {
