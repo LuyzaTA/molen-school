@@ -1,11 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
+import { list } from "@vercel/blob";
 import { hashPassword } from "@/lib/server/auth";
 import { listAccounts, saveAccount, cpfToSub } from "@/lib/server/store";
 
 export const runtime = "nodejs";
 
-// Temporary one-time password reset for the admin account.
-// Protected by AUTH_SECRET — delete this file after use.
+// Temporary diagnostic + recovery endpoint. Protected by AUTH_SECRET. Delete after use.
+export async function GET(req: NextRequest) {
+  const auth = req.headers.get("authorization") ?? "";
+  const secret = process.env.AUTH_SECRET ?? "";
+  if (!secret || auth !== `Bearer ${secret}`) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+  // List ALL blobs to see what prefixes exist
+  const { blobs } = await list({ limit: 100 });
+  const pathnames = blobs.map((b) => b.pathname);
+  const accounts = await listAccounts();
+  return NextResponse.json({ blobCount: blobs.length, pathnames, accountCount: accounts.length });
+}
+
 export async function POST(req: NextRequest) {
   const auth = req.headers.get("authorization") ?? "";
   const secret = process.env.AUTH_SECRET ?? "";
@@ -23,7 +36,7 @@ export async function POST(req: NextRequest) {
   const accounts = await listAccounts();
   const admin = accounts.find((a) => a.isAdmin);
   if (!admin) {
-    return NextResponse.json({ error: "No admin account found" }, { status: 404 });
+    return NextResponse.json({ error: "No admin account found", accountCount: accounts.length }, { status: 404 });
   }
 
   admin.passwordHash = hashPassword(newPassword);
