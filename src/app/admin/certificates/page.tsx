@@ -601,15 +601,12 @@ function Certificate({ name, level, levelName, date, teacher, pronoun, design: d
       <div style={{ position: "absolute", inset: "4%", border: `1.5px solid ${C.green}` }} />
       <Flourishes />
       <div style={{ position: "absolute", inset: "5.5%", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", overflow: "hidden" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 16, marginTop: d.topMargin }}>
+        <div style={{ marginTop: d.topMargin }}>
           {logoImg
-            ? <img src={logoImg} alt="Logo" style={{ height: d.logoSize, maxWidth: d.logoSize * 2, objectFit: "contain", flexShrink: 0 }} />
-            : <WindmillMark size={d.logoSize} />
+            ? <img src={logoImg} alt="Logo" style={{ height: d.logoSize, width: "auto", objectFit: "contain" }} />
+            : /* eslint-disable-next-line @next/next/no-img-element */
+              <img src="/molen-brand.png" alt="Molen English Classes" style={{ height: d.logoSize, width: "auto", mixBlendMode: "multiply" }} />
           }
-          <div style={{ lineHeight: 1, textAlign: "left" }}>
-            <div style={{ fontFamily: SERIF, fontWeight: 700, fontSize: "2.1rem", color: C.maroon }}>Molen</div>
-            <div style={{ fontSize: "0.72rem", letterSpacing: "0.32em", color: C.greenInk, fontWeight: 700, marginTop: 4 }}>ENGLISH SCHOOL</div>
-          </div>
         </div>
         <h2 style={{ fontFamily: SERIF, fontWeight: 700, color: C.maroon, fontSize: `${d.titleSize}rem`, margin: `${d.titleMargin}px 0 0` }}>
           Certificate of Achievement
