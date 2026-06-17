@@ -11,15 +11,15 @@ const SERIF = "Georgia, 'Iowan Old Style', 'Times New Roman', serif";
 const SCRIPT = "'Snell Roundhand', 'Segoe Script', 'Brush Script MT', cursive";
 
 const C = {
-  parchment:   "#F5EDD0",
-  parchment2:  "#EDE0BA",
-  gold:        "#BF9838",
-  darkBorder:  "#1C2218",
-  green:       "#1E2A1E",
-  greenMid:    "#3A5232",
-  greenInk:    "#4A6840",
-  maroon:      "#6E1822",
-  ink:         "#252820",
+  parchment:  "#F5EDD0",
+  parchment2: "#EDE0BA",
+  gold:       "#BF9838",
+  darkBorder: "#1C2218",
+  green:      "#1E2A1E",
+  greenMid:   "#3A5232",
+  greenInk:   "#4A6840",
+  maroon:     "#6E1822",
+  ink:        "#252820",
 };
 
 type Pronoun = "her" | "his" | "their";
@@ -156,6 +156,10 @@ interface CertProps {
   pronoun: Pronoun;
 }
 
+// All vertical spacing uses px so values never resolve against container width.
+// Budget: content area ≈ 611 px tall at maxWidth 1000.
+//   Brand 52 + Title 50 + Divider 32 + Label 14 + Name 62 + Body 55 + Congrats 28 = 293 px
+//   Footer ≈ 100 px → total ≈ 393 px, leaving ~218 px auto-margin above footer.
 function Certificate({ name, level, levelName, date, teacher, pronoun }: CertProps) {
   return (
     <div
@@ -180,7 +184,7 @@ function Certificate({ name, level, levelName, date, teacher, pronoun }: CertPro
 
       <Flourishes />
 
-      {/* Content */}
+      {/* Content — overflow:hidden is the safety net */}
       <div
         style={{
           position: "absolute",
@@ -192,35 +196,27 @@ function Certificate({ name, level, levelName, date, teacher, pronoun }: CertPro
           overflow: "hidden",
         }}
       >
-        {/* Brand row */}
-        <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginTop: "0.5%" }}>
-          <WindmillMark size={64} />
+        {/* ── Brand ── */}
+        <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 4 }}>
+          <WindmillMark size={48} />
           <div style={{ lineHeight: 1, textAlign: "left" }}>
-            <div style={{ fontFamily: SERIF, fontWeight: 700, fontSize: "2.7rem", color: C.maroon }}>
+            <div style={{ fontFamily: SERIF, fontWeight: 700, fontSize: "2.1rem", color: C.maroon }}>
               Molen
             </div>
-            <div
-              style={{
-                fontSize: "0.8rem",
-                letterSpacing: "0.32em",
-                color: C.greenInk,
-                fontWeight: 700,
-                marginTop: 4,
-              }}
-            >
+            <div style={{ fontSize: "0.7rem", letterSpacing: "0.32em", color: C.greenInk, fontWeight: 700, marginTop: 3 }}>
               ENGLISH SCHOOL
             </div>
           </div>
         </div>
 
-        {/* Title */}
+        {/* ── Title ── */}
         <h2
           style={{
             fontFamily: SERIF,
             fontWeight: 700,
             color: C.maroon,
-            fontSize: "2.8rem",
-            margin: "2% 0 0",
+            fontSize: "2.1rem",
+            margin: "10px 0 0",
           }}
         >
           Certificate of Achievement
@@ -228,38 +224,38 @@ function Certificate({ name, level, levelName, date, teacher, pronoun }: CertPro
 
         <Divider />
 
-        <p style={{ letterSpacing: "0.24em", fontSize: "0.75rem", color: C.ink, margin: 0, fontWeight: 500 }}>
+        <p style={{ letterSpacing: "0.22em", fontSize: "0.7rem", color: C.ink, margin: 0, fontWeight: 500 }}>
           THIS CERTIFICATE IS PROUDLY PRESENTED TO
         </p>
 
-        {/* Student name */}
+        {/* ── Student name ── */}
         <div
           style={{
             fontFamily: SCRIPT,
-            fontSize: "3.6rem",
+            fontSize: "2.6rem",
             color: C.green,
             lineHeight: 1.15,
-            margin: "1.2% 0 0",
-            padding: "0 4% 0.8%",
+            marginTop: 7,
+            padding: "0 32px 6px",
             borderBottom: `1px solid ${C.gold}`,
-            minWidth: "56%",
+            minWidth: "55%",
           }}
         >
           {name.trim() || "Student Name"}
         </div>
 
-        {/* Body text */}
-        <p style={{ maxWidth: "72%", fontSize: "1rem", color: C.ink, margin: "2% 0 0", lineHeight: 1.65 }}>
+        {/* ── Body text ── */}
+        <p style={{ maxWidth: "72%", fontSize: "0.88rem", color: C.ink, margin: "10px 0 0", lineHeight: 1.6 }}>
           for {pronoun} outstanding dedication, active participation and excellent performance
-          {"\n"}in English studies.
+          in English studies.
         </p>
 
-        {/* Congrats */}
-        <p style={{ fontFamily: SCRIPT, fontSize: "1.65rem", color: C.greenInk, margin: "1.2% 0 0" }}>
+        {/* ── Congratulations ── */}
+        <p style={{ fontFamily: SCRIPT, fontSize: "1.25rem", color: C.greenInk, margin: "7px 0 0" }}>
           Congratulations on your achievement!
         </p>
 
-        {/* Footer */}
+        {/* ── Footer row ── */}
         <div
           style={{
             marginTop: "auto",
@@ -269,63 +265,34 @@ function Certificate({ name, level, levelName, date, teacher, pronoun }: CertPro
             justifyContent: "space-between",
           }}
         >
-          {/* Level + Date */}
+          {/* Left: CEFR level + date */}
           <div style={{ textAlign: "center", minWidth: "28%" }}>
             <DashLabel>CEFR LEVEL</DashLabel>
-            <div
-              style={{
-                fontFamily: SERIF,
-                fontWeight: 700,
-                fontSize: "2.2rem",
-                color: C.greenInk,
-                lineHeight: 1,
-                margin: "5px 0 4px",
-              }}
-            >
+            <div style={{ fontFamily: SERIF, fontWeight: 700, fontSize: "1.5rem", color: C.greenInk, lineHeight: 1, margin: "3px 0" }}>
               {level}
             </div>
-            <div style={{ borderBottom: `1px solid ${C.gold}`, paddingBottom: 8, marginBottom: 10 }}>
+            <div style={{ borderBottom: `1px solid ${C.gold}`, paddingBottom: 5, marginBottom: 6 }}>
               <DashLabel>{levelName.toUpperCase()}</DashLabel>
             </div>
-            <div style={{ fontFamily: SCRIPT, fontSize: "1.2rem", color: C.ink }}>
+            <div style={{ fontFamily: SCRIPT, fontSize: "0.95rem", color: C.ink }}>
               {prettyDate(date)}
             </div>
-            <div
-              style={{
-                letterSpacing: "0.2em",
-                fontSize: "0.68rem",
-                color: C.ink,
-                borderTop: `1px solid ${C.gold}`,
-                paddingTop: 6,
-                marginTop: 5,
-                fontWeight: 500,
-              }}
-            >
+            <div style={{ letterSpacing: "0.2em", fontSize: "0.62rem", color: C.ink, borderTop: `1px solid ${C.gold}`, paddingTop: 4, marginTop: 3, fontWeight: 500 }}>
               DATE
             </div>
           </div>
 
           <Seal />
 
-          {/* Teacher signature */}
+          {/* Right: teacher signature */}
           <div style={{ textAlign: "center", minWidth: "28%" }}>
-            <div style={{ fontFamily: SCRIPT, fontSize: "1.8rem", color: C.ink, lineHeight: 1.2 }}>
-              {teacher || " "}
+            <div style={{ fontFamily: SCRIPT, fontSize: "1.6rem", color: C.ink, lineHeight: 1.2 }}>
+              {teacher || " "}
             </div>
-            <div
-              style={{
-                borderTop: `1px solid ${C.gold}`,
-                marginTop: 10,
-                paddingTop: 8,
-                letterSpacing: "0.2em",
-                fontSize: "0.68rem",
-                color: C.ink,
-                fontWeight: 600,
-              }}
-            >
+            <div style={{ borderTop: `1px solid ${C.gold}`, marginTop: 8, paddingTop: 6, letterSpacing: "0.2em", fontSize: "0.62rem", color: C.ink, fontWeight: 600 }}>
               TEACHER
             </div>
-            <div style={{ fontSize: "0.86rem", color: C.ink, marginTop: 4 }}>{teacher}</div>
+            <div style={{ fontSize: "0.82rem", color: C.ink, marginTop: 3 }}>{teacher}</div>
           </div>
         </div>
       </div>
@@ -335,28 +302,28 @@ function Certificate({ name, level, levelName, date, teacher, pronoun }: CertPro
 
 function DashLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 6, justifyContent: "center" }}>
-      <span style={{ height: 1, width: 20, background: C.gold, display: "inline-block" }} />
-      <span style={{ letterSpacing: "0.16em", fontSize: "0.66rem", color: C.green, fontWeight: 700 }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 5, justifyContent: "center" }}>
+      <span style={{ height: 1, width: 18, background: C.gold, display: "inline-block" }} />
+      <span style={{ letterSpacing: "0.15em", fontSize: "0.6rem", color: C.green, fontWeight: 700 }}>
         {children}
       </span>
-      <span style={{ height: 1, width: 20, background: C.gold, display: "inline-block" }} />
+      <span style={{ height: 1, width: 18, background: C.gold, display: "inline-block" }} />
     </div>
   );
 }
 
 function Divider() {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "1.6% 0 2.2%" }}>
-      <span style={{ width: 100, height: 1.5, background: C.gold, display: "inline-block" }} />
-      <svg width="22" height="14" viewBox="0 0 22 14" aria-hidden>
+    <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "7px 0 11px" }}>
+      <span style={{ width: 90, height: 1.5, background: C.gold, display: "inline-block" }} />
+      <svg width="20" height="12" viewBox="0 0 22 14" aria-hidden>
         <circle cx="11" cy="7" r="3.5" fill={C.gold} />
         <circle cx="3.5" cy="7" r="2" fill={C.gold} />
         <circle cx="18.5" cy="7" r="2" fill={C.gold} />
         <line x1="5.5" y1="7" x2="7.5" y2="7" stroke={C.gold} strokeWidth="1" />
         <line x1="14.5" y1="7" x2="16.5" y2="7" stroke={C.gold} strokeWidth="1" />
       </svg>
-      <span style={{ width: 100, height: 1.5, background: C.gold, display: "inline-block" }} />
+      <span style={{ width: 90, height: 1.5, background: C.gold, display: "inline-block" }} />
     </div>
   );
 }
@@ -387,50 +354,23 @@ function Corner({ pos }: { pos: "tl" | "tr" | "bl" | "br" }) {
 
   return (
     <svg viewBox="0 0 90 90" fill="none" style={{ ...base, ...place }} aria-hidden>
-      {/* Two nested arcs forming the ornamental frame corner */}
       <path d="M 6 82 C 6 40 40 6 82 6" stroke={g} strokeWidth="2" fill="none" strokeLinecap="round" />
-      <path
-        d="M 14 82 C 14 50 50 14 82 14"
-        stroke={g}
-        strokeWidth="1.3"
-        fill="none"
-        strokeLinecap="round"
-        opacity="0.85"
-      />
-
-      {/* Scroll flourish at the top-right end */}
-      <path
-        d="M 82 6 C 75 3 67 9 70 18 C 72 24 81 21 79 15 C 78 10 73 11 74 16 C 74 19 77 20 78 18"
-        stroke={g}
-        strokeWidth="1.4"
-        fill="none"
-        strokeLinecap="round"
-      />
-      {/* Scroll flourish at the bottom-left end */}
-      <path
-        d="M 6 82 C 3 75 9 67 18 70 C 24 72 21 81 15 79 C 10 78 11 73 16 74 C 19 74 20 77 18 78"
-        stroke={g}
-        strokeWidth="1.4"
-        fill="none"
-        strokeLinecap="round"
-      />
-
-      {/* Inner diagonal accent line */}
+      <path d="M 14 82 C 14 50 50 14 82 14" stroke={g} strokeWidth="1.3" fill="none" strokeLinecap="round" opacity="0.85" />
+      <path d="M 82 6 C 75 3 67 9 70 18 C 72 24 81 21 79 15 C 78 10 73 11 74 16 C 74 19 77 20 78 18" stroke={g} strokeWidth="1.4" fill="none" strokeLinecap="round" />
+      <path d="M 6 82 C 3 75 9 67 18 70 C 24 72 21 81 15 79 C 10 78 11 73 16 74 C 19 74 20 77 18 78" stroke={g} strokeWidth="1.4" fill="none" strokeLinecap="round" />
       <path d="M 26 66 C 38 54 54 38 66 26" stroke={g} strokeWidth="0.9" fill="none" opacity="0.5" />
-
-      {/* Apex dot */}
       <circle cx="22" cy="22" r="3" fill={g} />
-      {/* End-cap dots */}
       <circle cx="82" cy="6" r="3.5" fill={g} />
       <circle cx="6" cy="82" r="3.5" fill={g} />
     </svg>
   );
 }
 
+// Seal scaled to 100 px tall via width/height attrs; viewBox keeps proportions.
 function Seal() {
   const cx = 61, cy = 56;
   return (
-    <svg width="124" height="136" viewBox="0 0 124 136" fill="none" aria-hidden style={{ flexShrink: 0 }}>
+    <svg width="91" height="100" viewBox="0 0 124 136" fill="none" aria-hidden style={{ flexShrink: 0 }}>
       {/* Ribbons */}
       <path d="M 46 96 L 42 132 L 55 120 L 61 132 L 61 96 Z" fill={C.green} />
       <path d="M 76 96 L 80 132 L 67 120 L 61 132 L 61 96 Z" fill={C.greenMid} />
@@ -438,43 +378,27 @@ function Seal() {
       {/* Scalloped gold border */}
       {Array.from({ length: 24 }).map((_, i) => {
         const a = (i / 24) * Math.PI * 2 - Math.PI / 2;
-        return (
-          <circle
-            key={i}
-            cx={cx + Math.cos(a) * 46}
-            cy={cy + Math.sin(a) * 46}
-            r="7.5"
-            fill={C.gold}
-          />
-        );
+        return <circle key={i} cx={cx + Math.cos(a) * 46} cy={cy + Math.sin(a) * 46} r="7.5" fill={C.gold} />;
       })}
 
       <circle cx={cx} cy={cy} r="46" fill={C.gold} />
       <circle cx={cx} cy={cy} r="40" fill={C.green} />
       <circle cx={cx} cy={cy} r="38" fill="none" stroke={C.gold} strokeWidth="2" />
 
-      {/* Laurel wreath — left */}
+      {/* Laurel wreath */}
       <path d="M 30 58 Q 33 48 40 44" stroke={C.gold} strokeWidth="2.2" fill="none" strokeLinecap="round" />
       <path d="M 34 63 Q 37 54 45 49" stroke={C.gold} strokeWidth="1.6" fill="none" strokeLinecap="round" opacity="0.85" />
       <path d="M 38 68 Q 42 60 50 56" stroke={C.gold} strokeWidth="1.2" fill="none" strokeLinecap="round" opacity="0.65" />
-      {/* Laurel wreath — right */}
       <path d="M 92 58 Q 89 48 82 44" stroke={C.gold} strokeWidth="2.2" fill="none" strokeLinecap="round" />
       <path d="M 88 63 Q 85 54 77 49" stroke={C.gold} strokeWidth="1.6" fill="none" strokeLinecap="round" opacity="0.85" />
       <path d="M 84 68 Q 80 60 72 56" stroke={C.gold} strokeWidth="1.2" fill="none" strokeLinecap="round" opacity="0.65" />
 
       {/* Mortarboard */}
-      <polygon
-        points={`${cx},${cy - 18} ${cx + 22},${cy - 8} ${cx},${cy + 2} ${cx - 22},${cy - 8}`}
-        fill={C.gold}
-      />
+      <polygon points={`${cx},${cy - 18} ${cx + 22},${cy - 8} ${cx},${cy + 2} ${cx - 22},${cy - 8}`} fill={C.gold} />
       <path
         d={`M ${cx + 22} ${cy - 8} L ${cx + 22} ${cy + 6} Q ${cx} ${cy + 17} ${cx - 22} ${cy + 6} L ${cx - 22} ${cy - 8}`}
-        stroke={C.gold}
-        strokeWidth="2"
-        fill={C.gold}
-        opacity="0.35"
+        stroke={C.gold} strokeWidth="2" fill={C.gold} opacity="0.35"
       />
-      {/* Tassel */}
       <line x1={cx + 22} y1={cy - 8} x2={cx + 22} y2={cy + 6} stroke={C.gold} strokeWidth="2.5" strokeLinecap="round" />
       <line x1={cx + 22} y1={cy + 6} x2={cx + 27} y2={cy + 15} stroke={C.gold} strokeWidth="2" strokeLinecap="round" />
       <circle cx={cx + 27} cy={cy + 17} r="2.2" fill={C.gold} />
