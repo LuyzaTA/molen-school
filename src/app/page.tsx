@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Logo } from "@/components/ui/Logo";
 
 // ── Fixed brand palette — landing renders the same regardless of OS theme ─────
 const P = {
@@ -16,6 +15,7 @@ const P = {
   ink:        "#2A2D28",
   inkMuted:   "#6A6253",
   inkSubtle:  "#978B74",
+  maroon:     "#6E1822",
 } as const;
 
 const SERIF = "Georgia, 'Iowan Old Style', 'Times New Roman', serif";
@@ -41,13 +41,31 @@ export default function LandingPage() {
         <div style={{
           maxWidth: "72rem", margin: "0 auto",
           display: "flex", alignItems: "center", justifyContent: "space-between",
-          height: 68, padding: "0 2rem",
+          height: 72, padding: "0 2rem",
         }}>
-          <Logo size={42} />
+          {/* Brand lockup — icon + wordmark */}
+          <div style={{ display: "flex", alignItems: "center", gap: 13 }}>
+            <Image
+              src="/molen-logo.png"
+              alt="Molen English Classes"
+              width={52} height={52}
+              style={{ borderRadius: 10, display: "block" }}
+              priority
+            />
+            <div style={{ lineHeight: 1 }}>
+              <div style={{ fontFamily: SERIF, fontWeight: 700, fontSize: "1.5rem", color: P.maroon, letterSpacing: "-0.01em" }}>
+                Molen
+              </div>
+              <div style={{ fontSize: "0.54rem", letterSpacing: "0.26em", textTransform: "uppercase", color: P.dark, fontWeight: 700, marginTop: 4 }}>
+                English Classes
+              </div>
+            </div>
+          </div>
+
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <Link href="/login" style={{
-              padding: "7px 20px",
-              borderRadius: 999, fontSize: 14, fontWeight: 600,
+              padding: "7px 20px", borderRadius: 999,
+              fontSize: 14, fontWeight: 600,
               color: P.ink, textDecoration: "none",
               transition: "background 150ms",
             }}
@@ -55,9 +73,9 @@ export default function LandingPage() {
             >
               Sign in
             </Link>
-            <Link href="/register" style={{
-              padding: "8px 22px",
-              borderRadius: 999, fontSize: 14, fontWeight: 700,
+            <Link href="/contact" style={{
+              padding: "8px 22px", borderRadius: 999,
+              fontSize: 14, fontWeight: 700,
               backgroundColor: P.green, color: P.cream,
               textDecoration: "none", transition: "opacity 150ms",
             }}
@@ -127,7 +145,7 @@ export default function LandingPage() {
               from the very first class.
             </p>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 14 }}>
-              <Link href="/register" style={{
+              <Link href="/contact" style={{
                 display: "inline-flex", alignItems: "center", gap: 8,
                 padding: "13px 30px", borderRadius: 999,
                 backgroundColor: P.gold, color: P.dark,
@@ -411,7 +429,7 @@ export default function LandingPage() {
             account. Your first class could be this week.
           </p>
           <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 14 }}>
-            <Link href="/register" style={{
+            <Link href="/contact" style={{
               display: "inline-flex", alignItems: "center", gap: 8,
               padding: "13px 30px", borderRadius: 999,
               backgroundColor: P.gold, color: P.dark,
@@ -421,22 +439,8 @@ export default function LandingPage() {
             }}
               className="hover:opacity-90"
             >
-              Create your account →
+              Contact Us →
             </Link>
-            <a
-              href="mailto:alexandre.t.luyza@gmail.com"
-              style={{
-                display: "inline-flex", alignItems: "center", gap: 8,
-                padding: "12px 28px", borderRadius: 999,
-                border: `1.5px solid rgba(244,236,218,0.3)`,
-                color: "rgba(244,236,218,0.88)",
-                fontSize: 15, fontWeight: 500, textDecoration: "none",
-                transition: "background 150ms",
-              }}
-              className="hover:bg-white/10"
-            >
-              ✉️ Send an email
-            </a>
           </div>
           <p style={{ marginTop: 24, fontSize: 13, color: "rgba(244,236,218,0.45)", letterSpacing: "0.04em" }}>
             alexandre.t.luyza@gmail.com

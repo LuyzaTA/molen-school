@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 // Public routes that don't require a session.
-const PUBLIC = ["/login", "/register", "/"];
+const PUBLIC = ["/login", "/register", "/", "/contact"];
 const SESSION_COOKIE = "mes_session";
 
 export function middleware(req: NextRequest) {
@@ -23,8 +23,9 @@ export function middleware(req: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Already signed in → keep them out of login/register (but not the landing page).
-  if (hasSession && isPublic && pathname !== "/") {
+  // Already signed in → keep them out of login/register (but not public marketing pages).
+  const marketingPages = ["/", "/contact"];
+  if (hasSession && isPublic && !marketingPages.includes(pathname)) {
     return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 

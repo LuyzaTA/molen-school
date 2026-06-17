@@ -12,7 +12,7 @@ import { useSettings } from "@/context/SettingsContext";
 import { cn } from "@/lib/cn";
 
 // Auth pages render without the app chrome.
-const BARE_ROUTES = ["/", "/login", "/register", "/onboarding"];
+const BARE_ROUTES = ["/", "/login", "/register", "/onboarding", "/contact"];
 
 type NavItem = { href: string; label: string; icon: ReactNode };
 
