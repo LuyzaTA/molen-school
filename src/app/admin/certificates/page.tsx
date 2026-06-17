@@ -44,7 +44,7 @@ interface Design {
 }
 
 const DEFAULTS: Design = {
-  logoSize:            68,
+  logoSize:           220,
   topMargin:           30,
   titleSize:         2.25,
   titleMargin:         22,
@@ -380,7 +380,7 @@ export default function AdminCertificatesPage() {
                 <p className="text-xs font-semibold uppercase tracking-wider text-accent">Layout editor</p>
                 <div className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
                   <p className="sm:col-span-2 text-xs font-semibold text-ink-muted uppercase tracking-wider">Font sizes</p>
-                  <SliderRow label="Logo size" value={design.logoSize} min={36} max={100} step={2} unit="px" onChange={setD("logoSize")} />
+                  <SliderRow label="Logo size" value={design.logoSize} min={36} max={300} step={2} unit="px" onChange={setD("logoSize")} />
                   <SliderRow label="Title" value={design.titleSize} min={1.4} max={3.5} step={0.05} unit="rem" onChange={setD("titleSize")} />
                   <SliderRow label="Student name" value={design.nameSize} min={1.6} max={4.5} step={0.05} unit="rem" onChange={setD("nameSize")} />
                   <SliderRow label="Body text" value={design.bodySize} min={0.6} max={1.3} step={0.02} unit="rem" onChange={setD("bodySize")} />
