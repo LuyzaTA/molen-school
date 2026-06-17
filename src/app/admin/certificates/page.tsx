@@ -68,16 +68,34 @@ function prettyDate(iso: string) {
   return d.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
 }
 
+const STORAGE_KEY = "molen-cert-design";
+
 export default function AdminCertificatesPage() {
   const [name, setName]       = useState("");
   const [level, setLevel]     = useState<CEFRLevel>("A1");
   const [date, setDate]       = useState(todayISO());
   const [teacher, setTeacher] = useState("Luyza Alexandre");
   const [pronoun, setPronoun] = useState<Pronoun>("her");
-  const [design, setDesign]   = useState<Design>(DEFAULTS);
+  const [design, setDesign]   = useState<Design>(() => {
+    try {
+      const stored = typeof window !== "undefined" && localStorage.getItem(STORAGE_KEY);
+      return stored ? { ...DEFAULTS, ...JSON.parse(stored) } : DEFAULTS;
+    } catch {
+      return DEFAULTS;
+    }
+  });
   const [showLayout, setShowLayout] = useState(false);
+  const [saved, setSaved] = useState(false);
 
   const levelName = CEFR_LEVELS.find((l) => l.level === level)?.name ?? "";
+
+  function saveConfig() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(design));
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch {}
+  }
 
   function setD<K extends keyof Design>(key: K) {
     return (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -151,13 +169,22 @@ export default function AdminCertificatesPage() {
               {showLayout ? "Hide layout editor" : "Edit layout & sizes"}
             </button>
             {showLayout && (
-              <button
-                type="button"
-                onClick={() => setDesign(DEFAULTS)}
-                className="text-sm text-ink-muted underline underline-offset-2"
-              >
-                Reset to defaults
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={saveConfig}
+                  className="text-sm font-medium text-accent underline underline-offset-2"
+                >
+                  {saved ? "Saved ✓" : "Save configuration"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDesign(DEFAULTS)}
+                  className="text-sm text-ink-muted underline underline-offset-2"
+                >
+                  Reset to defaults
+                </button>
+              </>
             )}
           </div>
           <p className="sm:col-span-2 text-xs text-ink-subtle -mt-1">
