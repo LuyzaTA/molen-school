@@ -205,3 +205,50 @@ export async function getResources(): Promise<ResourceItem[] | null> {
 export async function saveResources(resources: ResourceItem[]): Promise<void> {
   await kvSet(RESOURCES_KEY, resources);
 }
+
+// ---- Certificate design (admin-managed; platform-wide) -----
+
+const CERT_DESIGN_KEY = "config/cert-design";
+
+export interface CertDesign {
+  logoSize: number;
+  topMargin: number;
+  titleSize: number;
+  titleMargin: number;
+  dividerTopMargin: number;
+  dividerBottomMargin: number;
+  nameSize: number;
+  nameMargin: number;
+  bodySize: number;
+  bodyMargin: number;
+  congratsSize: number;
+  congratsMargin: number;
+  cefrSize: number;
+  teacherSigSize: number;
+}
+
+export const DEFAULT_CERT_DESIGN: CertDesign = {
+  logoSize:            68,
+  topMargin:           30,
+  titleSize:         2.25,
+  titleMargin:         22,
+  dividerTopMargin:    20,
+  dividerBottomMargin:  4,
+  nameSize:          2.15,
+  nameMargin:          15,
+  bodySize:          0.92,
+  bodyMargin:          28,
+  congratsSize:      1.28,
+  congratsMargin:      12,
+  cefrSize:          1.15,
+  teacherSigSize:     1.3,
+};
+
+export async function getCertDesign(): Promise<CertDesign> {
+  const stored = await kvGet<Partial<CertDesign>>(CERT_DESIGN_KEY);
+  return { ...DEFAULT_CERT_DESIGN, ...(stored ?? {}) };
+}
+
+export async function saveCertDesign(design: CertDesign): Promise<void> {
+  await kvSet(CERT_DESIGN_KEY, design);
+}

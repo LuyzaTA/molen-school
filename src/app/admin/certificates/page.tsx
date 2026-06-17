@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { WindmillMark } from "@/components/ui/WindmillMark";
@@ -42,21 +42,22 @@ interface Design {
   teacherSigSize:  number;
 }
 
+// Values from the saved admin configuration (image reference).
 const DEFAULTS: Design = {
   logoSize:            68,
   topMargin:           30,
-  titleSize:          2.4,
-  titleMargin:         30,
+  titleSize:         2.25,
+  titleMargin:         22,
   dividerTopMargin:    20,
-  dividerBottomMargin: 26,
-  nameSize:           2.8,
-  nameMargin:          24,
-  bodySize:           0.92,
+  dividerBottomMargin:  4,
+  nameSize:          2.15,
+  nameMargin:          15,
+  bodySize:          0.92,
   bodyMargin:          28,
-  congratsSize:       1.28,
-  congratsMargin:      28,
-  cefrSize:           1.5,
-  teacherSigSize:     1.6,
+  congratsSize:      1.28,
+  congratsMargin:      12,
+  cefrSize:          1.15,
+  teacherSigSize:     1.3,
 };
 
 function todayISO() {
@@ -68,7 +69,7 @@ function prettyDate(iso: string) {
   return d.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
 }
 
-const STORAGE_KEY = "molen-cert-design";
+const CACHE_KEY = "molen-cert-design-cache";
 
 export default function AdminCertificatesPage() {
   const [name, setName]       = useState("");
@@ -77,24 +78,49 @@ export default function AdminCertificatesPage() {
   const [teacher, setTeacher] = useState("Luyza Alexandre");
   const [pronoun, setPronoun] = useState<Pronoun>("her");
   const [design, setDesign]   = useState<Design>(() => {
+    // Use localStorage cache for instant paint, then sync from server below.
     try {
-      const stored = typeof window !== "undefined" && localStorage.getItem(STORAGE_KEY);
-      return stored ? { ...DEFAULTS, ...JSON.parse(stored) } : DEFAULTS;
+      const cached = typeof window !== "undefined" && localStorage.getItem(CACHE_KEY);
+      return cached ? { ...DEFAULTS, ...JSON.parse(cached) } : DEFAULTS;
     } catch {
       return DEFAULTS;
     }
   });
   const [showLayout, setShowLayout] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const [saved, setSaved]     = useState(false);
+  const [saving, setSaving]   = useState(false);
 
   const levelName = CEFR_LEVELS.find((l) => l.level === level)?.name ?? "";
 
-  function saveConfig() {
+  // On mount: pull the authoritative config from the server.
+  useEffect(() => {
+    fetch("/api/admin/cert-design")
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        if (data?.design) {
+          const merged = { ...DEFAULTS, ...data.design };
+          setDesign(merged);
+          try { localStorage.setItem(CACHE_KEY, JSON.stringify(merged)); } catch {}
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  async function saveConfig() {
+    setSaving(true);
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(design));
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
+      const res = await fetch("/api/admin/cert-design", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ design }),
+      });
+      if (res.ok) {
+        localStorage.setItem(CACHE_KEY, JSON.stringify(design));
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2500);
+      }
     } catch {}
+    setSaving(false);
   }
 
   function setD<K extends keyof Design>(key: K) {
@@ -173,9 +199,10 @@ export default function AdminCertificatesPage() {
                 <button
                   type="button"
                   onClick={saveConfig}
-                  className="text-sm font-medium text-accent underline underline-offset-2"
+                  disabled={saving}
+                  className="text-sm font-medium text-accent underline underline-offset-2 disabled:opacity-50"
                 >
-                  {saved ? "Saved ✓" : "Save configuration"}
+                  {saved ? "Saved ✓" : saving ? "Saving…" : "Save configuration"}
                 </button>
                 <button
                   type="button"
