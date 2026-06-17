@@ -360,9 +360,9 @@ export default function LandingPage() {
               }}>
                 <span style={{ fontSize: 28, lineHeight: 1 }}>💻</span>
                 <div>
-                  <p style={{ fontSize: 14, fontWeight: 600, color: P.ink }}>Software Engineer background</p>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: P.ink }}>IT background</p>
                   <p style={{ fontSize: 13, color: P.inkMuted, marginTop: 3, lineHeight: 1.5 }}>
-                    Years in IT across international companies.{" "}
+                    10 years living and working across 3 countries in technology.{" "}
                     <a
                       href="https://luyzata-website.vercel.app/"
                       target="_blank"
