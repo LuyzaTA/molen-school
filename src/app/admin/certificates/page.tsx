@@ -702,7 +702,9 @@ function ContractDoc({ form, molenInfo, molenAddress }: ContractDocProps) {
 
         {/* Header */}
         <div style={{ textAlign: "center", marginBottom: 22 }}>
-          <WindmillMark size={60} />
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <WindmillMark size={90} />
+          </div>
           <div style={{ marginTop: 14, fontWeight: 700, fontSize: 14, textTransform: "uppercase", letterSpacing: "0.06em", lineHeight: 1.6, color: C.ink }}>
             Contrato de Presta&ccedil;&atilde;o de Servi&ccedil;os Educacionais
             <br />
