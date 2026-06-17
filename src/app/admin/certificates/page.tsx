@@ -197,13 +197,13 @@ function Certificate({ name, level, levelName, date, teacher, pronoun }: CertPro
         }}
       >
         {/* ── Brand ── */}
-        <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 4 }}>
-          <WindmillMark size={48} />
+        <div style={{ display: "flex", alignItems: "center", gap: 16, marginTop: 30 }}>
+          <WindmillMark size={68} />
           <div style={{ lineHeight: 1, textAlign: "left" }}>
             <div style={{ fontFamily: SERIF, fontWeight: 700, fontSize: "2.1rem", color: C.maroon }}>
               Molen
             </div>
-            <div style={{ fontSize: "0.7rem", letterSpacing: "0.32em", color: C.greenInk, fontWeight: 700, marginTop: 3 }}>
+            <div style={{ fontSize: "0.72rem", letterSpacing: "0.32em", color: C.greenInk, fontWeight: 700, marginTop: 4 }}>
               ENGLISH SCHOOL
             </div>
           </div>
@@ -215,8 +215,8 @@ function Certificate({ name, level, levelName, date, teacher, pronoun }: CertPro
             fontFamily: SERIF,
             fontWeight: 700,
             color: C.maroon,
-            fontSize: "2.1rem",
-            margin: "10px 0 0",
+            fontSize: "2.4rem",
+            margin: "30px 0 0",
           }}
         >
           Certificate of Achievement
@@ -232,10 +232,10 @@ function Certificate({ name, level, levelName, date, teacher, pronoun }: CertPro
         <div
           style={{
             fontFamily: SCRIPT,
-            fontSize: "2.6rem",
+            fontSize: "2.8rem",
             color: C.green,
             lineHeight: 1.15,
-            marginTop: 7,
+            marginTop: 24,
             padding: "0 32px 6px",
             borderBottom: `1px solid ${C.gold}`,
             minWidth: "55%",
@@ -245,13 +245,13 @@ function Certificate({ name, level, levelName, date, teacher, pronoun }: CertPro
         </div>
 
         {/* ── Body text ── */}
-        <p style={{ maxWidth: "72%", fontSize: "0.88rem", color: C.ink, margin: "10px 0 0", lineHeight: 1.6 }}>
+        <p style={{ maxWidth: "72%", fontSize: "0.92rem", color: C.ink, margin: "28px 0 0", lineHeight: 1.6 }}>
           for {pronoun} outstanding dedication, active participation and excellent performance
           in English studies.
         </p>
 
         {/* ── Congratulations ── */}
-        <p style={{ fontFamily: SCRIPT, fontSize: "1.25rem", color: C.greenInk, margin: "7px 0 0" }}>
+        <p style={{ fontFamily: SCRIPT, fontSize: "1.28rem", color: C.greenInk, margin: "28px 0 0" }}>
           Congratulations on your achievement!
         </p>
 
@@ -314,7 +314,7 @@ function DashLabel({ children }: { children: React.ReactNode }) {
 
 function Divider() {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "7px 0 11px" }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "20px 0 26px" }}>
       <span style={{ width: 90, height: 1.5, background: C.gold, display: "inline-block" }} />
       <svg width="20" height="12" viewBox="0 0 22 14" aria-hidden>
         <circle cx="11" cy="7" r="3.5" fill={C.gold} />
