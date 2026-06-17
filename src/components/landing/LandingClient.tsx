@@ -270,7 +270,7 @@ export function LandingClient() {
 
                 {lang === "pt" ? (
                   <>
-                    <p>Minha relação com o inglês começou muito antes de eu estar na frente de uma turma. Cresci no Brasil, depois construí uma carreira em TI em três países — Brasil, Polônia, Bulgária e Países Baixos — e o idioma foi o fio condutor de tudo.</p>
+                    <p>Minha relação com o inglês começou muito antes de eu estar na frente de uma turma. Cresci no Brasil, depois construí uma carreira em TI em quatro países — Brasil, Polônia, Bulgária e Países Baixos — e o idioma foi o fio condutor de tudo.</p>
                     <p>Fui para a <strong style={{ color: P.ink, fontWeight: 600 }}>Califórnia</strong> especificamente para me imergir nos estudos de inglês, absorvendo a língua como ela vive em conversas reais. Aliado ao meu{" "}
                       <a href="https://luyzata-website.vercel.app/" target="_blank" rel="noopener noreferrer" style={{ color: P.green, fontWeight: 600, textDecoration: "none" }} className="hover:underline">background em tecnologia</a>
                       , abordo o aprendizado de idiomas da forma como engenheiros resolvem problemas: descobrir o que funciona, eliminar o que não funciona e melhorar continuamente.</p>
@@ -281,7 +281,7 @@ export function LandingClient() {
                   </>
                 ) : (
                   <>
-                    <p>My journey with English started long before I ever stood in front of a class. I grew up in Brazil, then built a career in IT across three countries — Brazil, Poland, Bulgaria and the Netherlands — and language was the thread that tied it all together.</p>
+                    <p>My journey with English started long before I ever stood in front of a class. I grew up in Brazil, then built a career in IT across four countries — Brazil, Poland, Bulgaria and the Netherlands — and language was the thread that tied it all together.</p>
                     <p>I went to <strong style={{ color: P.ink, fontWeight: 600 }}>California</strong> specifically to immerse myself in English studies, absorbing the language as it lives in real conversations. Combined with my{" "}
                       <a href="https://luyzata-website.vercel.app/" target="_blank" rel="noopener noreferrer" style={{ color: P.green, fontWeight: 600, textDecoration: "none" }} className="hover:underline">background in technology</a>
                       , I approach language learning the way engineers approach problems: find what actually works, cut what doesn&rsquo;t, and iterate.</p>
