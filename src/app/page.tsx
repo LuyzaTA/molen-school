@@ -63,7 +63,7 @@ export default function LandingPage() {
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <Link href="/login" style={{
+            <Link href="https://molen-school.vercel.app/login" style={{
               padding: "7px 20px", borderRadius: 999,
               fontSize: 14, fontWeight: 600,
               color: P.ink, textDecoration: "none",
@@ -157,7 +157,7 @@ export default function LandingPage() {
               >
                 Start learning <span aria-hidden>→</span>
               </Link>
-              <Link href="/login" style={{
+              <Link href="https://molen-school.vercel.app/login" style={{
                 display: "inline-flex", alignItems: "center", gap: 8,
                 padding: "13px 28px", borderRadius: 999,
                 border: `1.5px solid rgba(244,236,218,0.28)`,
@@ -465,7 +465,7 @@ export default function LandingPage() {
           <div style={{ display: "flex", gap: 28, fontSize: 13, color: P.inkMuted }}>
             <a href="#about" style={{ color: P.inkMuted, textDecoration: "none" }} className="hover:text-[#2A2D28]">About</a>
             <a href="#contact" style={{ color: P.inkMuted, textDecoration: "none" }} className="hover:text-[#2A2D28]">Contact</a>
-            <Link href="/login" style={{ color: P.inkMuted, textDecoration: "none" }} className="hover:text-[#2A2D28]">Sign in</Link>
+            <Link href="https://molen-school.vercel.app/login" style={{ color: P.inkMuted, textDecoration: "none" }} className="hover:text-[#2A2D28]">Sign in</Link>
           </div>
         </div>
       </footer>

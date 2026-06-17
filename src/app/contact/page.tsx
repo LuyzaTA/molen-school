@@ -79,7 +79,7 @@ export default function ContactPage() {
               </div>
             </div>
           </Link>
-          <Link href="/login" style={{
+          <Link href="https://molen-school.vercel.app/login" style={{
             padding: "7px 20px", borderRadius: 999,
             fontSize: 14, fontWeight: 600,
             color: P.ink, textDecoration: "none",
