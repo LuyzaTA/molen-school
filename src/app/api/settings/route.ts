@@ -26,7 +26,9 @@ export async function PUT(req: NextRequest) {
     account.level = body.level as (typeof VALID_LEVELS)[number];
   }
   if (body.settings && typeof body.settings === "object") {
-    account.settings = { ...account.settings, ...body.settings };
+    // track is registration-only — strip it so settings updates can never overwrite it
+    const { track: _track, ...rest } = body.settings;
+    account.settings = { ...account.settings, ...rest };
   }
   await saveAccount(session.sub, account);
   return NextResponse.json({ ok: true });

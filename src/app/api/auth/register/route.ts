@@ -105,6 +105,7 @@ export async function POST(req: NextRequest) {
       paymentMethod,
       passwordHash: hashPassword(body.password as string),
       level,
+      registeredTrack: body.settings?.track === "business" ? "business" : "general",
       settings: { ...DEFAULT_SETTINGS, ...(body.settings ?? {}) },
       createdAt: new Date().toISOString(),
     };

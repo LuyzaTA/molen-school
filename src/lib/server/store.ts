@@ -10,6 +10,7 @@ import type {
 import { digitsOnly, genUserId, DEFAULT_PRICING } from "../account";
 import type {
   CEFRLevel,
+  LearningTrack,
   ProgressState,
   DailyHomework,
   MeetingsConfig,
@@ -31,6 +32,7 @@ export interface AccountRecord {
   paymentMethod: PaymentMethod;
   passwordHash: string;
   level: CEFRLevel;
+  registeredTrack?: LearningTrack; // set at registration; authoritative source of truth
   settings: AccountSettings;
   approved: boolean; // admin must approve before platform access
   active: boolean; // admin can deactivate a student

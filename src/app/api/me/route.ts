@@ -22,6 +22,10 @@ export async function GET() {
       name: account.name,
       level: account.level,
       ...account.settings,
+      // registeredTrack is the authoritative source; settings.track may be stale
+      // from the old dashboard toggle. Legacy accounts without registeredTrack
+      // default to "general".
+      track: account.registeredTrack ?? "general",
       createdAt: account.createdAt,
       onboarded: true,
     },
