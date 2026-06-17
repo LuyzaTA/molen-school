@@ -162,25 +162,19 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Image + badges */}
-          <div style={{ position: "relative", flexShrink: 0 }}>
-            <div style={{
-              borderRadius: 28, padding: 4,
-              boxShadow: "0 24px 80px rgba(0,0,0,0.55)",
-              background: `linear-gradient(135deg, rgba(194,154,87,0.4), rgba(76,106,46,0.2))`,
-            }}>
-              <Image
-                src="/molen-logo.png"
-                alt="Molen English Classes logo"
-                width={260} height={260}
-                style={{ borderRadius: 22, display: "block" }}
-                priority
-              />
-            </div>
+          {/* Brand image + badges */}
+          <div style={{ position: "relative", flexShrink: 0, paddingTop: 28, paddingBottom: 28 }}>
+            <Image
+              src="/molen-brand.png"
+              alt="Molen English Classes"
+              width={420} height={237}
+              style={{ display: "block", filter: "drop-shadow(0 16px 48px rgba(0,0,0,0.45))" }}
+              priority
+            />
             {/* Quote badge */}
             <div style={{
-              position: "absolute", top: -28, right: -20,
-              maxWidth: 170, transform: "rotate(3deg)",
+              position: "absolute", top: 0, right: -12,
+              maxWidth: 168, transform: "rotate(3deg)",
               backgroundColor: P.cream, color: P.ink,
               borderRadius: 16, padding: "12px 16px",
               fontSize: 13, fontWeight: 500, lineHeight: 1.45,
@@ -190,10 +184,10 @@ export default function LandingPage() {
             </div>
             {/* Stat badge */}
             <div style={{
-              position: "absolute", bottom: -20, left: -24,
+              position: "absolute", bottom: 0, left: 8,
               transform: "rotate(-2deg)",
               backgroundColor: P.gold, color: P.dark,
-              borderRadius: 14, padding: "10px 16px",
+              borderRadius: 14, padding: "10px 18px",
               fontSize: 13, fontWeight: 700,
               boxShadow: "0 6px 24px rgba(0,0,0,0.25)",
               whiteSpace: "nowrap",
