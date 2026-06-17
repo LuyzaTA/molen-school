@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { cn } from "@/lib/cn";
 import { useSettings } from "@/context/SettingsContext";
+import { tokenize } from "@/lib/posTagger";
 
 /**
  * A single speaking prompt. The written prompt is ALWAYS shown (a calm-mode
@@ -19,9 +20,9 @@ export function SpeakPrompt({
   translation?: string;
 }) {
   const { profile } = useSettings();
-  const [state, setState] = useState<"idle" | "speaking" | "done" | "passed">(
-    "idle",
-  );
+  const [state, setState] = useState<"idle" | "speaking" | "done" | "passed">("idle");
+  const [activeWord, setActiveWord] = useState<number | null>(null);
+  const tokens = tokenize(text);
 
   return (
     <div
@@ -39,7 +40,33 @@ export function SpeakPrompt({
           </span>
         )}
         <div className="flex-1">
-          <p className="text-[15px] leading-relaxed text-ink">{text}</p>
+          <p className="text-[15px] leading-relaxed text-ink">
+            {tokens.map((tok, i) => {
+              if (tok.kind !== "word") return <span key={i}>{tok.text}</span>;
+              const open = activeWord === i;
+              return (
+                <span
+                  key={i}
+                  className="relative inline-block cursor-pointer"
+                  onMouseEnter={() => setActiveWord(i)}
+                  onMouseLeave={() => setActiveWord(null)}
+                  onClick={() => setActiveWord(open ? null : i)}
+                >
+                  <span className={cn(
+                    "border-b border-dashed transition-colors",
+                    open ? "border-accent text-accent" : "border-transparent",
+                  )}>
+                    {tok.text}
+                  </span>
+                  {open && (
+                    <span className="pointer-events-none absolute -top-7 left-1/2 z-20 -translate-x-1/2 whitespace-nowrap rounded-md bg-ink px-2 py-0.5 text-[11px] font-semibold text-base shadow-md">
+                      {tok.tag}
+                    </span>
+                  )}
+                </span>
+              );
+            })}
+          </p>
           {translation && (
             <p className="mt-1 text-sm italic text-ink-subtle">{translation}</p>
           )}

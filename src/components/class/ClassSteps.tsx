@@ -53,11 +53,11 @@ export function WarmUpStepView({ klass }: { klass: GeneratedClass }) {
           </button>
 
           {grammarOpen && (
-            <div className="mt-3 rounded-xl border border-accent/30 bg-accent-soft p-4 space-y-3 animate-fade-in">
+            <div className="mt-3 rounded-xl border border-gold/40 bg-gold/5 p-4 space-y-3 animate-fade-in">
               {grammarPoints.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                   {grammarPoints.map((g, i) => (
-                    <span key={i} className="rounded-pill bg-white/60 px-3 py-1 text-xs font-semibold text-ink">
+                    <span key={i} className="rounded-pill bg-gold/15 px-3 py-1 text-xs font-semibold text-ink border border-gold/30">
                       {g}
                     </span>
                   ))}
