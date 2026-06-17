@@ -68,10 +68,10 @@ export default function ContactPage() {
           height: 68,
         }}>
           <Link href="/" style={{ textDecoration: "none", lineHeight: 1 }}>
-            <div style={{ fontFamily: SERIF, fontWeight: 700, fontSize: "1.5rem", color: P.maroon, letterSpacing: "-0.01em" }}>
+            <div style={{ fontFamily: SERIF, fontWeight: 700, fontSize: "2.2rem", color: P.maroon, letterSpacing: "-0.01em" }}>
               Molen
             </div>
-            <div style={{ fontSize: "0.52rem", letterSpacing: "0.28em", textTransform: "uppercase", color: P.dark, fontWeight: 700, marginTop: 3 }}>
+            <div style={{ fontSize: "0.68rem", letterSpacing: "0.28em", textTransform: "uppercase", color: P.dark, fontWeight: 700, marginTop: 5 }}>
               English Classes
             </div>
           </Link>

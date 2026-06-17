@@ -45,10 +45,10 @@ export default function LandingPage() {
         }}>
           {/* Brand wordmark only */}
           <div style={{ lineHeight: 1 }}>
-            <div style={{ fontFamily: SERIF, fontWeight: 700, fontSize: "1.6rem", color: P.maroon, letterSpacing: "-0.01em" }}>
+            <div style={{ fontFamily: SERIF, fontWeight: 700, fontSize: "2.2rem", color: P.maroon, letterSpacing: "-0.01em" }}>
               Molen
             </div>
-            <div style={{ fontSize: "0.54rem", letterSpacing: "0.26em", textTransform: "uppercase", color: P.dark, fontWeight: 700, marginTop: 4 }}>
+            <div style={{ fontSize: "0.68rem", letterSpacing: "0.28em", textTransform: "uppercase", color: P.dark, fontWeight: 700, marginTop: 5 }}>
               English Classes
             </div>
           </div>
