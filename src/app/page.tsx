@@ -282,26 +282,12 @@ export default function LandingPage() {
               <div style={{ display: "flex", flexDirection: "column", gap: 16, fontSize: 15, lineHeight: 1.75, color: P.inkMuted }}>
                 <p>
                   My journey with English started long before I ever stood in front of a class.
-                  I grew up in Brazil, then built a career as a software engineer across three
-                  countries — Brazil, the Netherlands, and the United States — and language was
-                  the thread that tied it all together.
+                  I grew up in Brazil, then built a career in IT across three countries —
+                  Brazil, Poland, Bulgaria and the Netherlands — and language was the thread
+                  that tied it all together.
                 </p>
                 <p>
-                  Living in the <strong style={{ color: P.ink, fontWeight: 600 }}>Netherlands</strong> changed
-                  my perspective entirely. I was surrounded by people who switched to English
-                  effortlessly — at work, in shops, with strangers. Not because they had some
-                  special gift, but because they had simply <em>used</em> it their whole lives.
-                  The Dutch are the most English-proficient non-native speakers on the planet:{" "}
-                  <strong style={{ color: P.ink, fontWeight: 600 }}>
-                    over 95 % of the population speaks English fluently
-                  </strong>
-                  , ranking #1 in the EF English Proficiency Index year after year. No dubbing on TV,
-                  English media consumed raw, and a culture that treats speaking as a daily habit — not
-                  a test.
-                </p>
-                <p>
-                  I then moved to{" "}
-                  <strong style={{ color: P.ink, fontWeight: 600 }}>California</strong> specifically
+                  I went to <strong style={{ color: P.ink, fontWeight: 600 }}>California</strong> specifically
                   to immerse myself in English studies, absorbing the language as it lives in real
                   conversations. Combined with my{" "}
                   <a
@@ -317,6 +303,19 @@ export default function LandingPage() {
                   actually works, cut what doesn&rsquo;t, and iterate.
                 </p>
                 <p>
+                  Living in the <strong style={{ color: P.ink, fontWeight: 600 }}>Netherlands</strong>{" "}
+                  (most known as Holland) changed my perspective entirely. I was surrounded by people
+                  who switched to English effortlessly — at work, in shops, with strangers. Not because
+                  they had some special gift, but because they simply learnt and used it their whole
+                  lives. The Dutch are the most English-proficient non-native speakers on the planet:{" "}
+                  <strong style={{ color: P.ink, fontWeight: 600 }}>
+                    over 95 % of the population speaks English fluently
+                  </strong>
+                  , ranking #1 in the EF English Proficiency Index year after year. No dubbing on TV,
+                  English media consumed raw, and a culture that treats speaking as a daily habit —
+                  not a test.
+                </p>
+                <p>
                   That&rsquo;s why I created{" "}
                   <strong style={{ color: P.ink, fontWeight: 600 }}>Molen English Classes</strong> — to
                   bring this Dutch-inspired, speaking-first method to Brazil. Brazilians are warm,
@@ -330,8 +329,8 @@ export default function LandingPage() {
                   fontStyle: "normal", lineHeight: 1.6,
                 }}>
                   Fluency isn&rsquo;t reserved for the gifted or the lucky — it&rsquo;s built,
-                  class by class, conversation by conversation. I&rsquo;m here to walk every step
-                  of that journey with you.
+                  class by class, mistakes by mistakes, conversation by conversation. I&rsquo;m
+                  here to walk every step of that journey with you.
                 </blockquote>
               </div>
             </div>
@@ -488,9 +487,9 @@ const COUNTRIES = [
     desc: "Where the dream of speaking English fluently began.",
   },
   {
-    flag: "🇳🇱",
-    label: "Netherlands — the inspiration",
-    desc: "Witnessed how a nation achieved 95 % English fluency through a speaking-first culture.",
+    flag: "🇵🇱🇧🇬🇳🇱",
+    label: "Poland · Bulgaria · Netherlands — 10 years abroad",
+    desc: "A decade building an IT career across Europe, with language as the constant thread.",
   },
   {
     flag: "🇺🇸",
