@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Toggle } from "@/components/ui/Toggle";
 import { CEFR_LEVELS } from "@/lib/cefr";
-import type { CEFRLevel } from "@/lib/types";
+import type { CEFRLevel, LearningTrack } from "@/lib/types";
 import {
   PAYMENT_METHODS,
   DEFAULT_SETTINGS,
@@ -200,16 +200,18 @@ export default function RegisterPage() {
           </Grid>
         </Section>
 
-        {/* English level — or Platform Administrator */}
-        <Section title="Your English level" hint="Pick the level that feels right — you can change it later.">
+        {/* Learning path — CEFR, Business Vocabulary, or Admin */}
+        <Section title="Your learning path" hint="Choose General English to progress through CEFR levels, or Business Vocabulary for a work-focused curriculum.">
+          {/* General English — CEFR levels */}
+          <p className="text-xs font-semibold uppercase tracking-wider text-ink-subtle">General English (CEFR)</p>
           <div className="grid gap-2 sm:grid-cols-2">
             {CEFR_LEVELS.map((l) => {
-              const selected = !form.isAdmin && form.level === l.level;
+              const selected = !form.isAdmin && form.settings.track !== "business" && form.level === l.level;
               return (
                 <button
                   type="button"
                   key={l.level}
-                  onClick={() => setForm((f) => ({ ...f, level: l.level, isAdmin: false }))}
+                  onClick={() => setForm((f) => ({ ...f, level: l.level, isAdmin: false, settings: { ...f.settings, track: "general" as LearningTrack } }))}
                   className={cn(
                     "rounded-xl border p-3 text-left transition-colors",
                     selected ? "border-accent bg-accent-soft" : "border-border hover:border-accent/60",
@@ -220,11 +222,33 @@ export default function RegisterPage() {
                 </button>
               );
             })}
+          </div>
+
+          {/* Business Vocabulary */}
+          <div className="mt-2 grid gap-2">
+            <p className="text-xs font-semibold uppercase tracking-wider text-ink-subtle">Business Vocabulary</p>
+            <button
+              type="button"
+              onClick={() => setForm((f) => ({ ...f, isAdmin: false, settings: { ...f.settings, track: "business" as LearningTrack } }))}
+              className={cn(
+                "rounded-xl border p-3 text-left transition-colors",
+                !form.isAdmin && form.settings.track === "business" ? "border-accent bg-accent-soft" : "border-border hover:border-accent/60",
+              )}
+            >
+              <span className="font-semibold text-ink">💼 Business Vocabulary</span>
+              <span className="mt-0.5 block text-sm text-ink-muted">
+                Classes built around the workplace — emails, meetings, negotiations, and presentations. Ideal if you need English for your career.
+              </span>
+            </button>
+          </div>
+
+          {/* Admin */}
+          <div className="mt-2 grid gap-2">
             <button
               type="button"
               onClick={() => setForm((f) => ({ ...f, isAdmin: true }))}
               className={cn(
-                "rounded-xl border p-3 text-left transition-colors sm:col-span-2",
+                "rounded-xl border p-3 text-left transition-colors",
                 form.isAdmin ? "border-accent bg-accent-soft" : "border-border hover:border-accent/60",
               )}
             >
@@ -253,7 +277,7 @@ export default function RegisterPage() {
               checked={form.settings.font === "dyslexic"}
               onChange={(v) => setSetting("font", v ? "dyslexic" : "inter")}
             />
-            {form.level === "A1" && (
+            {form.level === "A1" && form.settings.track !== "business" && (
               <>
                 <hr className="border-border" />
                 <Toggle

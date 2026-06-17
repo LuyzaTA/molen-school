@@ -11,7 +11,7 @@ import { CONVERSATION_CIRCLES } from "@/lib/mockData";
 import { cn } from "@/lib/cn";
 
 export default function DashboardPage() {
-  const { profile, update } = useSettings();
+  const { profile } = useSettings();
   const { progress } = useProgress();
   const isClient = useIsClient();
 
@@ -39,16 +39,6 @@ export default function DashboardPage() {
             <span className="rounded-pill bg-white/20 px-3 py-1 text-xs font-bold uppercase tracking-wider backdrop-blur">
               {business ? "Business Vocabulary" : `${profile.level} · ${info.name}`}
             </span>
-          </div>
-
-          {/* Learning track switcher */}
-          <div className="mb-5 inline-flex rounded-pill bg-white/15 p-1 backdrop-blur">
-            <TrackBtn active={!business} onClick={() => update({ track: "general" })}>
-              General English
-            </TrackBtn>
-            <TrackBtn active={business} onClick={() => update({ track: "business" })}>
-              Business Vocabulary
-            </TrackBtn>
           </div>
 
           <p className="text-sm font-medium text-accent-ink/80">
@@ -213,29 +203,6 @@ function FeatureCard({
         <span className="mt-4 text-sm font-semibold text-accent">{cta} →</span>
       </Card>
     </Link>
-  );
-}
-
-function TrackBtn({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "rounded-pill px-3.5 py-1.5 text-xs font-bold transition-colors",
-        active ? "bg-white text-mark shadow-sm" : "text-accent-ink/80 hover:text-accent-ink",
-      )}
-    >
-      {children}
-    </button>
   );
 }
 
