@@ -115,10 +115,6 @@ export function SiteFooter() {
           <Logo size={40} />
           <p className="text-sm text-ink-subtle">
             Speak with confidence. © {year} Molen English Classes.
-            <br className="sm:hidden" />{" "}
-            <span className="text-ink-subtle/80">
-              Your data stays on this device.
-            </span>
           </p>
         </div>
       </div>
