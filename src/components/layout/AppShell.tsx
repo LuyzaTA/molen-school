@@ -24,7 +24,7 @@ const ADMIN_NAV: NavItem[] = [
   { href: "/admin/schedule", label: "Schedule", icon: <span aria-hidden>🗓️</span> },
   { href: "/admin/meetings", label: "Meetings", icon: <span aria-hidden>🎙️</span> },
   { href: "/admin/resources", label: "Resources", icon: <span aria-hidden>📚</span> },
-  { href: "/admin/certificates", label: "Certificates", icon: <span aria-hidden>🏅</span> },
+  { href: "/admin/certificates", label: "Contracts and Certificates", icon: <span aria-hidden>🏅</span> },
   { href: "/settings", label: "Settings", icon: <span aria-hidden>⚙️</span> },
 ];
 

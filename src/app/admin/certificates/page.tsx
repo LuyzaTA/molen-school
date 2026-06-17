@@ -163,7 +163,7 @@ export default function AdminCertificatesPage() {
       <div className="mx-auto max-w-wide space-y-6">
         <header className="pt-2">
           <p className="text-xs font-semibold uppercase tracking-wider text-accent">Administration</p>
-          <h1 className="mt-1 text-2xl font-bold tracking-tight text-ink sm:text-3xl">Certificates</h1>
+          <h1 className="mt-1 text-2xl font-bold tracking-tight text-ink sm:text-3xl">Contracts and Certificates</h1>
           <p className="mt-2 text-[15px] text-ink-muted">
             Fill in the details, adjust the layout, then download as PDF.
           </p>
