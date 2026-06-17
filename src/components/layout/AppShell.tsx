@@ -17,6 +17,7 @@ const BARE_ROUTES = ["/", "/login", "/register", "/onboarding", "/contact"];
 type NavItem = { href: string; label: string; icon: ReactNode };
 
 const ADMIN_NAV: NavItem[] = [
+  { href: "/admin/molen", label: "Molen", icon: <span aria-hidden>🏢</span> },
   { href: "/admin", label: "Dashboard", icon: <span aria-hidden>📊</span> },
   { href: "/admin/report", label: "Report", icon: <span aria-hidden>📈</span> },
   { href: "/admin/users", label: "Users", icon: <span aria-hidden>👥</span> },
