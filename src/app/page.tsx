@@ -163,17 +163,17 @@ export default function LandingPage() {
           </div>
 
           {/* Brand image + badges */}
-          <div style={{ position: "relative", flexShrink: 0, paddingTop: 28, paddingBottom: 28 }}>
+          <div style={{ position: "relative", flexShrink: 0, paddingTop: 32, paddingBottom: 32 }}>
             <Image
-              src="/molen-brand.png"
+              src="/circular_logo.png"
               alt="Molen English Classes"
-              width={420} height={237}
-              style={{ display: "block", filter: "drop-shadow(0 16px 48px rgba(0,0,0,0.45))" }}
+              width={300} height={300}
+              style={{ display: "block", filter: "drop-shadow(0 16px 56px rgba(0,0,0,0.5))" }}
               priority
             />
             {/* Quote badge */}
             <div style={{
-              position: "absolute", top: 0, right: -12,
+              position: "absolute", top: 0, right: -16,
               maxWidth: 168, transform: "rotate(3deg)",
               backgroundColor: P.cream, color: P.ink,
               borderRadius: 16, padding: "12px 16px",
@@ -184,7 +184,7 @@ export default function LandingPage() {
             </div>
             {/* Stat badge */}
             <div style={{
-              position: "absolute", bottom: 0, left: 8,
+              position: "absolute", bottom: 0, left: -8,
               transform: "rotate(-2deg)",
               backgroundColor: P.gold, color: P.dark,
               borderRadius: 14, padding: "10px 18px",
