@@ -707,7 +707,7 @@ function ContractDoc({ form, molenInfo, molenAddress }: ContractDocProps) {
             <img
               src="/molen-brand.png"
               alt="Molen English Classes"
-              style={{ height: 160, width: "auto", mixBlendMode: "multiply" }}
+              style={{ height: 220, width: "auto", mixBlendMode: "multiply" }}
             />
           </div>
           <div style={{ marginTop: 14, fontWeight: 700, fontSize: 14, textTransform: "uppercase", letterSpacing: "0.06em", lineHeight: 1.6, color: C.ink }}>
