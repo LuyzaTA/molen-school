@@ -2,6 +2,22 @@ import Image from "next/image";
 import Link from "next/link";
 import { Logo } from "@/components/ui/Logo";
 
+// ── Fixed brand palette — landing renders the same regardless of OS theme ─────
+const P = {
+  parchment:  "#F4ECDA",
+  cream:      "#FFFAEF",
+  dark:       "#1C2218",
+  darkMid:    "#253A18",
+  green:      "#4C6A2E",
+  greenMid:   "#5D7A46",
+  gold:       "#C29A57",
+  goldDark:   "#9E7A36",
+  tan:        "#DCC8A0",
+  ink:        "#2A2D28",
+  inkMuted:   "#6A6253",
+  inkSubtle:  "#978B74",
+} as const;
+
 const SERIF = "Georgia, 'Iowan Old Style', 'Times New Roman', serif";
 
 export const metadata = {
@@ -12,26 +28,40 @@ export const metadata = {
 
 export default function LandingPage() {
   return (
-    <div className="flex min-h-screen flex-col bg-base">
+    <div style={{ backgroundColor: P.parchment, color: P.ink, fontFamily: "var(--font-sans, system-ui, sans-serif)" }}>
 
-      {/* ── Sticky header ── */}
-      <header className="sticky top-0 z-50 border-b border-border bg-base/90 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-wide items-center justify-between px-5 sm:px-8">
-          <Logo size={40} />
-          <nav className="hidden items-center gap-7 sm:flex">
-            <a href="#about" className="text-sm font-medium text-ink-muted transition-colors hover:text-ink">About</a>
-            <a href="#contact" className="text-sm font-medium text-ink-muted transition-colors hover:text-ink">Contact</a>
-          </nav>
-          <div className="flex items-center gap-3">
-            <Link
-              href="/login"
-              className="rounded-pill px-4 py-1.5 text-sm font-semibold text-ink transition-colors hover:bg-accent-soft"
+      {/* ── Header ── */}
+      <header style={{
+        position: "sticky", top: 0, zIndex: 50,
+        backgroundColor: P.parchment,
+        borderBottom: `1px solid ${P.tan}`,
+        backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
+      }}>
+        <div style={{
+          maxWidth: "72rem", margin: "0 auto",
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          height: 68, padding: "0 2rem",
+        }}>
+          <Logo size={42} />
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <Link href="/login" style={{
+              padding: "7px 20px",
+              borderRadius: 999, fontSize: 14, fontWeight: 600,
+              color: P.ink, textDecoration: "none",
+              transition: "background 150ms",
+            }}
+              className="hover:bg-[#EAE0C8]"
             >
               Sign in
             </Link>
-            <Link
-              href="/register"
-              className="rounded-pill bg-accent px-4 py-1.5 text-sm font-bold text-accent-ink transition-opacity hover:opacity-90"
+            <Link href="/register" style={{
+              padding: "8px 22px",
+              borderRadius: 999, fontSize: 14, fontWeight: 700,
+              backgroundColor: P.green, color: P.cream,
+              textDecoration: "none", transition: "opacity 150ms",
+            }}
+              className="hover:opacity-90"
             >
               Get started
             </Link>
@@ -40,61 +70,125 @@ export default function LandingPage() {
       </header>
 
       {/* ── Hero ── */}
-      <section className="hero-grad relative overflow-hidden px-5 pb-24 pt-20 text-accent-ink sm:px-8 sm:pb-32 sm:pt-28">
-        <div aria-hidden className="decor animate-float absolute -right-32 -top-32 h-[560px] w-[560px] rounded-full bg-gold/20" />
-        <div aria-hidden className="decor animate-float-slow absolute -bottom-40 -left-20 h-[440px] w-[440px] rounded-full bg-accent/20" />
+      <section style={{
+        background: `radial-gradient(ellipse 60% 80% at 80% 20%, rgba(194,154,87,0.18) 0%, transparent 70%),
+                     linear-gradient(145deg, ${P.dark} 0%, ${P.darkMid} 60%, #1A2E12 100%)`,
+        color: P.parchment,
+        padding: "80px 2rem 96px",
+        overflow: "hidden",
+        position: "relative",
+      }}>
+        {/* Decorative blobs */}
+        <div aria-hidden style={{
+          position: "absolute", top: -80, right: -80,
+          width: 480, height: 480, borderRadius: "50%",
+          background: `radial-gradient(circle, rgba(194,154,87,0.14) 0%, transparent 70%)`,
+          pointerEvents: "none",
+        }} />
+        <div aria-hidden style={{
+          position: "absolute", bottom: -100, left: -60,
+          width: 360, height: 360, borderRadius: "50%",
+          background: `radial-gradient(circle, rgba(93,122,70,0.18) 0%, transparent 70%)`,
+          pointerEvents: "none",
+        }} />
 
-        <div className="relative mx-auto flex max-w-wide flex-col items-center gap-14 lg:flex-row lg:items-center">
-          {/* Text */}
-          <div className="flex-1 text-center lg:text-left">
-            <p className="mb-4 text-xs font-bold uppercase tracking-[0.22em] text-gold">
+        <div style={{
+          maxWidth: "72rem", margin: "0 auto", position: "relative",
+          display: "flex", alignItems: "center", gap: 56,
+          flexWrap: "wrap",
+        }}>
+          {/* Text column */}
+          <div style={{ flex: "1 1 340px" }}>
+            <p style={{
+              fontSize: 11, fontWeight: 700, letterSpacing: "0.22em",
+              textTransform: "uppercase", color: P.gold, marginBottom: 16,
+            }}>
               Speaking-first English · Brazil
             </p>
-            <h1
-              className="mb-6 text-5xl font-bold leading-[1.07] tracking-tight sm:text-6xl lg:text-7xl"
-              style={{ fontFamily: SERIF }}
-            >
+            <h1 style={{
+              fontFamily: SERIF, fontWeight: 700,
+              fontSize: "clamp(2.6rem, 6vw, 4.25rem)",
+              lineHeight: 1.07, letterSpacing: "-0.01em",
+              color: P.parchment, marginBottom: 24,
+            }}>
               Where English
-              <br />
-              Finds Your Voice.
+              <br />Finds Your Voice.
             </h1>
-            <p className="mx-auto mb-10 max-w-lg text-lg leading-relaxed text-accent-ink/80 lg:mx-0">
+            <p style={{
+              fontSize: 17, lineHeight: 1.7,
+              color: "rgba(244,236,218,0.78)",
+              maxWidth: 480, marginBottom: 40,
+            }}>
               Inspired by the country where{" "}
-              <strong className="font-semibold text-gold">95 % of people speak English fluently</strong>{" "}
-              — Molen puts conversation at the heart of every lesson, from the very first class.
+              <strong style={{ color: P.gold, fontWeight: 600 }}>
+                95 % of people speak English fluently
+              </strong>{" "}
+              — Molen puts real conversation at the heart of every lesson,
+              from the very first class.
             </p>
-            <div className="flex flex-wrap justify-center gap-4 lg:justify-start">
-              <Link
-                href="/register"
-                className="inline-flex items-center gap-2 rounded-pill bg-gold px-7 py-3.5 text-base font-bold text-mark shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl"
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 14 }}>
+              <Link href="/register" style={{
+                display: "inline-flex", alignItems: "center", gap: 8,
+                padding: "13px 30px", borderRadius: 999,
+                backgroundColor: P.gold, color: P.dark,
+                fontSize: 15, fontWeight: 700, textDecoration: "none",
+                boxShadow: "0 4px 24px rgba(194,154,87,0.35)",
+                transition: "transform 150ms, box-shadow 150ms",
+              }}
+                className="hover:-translate-y-0.5 hover:shadow-[0_8px_32px_rgba(194,154,87,0.45)]"
               >
                 Start learning <span aria-hidden>→</span>
               </Link>
-              <Link
-                href="/login"
-                className="inline-flex items-center gap-2 rounded-pill border border-accent-ink/30 px-7 py-3.5 text-base font-medium text-accent-ink/90 backdrop-blur transition-colors hover:bg-white/10"
+              <Link href="/login" style={{
+                display: "inline-flex", alignItems: "center", gap: 8,
+                padding: "13px 28px", borderRadius: 999,
+                border: `1.5px solid rgba(244,236,218,0.28)`,
+                color: "rgba(244,236,218,0.88)", fontSize: 15, fontWeight: 500,
+                textDecoration: "none", transition: "background 150ms",
+              }}
+                className="hover:bg-white/10"
               >
                 Already a student
               </Link>
             </div>
           </div>
 
-          {/* Logo image + floating badges */}
-          <div className="relative shrink-0">
-            <div className="rounded-[28px] p-1 shadow-2xl ring-1 ring-white/10">
+          {/* Image + badges */}
+          <div style={{ position: "relative", flexShrink: 0 }}>
+            <div style={{
+              borderRadius: 28, padding: 4,
+              boxShadow: "0 24px 80px rgba(0,0,0,0.55)",
+              background: `linear-gradient(135deg, rgba(194,154,87,0.4), rgba(76,106,46,0.2))`,
+            }}>
               <Image
                 src="/molen-logo.png"
-                alt="Molen English Classes"
-                width={270}
-                height={270}
-                className="rounded-[22px]"
+                alt="Molen English Classes logo"
+                width={260} height={260}
+                style={{ borderRadius: 22, display: "block" }}
                 priority
               />
             </div>
-            <div className="absolute -right-5 -top-7 max-w-[165px] rotate-3 rounded-2xl bg-surface px-4 py-3 text-sm font-medium text-ink shadow-xl">
+            {/* Quote badge */}
+            <div style={{
+              position: "absolute", top: -28, right: -20,
+              maxWidth: 170, transform: "rotate(3deg)",
+              backgroundColor: P.cream, color: P.ink,
+              borderRadius: 16, padding: "12px 16px",
+              fontSize: 13, fontWeight: 500, lineHeight: 1.45,
+              boxShadow: "0 8px 32px rgba(0,0,0,0.22)",
+            }}>
               &ldquo;I finally started speaking!&rdquo; 🎉
             </div>
-            <div className="absolute -bottom-5 -left-5 -rotate-2 rounded-2xl bg-gold px-4 py-3 text-sm font-bold text-mark shadow-xl">
+            {/* Stat badge */}
+            <div style={{
+              position: "absolute", bottom: -20, left: -24,
+              transform: "rotate(-2deg)",
+              backgroundColor: P.gold, color: P.dark,
+              borderRadius: 14, padding: "10px 16px",
+              fontSize: 13, fontWeight: 700,
+              boxShadow: "0 6px 24px rgba(0,0,0,0.25)",
+              whiteSpace: "nowrap",
+            }}>
               🇳🇱 #1 English fluency worldwide
             </div>
           </div>
@@ -102,41 +196,54 @@ export default function LandingPage() {
       </section>
 
       {/* ── Why Speaking ── */}
-      <section className="px-5 py-20 sm:px-8 sm:py-28">
-        <div className="mx-auto max-w-wide">
-          <p className="mb-3 text-center text-xs font-bold uppercase tracking-[0.22em] text-accent">
+      <section style={{ backgroundColor: P.parchment, padding: "80px 2rem" }}>
+        <div style={{ maxWidth: "72rem", margin: "0 auto" }}>
+          <p style={{
+            textAlign: "center", fontSize: 11, fontWeight: 700,
+            letterSpacing: "0.22em", textTransform: "uppercase",
+            color: P.green, marginBottom: 12,
+          }}>
             Why Molen Works
           </p>
-          <h2
-            className="mb-4 text-center text-3xl font-bold text-ink sm:text-4xl"
-            style={{ fontFamily: SERIF }}
-          >
-            English is spoken,
-            <br className="sm:hidden" /> not memorized.
+          <h2 style={{
+            fontFamily: SERIF, fontWeight: 700, textAlign: "center",
+            fontSize: "clamp(1.8rem, 4vw, 2.4rem)", color: P.ink,
+            marginBottom: 16, lineHeight: 1.2,
+          }}>
+            English is spoken, not memorized.
           </h2>
-          <p className="mx-auto mb-14 max-w-xl text-center text-[15px] leading-relaxed text-ink-muted">
-            Most courses wait months before asking you to speak. We flip the script — because
-            the only way to get fluent is to actually use the language.
+          <p style={{
+            textAlign: "center", fontSize: 15, lineHeight: 1.7,
+            color: P.inkMuted, maxWidth: 520, margin: "0 auto 56px",
+          }}>
+            Most courses wait months before asking you to speak.
+            We flip the script — because the only way to get fluent is to
+            actually use the language.
           </p>
 
-          <div className="grid gap-6 sm:grid-cols-3">
-            {PILLARS.map(({ icon, title, desc, tone }) => (
-              <div key={title} className="card rounded-card p-7">
-                <div
-                  className={`mb-5 flex h-12 w-12 items-center justify-center rounded-xl text-2xl ${
-                    tone === "accent"
-                      ? "bg-accent-soft text-accent"
-                      : tone === "gold"
-                        ? "bg-gold-soft text-gold"
-                        : "bg-green-soft text-green"
-                  }`}
-                >
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 24 }}>
+            {PILLARS.map(({ icon, title, desc, iconBg, iconColor }) => (
+              <div key={title} style={{
+                backgroundColor: P.cream,
+                border: `1px solid ${P.tan}`,
+                borderRadius: 20,
+                padding: "28px 28px 32px",
+                boxShadow: "0 1px 2px rgba(42,45,40,0.04), 0 8px 24px -12px rgba(42,45,40,0.08)",
+              }}>
+                <div style={{
+                  width: 48, height: 48, borderRadius: 14,
+                  backgroundColor: iconBg, color: iconColor,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 22, marginBottom: 20,
+                }}>
                   {icon}
                 </div>
-                <h3 className="mb-2 font-bold text-ink" style={{ fontFamily: SERIF }}>
+                <h3 style={{ fontFamily: SERIF, fontWeight: 700, color: P.ink, fontSize: 16, marginBottom: 8 }}>
                   {title}
                 </h3>
-                <p className="text-sm leading-relaxed text-ink-muted">{desc}</p>
+                <p style={{ fontSize: 14, lineHeight: 1.65, color: P.inkMuted }}>
+                  {desc}
+                </p>
               </div>
             ))}
           </div>
@@ -144,21 +251,32 @@ export default function LandingPage() {
       </section>
 
       {/* ── About ── */}
-      <section id="about" className="surface-grad px-5 py-20 sm:px-8 sm:py-28">
-        <div className="mx-auto max-w-wide">
-          <p className="mb-3 text-xs font-bold uppercase tracking-[0.22em] text-accent">
+      <section id="about" style={{
+        background: `linear-gradient(155deg, #EDE0C0 0%, #F6F0DE 100%)`,
+        padding: "80px 2rem",
+      }}>
+        <div style={{ maxWidth: "72rem", margin: "0 auto" }}>
+          <p style={{
+            fontSize: 11, fontWeight: 700, letterSpacing: "0.22em",
+            textTransform: "uppercase", color: P.green, marginBottom: 12,
+          }}>
             Meet your teacher
           </p>
-          <div className="grid gap-12 lg:grid-cols-[1fr_460px] lg:items-start">
+
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))",
+            gap: 56, alignItems: "start",
+          }}>
             {/* Story */}
             <div>
-              <h2
-                className="mb-6 text-3xl font-bold text-ink sm:text-4xl"
-                style={{ fontFamily: SERIF }}
-              >
+              <h2 style={{
+                fontFamily: SERIF, fontWeight: 700, color: P.ink,
+                fontSize: "clamp(1.8rem, 4vw, 2.3rem)", marginBottom: 28, lineHeight: 1.15,
+              }}>
                 Luyza Alexandre
               </h2>
-              <div className="space-y-4 text-[15px] leading-relaxed text-ink-muted">
+              <div style={{ display: "flex", flexDirection: "column", gap: 16, fontSize: 15, lineHeight: 1.75, color: P.inkMuted }}>
                 <p>
                   My journey with English started long before I ever stood in front of a class.
                   I grew up in Brazil, then built a career as a software engineer across three
@@ -166,43 +284,48 @@ export default function LandingPage() {
                   the thread that tied it all together.
                 </p>
                 <p>
-                  Living in the{" "}
-                  <strong className="font-semibold text-ink">Netherlands</strong> changed my
-                  perspective entirely. I was surrounded by people who switched to English
-                  effortlessly — at work, in shops, with strangers — not because they had some
+                  Living in the <strong style={{ color: P.ink, fontWeight: 600 }}>Netherlands</strong> changed
+                  my perspective entirely. I was surrounded by people who switched to English
+                  effortlessly — at work, in shops, with strangers. Not because they had some
                   special gift, but because they had simply <em>used</em> it their whole lives.
                   The Dutch are the most English-proficient non-native speakers on the planet:{" "}
-                  <strong className="font-semibold text-ink">
+                  <strong style={{ color: P.ink, fontWeight: 600 }}>
                     over 95 % of the population speaks English fluently
                   </strong>
-                  , ranking #1 in the EF English Proficiency Index year after year. No dubbing on
-                  TV. English music, films, and podcasts consumed raw. And a culture that treats
-                  speaking as a daily habit, not an exam subject.
+                  , ranking #1 in the EF English Proficiency Index year after year. No dubbing on TV,
+                  English media consumed raw, and a culture that treats speaking as a daily habit — not
+                  a test.
                 </p>
                 <p>
                   I then moved to{" "}
-                  <strong className="font-semibold text-ink">California</strong> specifically to
-                  immerse myself in English studies — absorbing the language as it lives in real
-                  conversations, not textbooks. Combined with my background in technology{" "}
+                  <strong style={{ color: P.ink, fontWeight: 600 }}>California</strong> specifically
+                  to immerse myself in English studies, absorbing the language as it lives in real
+                  conversations. Combined with my{" "}
                   <a
                     href="https://luyzata-website.vercel.app/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="font-semibold text-accent hover:underline"
+                    style={{ color: P.green, fontWeight: 600, textDecoration: "none" }}
+                    className="hover:underline"
                   >
-                    (see my IT portfolio)
+                    background in technology
                   </a>
-                  , I think about language learning the way engineers think about systems: find
-                  what actually works, cut what doesn&rsquo;t, and iterate.
+                  , I approach language learning the way engineers approach problems: find what
+                  actually works, cut what doesn&rsquo;t, and iterate.
                 </p>
                 <p>
                   That&rsquo;s why I created{" "}
-                  <strong className="font-semibold text-ink">Molen English Classes</strong> — to
-                  bring this Dutch-inspired, speaking-first method to Brazil. Because Brazilians
-                  are warm, expressive, deeply communicative people. All they need is the right
-                  environment to unlock that fluency in English.
+                  <strong style={{ color: P.ink, fontWeight: 600 }}>Molen English Classes</strong> — to
+                  bring this Dutch-inspired, speaking-first method to Brazil. Brazilians are warm,
+                  expressive, deeply communicative people. All they need is the right environment to
+                  unlock that fluency.
                 </p>
-                <blockquote className="mt-6 border-l-4 border-gold pl-5 text-base font-semibold text-ink">
+                <blockquote style={{
+                  borderLeft: `4px solid ${P.gold}`,
+                  paddingLeft: 20, marginTop: 8,
+                  fontSize: 15.5, fontWeight: 600, color: P.ink,
+                  fontStyle: "normal", lineHeight: 1.6,
+                }}>
                   Fluency isn&rsquo;t reserved for the gifted or the lucky — it&rsquo;s built,
                   class by class, conversation by conversation. I&rsquo;m here to walk every step
                   of that journey with you.
@@ -210,28 +333,39 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Country / background cards */}
-            <div className="flex flex-col gap-4 lg:pt-14">
+            {/* Country + background cards */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 16, paddingTop: 8 }}>
               {COUNTRIES.map(({ flag, label, desc }) => (
-                <div key={label} className="card rounded-card flex items-start gap-4 p-5">
-                  <span className="text-3xl">{flag}</span>
+                <div key={label} style={{
+                  backgroundColor: P.cream, border: `1px solid ${P.tan}`,
+                  borderRadius: 18, padding: "18px 20px",
+                  display: "flex", alignItems: "flex-start", gap: 16,
+                  boxShadow: "0 1px 2px rgba(42,45,40,0.04)",
+                }}>
+                  <span style={{ fontSize: 28, lineHeight: 1 }}>{flag}</span>
                   <div>
-                    <p className="text-sm font-semibold text-ink">{label}</p>
-                    <p className="mt-0.5 text-sm text-ink-muted">{desc}</p>
+                    <p style={{ fontSize: 14, fontWeight: 600, color: P.ink }}>{label}</p>
+                    <p style={{ fontSize: 13, color: P.inkMuted, marginTop: 3, lineHeight: 1.5 }}>{desc}</p>
                   </div>
                 </div>
               ))}
-              <div className="card rounded-card flex items-start gap-4 p-5">
-                <span className="text-3xl">💻</span>
+              <div style={{
+                backgroundColor: P.cream, border: `1px solid ${P.tan}`,
+                borderRadius: 18, padding: "18px 20px",
+                display: "flex", alignItems: "flex-start", gap: 16,
+                boxShadow: "0 1px 2px rgba(42,45,40,0.04)",
+              }}>
+                <span style={{ fontSize: 28, lineHeight: 1 }}>💻</span>
                 <div>
-                  <p className="text-sm font-semibold text-ink">Software Engineer background</p>
-                  <p className="mt-0.5 text-sm text-ink-muted">
+                  <p style={{ fontSize: 14, fontWeight: 600, color: P.ink }}>Software Engineer background</p>
+                  <p style={{ fontSize: 13, color: P.inkMuted, marginTop: 3, lineHeight: 1.5 }}>
                     Years in IT across international companies.{" "}
                     <a
                       href="https://luyzata-website.vercel.app/"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-semibold text-accent hover:underline"
+                      style={{ color: P.green, fontWeight: 600, textDecoration: "none" }}
+                      className="hover:underline"
                     >
                       See portfolio →
                     </a>
@@ -244,50 +378,90 @@ export default function LandingPage() {
       </section>
 
       {/* ── Contact ── */}
-      <section id="contact" className="px-5 py-20 sm:px-8 sm:py-28">
-        <div className="mx-auto max-w-2xl text-center">
-          <p className="mb-3 text-xs font-bold uppercase tracking-[0.22em] text-accent">
+      <section id="contact" style={{
+        background: `linear-gradient(145deg, ${P.dark} 0%, ${P.darkMid} 100%)`,
+        color: P.parchment, padding: "80px 2rem",
+        position: "relative", overflow: "hidden",
+      }}>
+        <div aria-hidden style={{
+          position: "absolute", top: -120, right: -120,
+          width: 440, height: 440, borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(194,154,87,0.12) 0%, transparent 70%)",
+          pointerEvents: "none",
+        }} />
+        <div style={{ maxWidth: "44rem", margin: "0 auto", textAlign: "center", position: "relative" }}>
+          <p style={{
+            fontSize: 11, fontWeight: 700, letterSpacing: "0.22em",
+            textTransform: "uppercase", color: P.gold, marginBottom: 12,
+          }}>
             Get in touch
           </p>
-          <h2
-            className="mb-4 text-3xl font-bold text-ink sm:text-4xl"
-            style={{ fontFamily: SERIF }}
-          >
+          <h2 style={{
+            fontFamily: SERIF, fontWeight: 700,
+            fontSize: "clamp(1.8rem, 4vw, 2.4rem)",
+            color: P.parchment, marginBottom: 18, lineHeight: 1.2,
+          }}>
             Ready to find your voice?
           </h2>
-          <p className="mb-10 text-[15px] leading-relaxed text-ink-muted">
+          <p style={{
+            fontSize: 15, lineHeight: 1.75,
+            color: "rgba(244,236,218,0.72)", marginBottom: 40,
+          }}>
             Have a question before starting? Send a message — or go ahead and create your
             account. Your first class could be this week.
           </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <Link
-              href="/register"
-              className="inline-flex items-center gap-2 rounded-pill bg-accent px-7 py-3.5 text-base font-bold text-accent-ink shadow transition-opacity hover:opacity-90"
+          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 14 }}>
+            <Link href="/register" style={{
+              display: "inline-flex", alignItems: "center", gap: 8,
+              padding: "13px 30px", borderRadius: 999,
+              backgroundColor: P.gold, color: P.dark,
+              fontSize: 15, fontWeight: 700, textDecoration: "none",
+              boxShadow: "0 4px 20px rgba(194,154,87,0.3)",
+              transition: "opacity 150ms",
+            }}
+              className="hover:opacity-90"
             >
               Create your account →
             </Link>
             <a
               href="mailto:alexandre.t.luyza@gmail.com"
-              className="inline-flex items-center gap-2 rounded-pill border border-border px-7 py-3.5 text-base font-medium text-ink transition-colors hover:bg-surface"
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 8,
+                padding: "12px 28px", borderRadius: 999,
+                border: `1.5px solid rgba(244,236,218,0.3)`,
+                color: "rgba(244,236,218,0.88)",
+                fontSize: 15, fontWeight: 500, textDecoration: "none",
+                transition: "background 150ms",
+              }}
+              className="hover:bg-white/10"
             >
               ✉️ Send an email
             </a>
           </div>
-          <p className="mt-6 text-sm text-ink-subtle">alexandre.t.luyza@gmail.com</p>
+          <p style={{ marginTop: 24, fontSize: 13, color: "rgba(244,236,218,0.45)", letterSpacing: "0.04em" }}>
+            alexandre.t.luyza@gmail.com
+          </p>
         </div>
       </section>
 
       {/* ── Footer ── */}
-      <footer className="border-t border-border px-5 py-8 sm:px-8">
-        <div className="mx-auto flex max-w-wide flex-col items-center justify-between gap-4 sm:flex-row">
-          <Logo size={36} />
-          <p className="text-center text-sm text-ink-subtle">
+      <footer style={{
+        backgroundColor: P.parchment,
+        borderTop: `1px solid ${P.tan}`,
+        padding: "28px 2rem",
+      }}>
+        <div style={{
+          maxWidth: "72rem", margin: "0 auto",
+          display: "flex", flexWrap: "wrap", alignItems: "center",
+          justifyContent: "space-between", gap: 16,
+        }}>
+          <p style={{ fontSize: 13, color: P.inkSubtle }}>
             © 2026 Molen English Classes · Brazil
           </p>
-          <div className="flex gap-5 text-sm text-ink-muted">
-            <a href="#about" className="transition-colors hover:text-ink">About</a>
-            <a href="#contact" className="transition-colors hover:text-ink">Contact</a>
-            <Link href="/login" className="transition-colors hover:text-ink">Sign in</Link>
+          <div style={{ display: "flex", gap: 28, fontSize: 13, color: P.inkMuted }}>
+            <a href="#about" style={{ color: P.inkMuted, textDecoration: "none" }} className="hover:text-[#2A2D28]">About</a>
+            <a href="#contact" style={{ color: P.inkMuted, textDecoration: "none" }} className="hover:text-[#2A2D28]">Contact</a>
+            <Link href="/login" style={{ color: P.inkMuted, textDecoration: "none" }} className="hover:text-[#2A2D28]">Sign in</Link>
           </div>
         </div>
       </footer>
@@ -301,19 +475,19 @@ const PILLARS = [
   {
     icon: "🎙️",
     title: "Speak from Day One",
-    tone: "accent",
-    desc: "No long grammar drills before you open your mouth. From the very first class you speak, respond, and converse — mistakes and all.",
+    iconBg: "#E4E9CF", iconColor: "#4C6A2E",
+    desc: "No grammar drills before you open your mouth. From the very first class you speak, respond, and converse — mistakes and all.",
   },
   {
     icon: "🇳🇱",
     title: "The Dutch Blueprint",
-    tone: "gold",
+    iconBg: "#F1E6CB", iconColor: "#9E7A36",
     desc: "The Netherlands ranks #1 globally in English proficiency. Their method: immersive speaking over rote memorization. That's exactly what Molen teaches.",
   },
   {
     icon: "👥",
     title: "Small Groups, Real Results",
-    tone: "green",
+    iconBg: "#E7E4C6", iconColor: "#6B6A2F",
     desc: "Intimate live sessions mean you actually speak — a lot. Plus conversation circles to practice with peers at your exact level.",
   },
 ] as const;
@@ -327,7 +501,7 @@ const COUNTRIES = [
   {
     flag: "🇳🇱",
     label: "Netherlands — the inspiration",
-    desc: "Witnessed first-hand how a nation achieved 95 % English fluency through a speaking-first culture.",
+    desc: "Witnessed how a nation achieved 95 % English fluency through a speaking-first culture.",
   },
   {
     flag: "🇺🇸",

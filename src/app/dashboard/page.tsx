@@ -151,15 +151,6 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {profile.autisticMode && (
-        <Card className="border-accent/40">
-          <p className="text-sm text-ink-muted">
-            <span className="font-semibold text-ink">Calm mode is on.</span>{" "}
-            Lessons show the full plan up front, animations are off, idioms are
-            explained literally, and you can always choose to pass.
-          </p>
-        </Card>
-      )}
     </div>
   );
 }
