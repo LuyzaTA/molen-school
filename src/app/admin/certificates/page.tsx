@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { WindmillMark } from "@/components/ui/WindmillMark";
 import { CEFR_LEVELS } from "@/lib/cefr";
 import type { CEFRLevel } from "@/lib/types";
+import type { MolenCompanyInfo } from "@/app/api/admin/molen/route";
 
 const SERIF = "Georgia, 'Iowan Old Style', 'Times New Roman', serif";
 const SCRIPT = "'Snell Roundhand', 'Segoe Script', 'Brush Script MT', cursive";
@@ -23,26 +24,25 @@ const C = {
 };
 
 type Pronoun = "her" | "his" | "their";
+type Tab = "certificate" | "contract";
 
-// All editable design tokens and their defaults.
 interface Design {
-  logoSize:        number;
-  topMargin:       number;
-  titleSize:       number;
-  titleMargin:     number;
+  logoSize:            number;
+  topMargin:           number;
+  titleSize:           number;
+  titleMargin:         number;
   dividerTopMargin:    number;
   dividerBottomMargin: number;
-  nameSize:        number;
-  nameMargin:      number;
-  bodySize:        number;
-  bodyMargin:      number;
-  congratsSize:    number;
-  congratsMargin:  number;
-  cefrSize:        number;
-  teacherSigSize:  number;
+  nameSize:            number;
+  nameMargin:          number;
+  bodySize:            number;
+  bodyMargin:          number;
+  congratsSize:        number;
+  congratsMargin:      number;
+  cefrSize:            number;
+  teacherSigSize:      number;
 }
 
-// Values from the saved admin configuration (image reference).
 const DEFAULTS: Design = {
   logoSize:            68,
   topMargin:           30,
@@ -60,25 +60,70 @@ const DEFAULTS: Design = {
   teacherSigSize:     1.3,
 };
 
+interface ContractUser {
+  userId: string;
+  name: string;
+  cpf: string;
+  address: string;
+  city: string;
+  state: string;
+}
+
+interface ContractForm {
+  studentName:    string;
+  studentCpf:     string;
+  studentDob:     string;
+  studentAddress: string;
+  studentContact: string;
+  modalidade:     "Presencial" | "Online";
+  local:          string;
+  qtdAulas:       string;
+  duracao:        string;
+  diasHorarios:   string;
+  valor:          string;
+  formaPgto:      string;
+  vencimento:     string;
+  comarca:        string;
+  cidade:         string;
+  dataContrato:   string;
+}
+
+const EMPTY_CONTRACT: ContractForm = {
+  studentName: "", studentCpf: "", studentDob: "", studentAddress: "", studentContact: "",
+  modalidade: "Presencial", local: "", qtdAulas: "", duracao: "", diasHorarios: "",
+  valor: "", formaPgto: "", vencimento: "",
+  comarca: "", cidade: "", dataContrato: todayISO(),
+};
+
 function todayISO() {
   return new Date().toISOString().slice(0, 10);
 }
+
 function prettyDate(iso: string) {
   const d = new Date(iso + "T00:00:00");
   if (isNaN(+d)) return "—";
   return d.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
 }
 
+function brDate(iso: string) {
+  if (!iso) return "";
+  const d = new Date(iso + "T00:00:00");
+  if (isNaN(+d)) return "";
+  return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
+}
+
 const CACHE_KEY = "molen-cert-design-cache";
 
 export default function AdminCertificatesPage() {
+  const [tab, setTab] = useState<Tab>("certificate");
+
+  // ── Certificate state ─────────────────────────────────────────────────────
   const [name, setName]       = useState("");
   const [level, setLevel]     = useState<CEFRLevel>("A1");
   const [date, setDate]       = useState(todayISO());
   const [teacher, setTeacher] = useState("Luyza Alexandre");
   const [pronoun, setPronoun] = useState<Pronoun>("her");
   const [design, setDesign]   = useState<Design>(() => {
-    // Use localStorage cache for instant paint, then sync from server below.
     try {
       const cached = typeof window !== "undefined" && localStorage.getItem(CACHE_KEY);
       return cached ? { ...DEFAULTS, ...JSON.parse(cached) } : DEFAULTS;
@@ -86,12 +131,20 @@ export default function AdminCertificatesPage() {
       return DEFAULTS;
     }
   });
-  const [logoImg,  setLogoImg]  = useState<string | null>(null);
-  const [sealImg,  setSealImg]  = useState<string | null>(null);
-  const [cefrImg,  setCefrImg]  = useState<string | null>(null);
+  const [logoImg,    setLogoImg]    = useState<string | null>(null);
+  const [sealImg,    setSealImg]    = useState<string | null>(null);
+  const [cefrImg,    setCefrImg]    = useState<string | null>(null);
   const [showLayout, setShowLayout] = useState(false);
-  const [saved, setSaved]     = useState(false);
-  const [saving, setSaving]   = useState(false);
+  const [saved,      setSaved]      = useState(false);
+  const [saving,     setSaving]     = useState(false);
+
+  // ── Contract state ────────────────────────────────────────────────────────
+  const [molenInfo,      setMolenInfo]      = useState<MolenCompanyInfo | null>(null);
+  const [contractUsers,  setContractUsers]  = useState<ContractUser[]>([]);
+  const [userSearch,     setUserSearch]     = useState("");
+  const [showDropdown,   setShowDropdown]   = useState(false);
+  const [contractForm,   setContractForm]   = useState<ContractForm>(EMPTY_CONTRACT);
+  const searchRef = useRef<HTMLDivElement>(null);
 
   function onImgUpload(setter: (v: string) => void) {
     return (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -106,7 +159,6 @@ export default function AdminCertificatesPage() {
 
   const levelName = CEFR_LEVELS.find((l) => l.level === level)?.name ?? "";
 
-  // On mount: pull the authoritative config from the server.
   useEffect(() => {
     fetch("/api/admin/cert-design")
       .then((r) => r.ok ? r.json() : null)
@@ -118,6 +170,32 @@ export default function AdminCertificatesPage() {
         }
       })
       .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (tab !== "contract") return;
+    if (!molenInfo) {
+      fetch("/api/admin/molen")
+        .then((r) => r.json())
+        .then((d) => { if (d.info) setMolenInfo(d.info); })
+        .catch(() => {});
+    }
+    if (contractUsers.length === 0) {
+      fetch("/api/admin/contract-users")
+        .then((r) => r.json())
+        .then((d) => { if (d.users) setContractUsers(d.users); })
+        .catch(() => {});
+    }
+  }, [tab]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setShowDropdown(false);
+      }
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
   }, []);
 
   async function saveConfig() {
@@ -142,21 +220,59 @@ export default function AdminCertificatesPage() {
       setDesign((d) => ({ ...d, [key]: Number(e.target.value) }));
   }
 
+  function selectUser(u: ContractUser) {
+    const addr = [u.address, u.city, u.state].filter(Boolean).join(", ");
+    setContractForm((f) => ({ ...f, studentName: u.name, studentCpf: u.cpf, studentAddress: addr }));
+    setUserSearch(u.name);
+    setShowDropdown(false);
+  }
+
+  const setC = <K extends keyof ContractForm>(k: K, v: ContractForm[K]) =>
+    setContractForm((f) => ({ ...f, [k]: v }));
+
+  const filteredUsers = userSearch.length > 1
+    ? contractUsers.filter((u) => u.name.toLowerCase().includes(userSearch.toLowerCase())).slice(0, 8)
+    : [];
+
+  const molenAddress = molenInfo
+    ? [
+        molenInfo.logradouro,
+        molenInfo.numero,
+        molenInfo.complemento,
+        molenInfo.bairro,
+        molenInfo.cidade,
+        molenInfo.estado,
+      ].filter(Boolean).join(", ")
+    : "";
+
   return (
     <>
       <style>{`
         @media print {
-          @page { size: A4 landscape; margin: 0; }
-          body * { visibility: hidden; }
-          #certificate, #certificate * { visibility: visible; }
-          #certificate {
-            position: fixed !important;
-            inset: 0 !important;
-            width: 100vw !important;
-            height: 100vh !important;
-            max-width: none !important;
-            margin: 0 !important;
-          }
+          ${tab === "certificate" ? `
+            @page { size: A4 landscape; margin: 0; }
+            body * { visibility: hidden; }
+            #certificate, #certificate * { visibility: visible; }
+            #certificate {
+              position: fixed !important;
+              inset: 0 !important;
+              width: 100vw !important;
+              height: 100vh !important;
+              max-width: none !important;
+              margin: 0 !important;
+            }
+          ` : `
+            @page { size: A4 portrait; margin: 2cm; }
+            body * { visibility: hidden; }
+            #contract-doc, #contract-doc * { visibility: visible; }
+            #contract-doc {
+              position: static !important;
+              width: 100% !important;
+              border: none !important;
+              border-radius: 0 !important;
+              padding: 0 !important;
+            }
+          `}
         }
       `}</style>
 
@@ -165,134 +281,298 @@ export default function AdminCertificatesPage() {
           <p className="text-xs font-semibold uppercase tracking-wider text-accent">Administration</p>
           <h1 className="mt-1 text-2xl font-bold tracking-tight text-ink sm:text-3xl">Contracts and Certificates</h1>
           <p className="mt-2 text-[15px] text-ink-muted">
-            Fill in the details, adjust the layout, then download as PDF.
+            Fill in the details then download as PDF.
           </p>
         </header>
 
-        {/* ── Content fields ── */}
-        <Card className="grid gap-4 sm:grid-cols-2">
-          <label className="block sm:col-span-2">
-            <span className="mb-1.5 block text-sm font-medium text-ink">Student name</span>
-            <input className="input-field" value={name} onChange={(e) => setName(e.target.value)} placeholder="Maria Eduarda Silva" />
-          </label>
-          <label className="block">
-            <span className="mb-1.5 block text-sm font-medium text-ink">CEFR level</span>
-            <select className="input-field" value={level} onChange={(e) => setLevel(e.target.value as CEFRLevel)}>
-              {CEFR_LEVELS.map((l) => (
-                <option key={l.level} value={l.level}>{l.level} · {l.name}</option>
-              ))}
-            </select>
-          </label>
-          <label className="block">
-            <span className="mb-1.5 block text-sm font-medium text-ink">Date</span>
-            <input type="date" className="input-field" value={date} onChange={(e) => setDate(e.target.value)} />
-          </label>
-          <label className="block">
-            <span className="mb-1.5 block text-sm font-medium text-ink">Teacher</span>
-            <input className="input-field" value={teacher} onChange={(e) => setTeacher(e.target.value)} />
-          </label>
-          <label className="block">
-            <span className="mb-1.5 block text-sm font-medium text-ink">Pronoun</span>
-            <select className="input-field" value={pronoun} onChange={(e) => setPronoun(e.target.value as Pronoun)}>
-              <option value="her">her</option>
-              <option value="his">his</option>
-              <option value="their">their</option>
-            </select>
-          </label>
-          {/* Image uploads */}
-          <div className="sm:col-span-2 space-y-2">
-            <p className="text-sm font-semibold text-ink">Images (optional)</p>
-            <div className="flex flex-wrap gap-6">
-              <ImgUpload label="School logo" value={logoImg} onChange={onImgUpload(setLogoImg)} onClear={() => setLogoImg(null)} />
-              <ImgUpload label="Seal / medallion" value={sealImg} onChange={onImgUpload(setSealImg)} onClear={() => setSealImg(null)} />
-              <ImgUpload label="CEFR badge" value={cefrImg} onChange={onImgUpload(setCefrImg)} onClear={() => setCefrImg(null)} />
-            </div>
-          </div>
-
-          <div className="sm:col-span-2 flex flex-wrap gap-3 items-center">
-            <Button onClick={() => window.print()} disabled={!name.trim()}>Download PDF</Button>
+        {/* ── Tab toggle ── */}
+        <div className="flex rounded-lg border border-border w-fit overflow-hidden text-sm font-medium">
+          {(["contract", "certificate"] as const).map((t, i) => (
             <button
-              type="button"
-              onClick={() => setShowLayout((v) => !v)}
-              className="text-sm font-medium text-accent underline underline-offset-2"
+              key={t}
+              onClick={() => setTab(t)}
+              className={[
+                "px-5 py-2 transition-colors",
+                i > 0 ? "border-l border-border" : "",
+                tab === t
+                  ? "bg-accent text-white"
+                  : "bg-surface text-ink-muted hover:text-ink",
+              ].join(" ")}
             >
-              {showLayout ? "Hide layout editor" : "Edit layout & sizes"}
+              {t === "contract" ? "Contract" : "Certificate"}
             </button>
-            {showLayout && (
-              <>
-                <button
-                  type="button"
-                  onClick={saveConfig}
-                  disabled={saving}
-                  className="text-sm font-medium text-accent underline underline-offset-2 disabled:opacity-50"
-                >
-                  {saved ? "Saved ✓" : saving ? "Saving…" : "Save configuration"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDesign(DEFAULTS)}
-                  className="text-sm text-ink-muted underline underline-offset-2"
-                >
-                  Reset to defaults
-                </button>
-              </>
-            )}
-          </div>
-          <p className="sm:col-span-2 text-xs text-ink-subtle -mt-1">
-            Opens the print dialog — choose &ldquo;Save as PDF&rdquo;, landscape, no margins.
-          </p>
-        </Card>
-
-        {/* ── Layout editor ── */}
-        {showLayout && (
-          <Card className="space-y-5">
-            <p className="text-xs font-semibold uppercase tracking-wider text-accent">Layout editor</p>
-
-            <div className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
-              <p className="sm:col-span-2 text-xs font-semibold text-ink-muted uppercase tracking-wider">Font sizes</p>
-
-              <SliderRow label="Logo size" value={design.logoSize} min={36} max={100} step={2} unit="px" onChange={setD("logoSize")} />
-              <SliderRow label="Title" value={design.titleSize} min={1.4} max={3.5} step={0.05} unit="rem" onChange={setD("titleSize")} />
-              <SliderRow label="Student name" value={design.nameSize} min={1.6} max={4.5} step={0.05} unit="rem" onChange={setD("nameSize")} />
-              <SliderRow label="Body text" value={design.bodySize} min={0.6} max={1.3} step={0.02} unit="rem" onChange={setD("bodySize")} />
-              <SliderRow label="Congratulations" value={design.congratsSize} min={0.8} max={2} step={0.02} unit="rem" onChange={setD("congratsSize")} />
-              <SliderRow label="CEFR level (A1…)" value={design.cefrSize} min={0.9} max={2.5} step={0.05} unit="rem" onChange={setD("cefrSize")} />
-              <SliderRow label="Teacher signature" value={design.teacherSigSize} min={1} max={2.5} step={0.05} unit="rem" onChange={setD("teacherSigSize")} />
-
-              <p className="sm:col-span-2 text-xs font-semibold text-ink-muted uppercase tracking-wider pt-2">Spacing (px)</p>
-
-              <SliderRow label="Top margin (logo)" value={design.topMargin} min={4} max={80} step={1} unit="px" onChange={setD("topMargin")} />
-              <SliderRow label="Logo → Title" value={design.titleMargin} min={4} max={80} step={1} unit="px" onChange={setD("titleMargin")} />
-              <SliderRow label="Divider top" value={design.dividerTopMargin} min={4} max={60} step={1} unit="px" onChange={setD("dividerTopMargin")} />
-              <SliderRow label="Divider bottom" value={design.dividerBottomMargin} min={4} max={60} step={1} unit="px" onChange={setD("dividerBottomMargin")} />
-              <SliderRow label="Label → Name" value={design.nameMargin} min={4} max={60} step={1} unit="px" onChange={setD("nameMargin")} />
-              <SliderRow label="Name → Body" value={design.bodyMargin} min={4} max={60} step={1} unit="px" onChange={setD("bodyMargin")} />
-              <SliderRow label="Body → Congratulations" value={design.congratsMargin} min={4} max={60} step={1} unit="px" onChange={setD("congratsMargin")} />
-            </div>
-          </Card>
-        )}
-
-        {/* ── Live preview ── */}
-        <div className="overflow-x-auto">
-          <Certificate
-            name={name}
-            level={level}
-            levelName={levelName}
-            date={date}
-            teacher={teacher}
-            pronoun={pronoun}
-            design={design}
-            logoImg={logoImg}
-            sealImg={sealImg}
-            cefrImg={cefrImg}
-          />
+          ))}
         </div>
+
+        {tab === "certificate" ? (
+          <>
+            {/* ── Content fields ── */}
+            <Card className="grid gap-4 sm:grid-cols-2">
+              <label className="block sm:col-span-2">
+                <span className="mb-1.5 block text-sm font-medium text-ink">Student name</span>
+                <input className="input-field" value={name} onChange={(e) => setName(e.target.value)} placeholder="Maria Eduarda Silva" />
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-sm font-medium text-ink">CEFR level</span>
+                <select className="input-field" value={level} onChange={(e) => setLevel(e.target.value as CEFRLevel)}>
+                  {CEFR_LEVELS.map((l) => (
+                    <option key={l.level} value={l.level}>{l.level} · {l.name}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-sm font-medium text-ink">Date</span>
+                <input type="date" className="input-field" value={date} onChange={(e) => setDate(e.target.value)} />
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-sm font-medium text-ink">Teacher</span>
+                <input className="input-field" value={teacher} onChange={(e) => setTeacher(e.target.value)} />
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-sm font-medium text-ink">Pronoun</span>
+                <select className="input-field" value={pronoun} onChange={(e) => setPronoun(e.target.value as Pronoun)}>
+                  <option value="her">her</option>
+                  <option value="his">his</option>
+                  <option value="their">their</option>
+                </select>
+              </label>
+              <div className="sm:col-span-2 space-y-2">
+                <p className="text-sm font-semibold text-ink">Images (optional)</p>
+                <div className="flex flex-wrap gap-6">
+                  <ImgUpload label="School logo" value={logoImg} onChange={onImgUpload(setLogoImg)} onClear={() => setLogoImg(null)} />
+                  <ImgUpload label="Seal / medallion" value={sealImg} onChange={onImgUpload(setSealImg)} onClear={() => setSealImg(null)} />
+                  <ImgUpload label="CEFR badge" value={cefrImg} onChange={onImgUpload(setCefrImg)} onClear={() => setCefrImg(null)} />
+                </div>
+              </div>
+              <div className="sm:col-span-2 flex flex-wrap gap-3 items-center">
+                <Button onClick={() => window.print()} disabled={!name.trim()}>Download PDF</Button>
+                <button
+                  type="button"
+                  onClick={() => setShowLayout((v) => !v)}
+                  className="text-sm font-medium text-accent underline underline-offset-2"
+                >
+                  {showLayout ? "Hide layout editor" : "Edit layout & sizes"}
+                </button>
+                {showLayout && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={saveConfig}
+                      disabled={saving}
+                      className="text-sm font-medium text-accent underline underline-offset-2 disabled:opacity-50"
+                    >
+                      {saved ? "Saved ✓" : saving ? "Saving…" : "Save configuration"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDesign(DEFAULTS)}
+                      className="text-sm text-ink-muted underline underline-offset-2"
+                    >
+                      Reset to defaults
+                    </button>
+                  </>
+                )}
+              </div>
+              <p className="sm:col-span-2 text-xs text-ink-subtle -mt-1">
+                Opens the print dialog — choose &ldquo;Save as PDF&rdquo;, landscape, no margins.
+              </p>
+            </Card>
+
+            {/* ── Layout editor ── */}
+            {showLayout && (
+              <Card className="space-y-5">
+                <p className="text-xs font-semibold uppercase tracking-wider text-accent">Layout editor</p>
+                <div className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
+                  <p className="sm:col-span-2 text-xs font-semibold text-ink-muted uppercase tracking-wider">Font sizes</p>
+                  <SliderRow label="Logo size" value={design.logoSize} min={36} max={100} step={2} unit="px" onChange={setD("logoSize")} />
+                  <SliderRow label="Title" value={design.titleSize} min={1.4} max={3.5} step={0.05} unit="rem" onChange={setD("titleSize")} />
+                  <SliderRow label="Student name" value={design.nameSize} min={1.6} max={4.5} step={0.05} unit="rem" onChange={setD("nameSize")} />
+                  <SliderRow label="Body text" value={design.bodySize} min={0.6} max={1.3} step={0.02} unit="rem" onChange={setD("bodySize")} />
+                  <SliderRow label="Congratulations" value={design.congratsSize} min={0.8} max={2} step={0.02} unit="rem" onChange={setD("congratsSize")} />
+                  <SliderRow label="CEFR level (A1…)" value={design.cefrSize} min={0.9} max={2.5} step={0.05} unit="rem" onChange={setD("cefrSize")} />
+                  <SliderRow label="Teacher signature" value={design.teacherSigSize} min={1} max={2.5} step={0.05} unit="rem" onChange={setD("teacherSigSize")} />
+                  <p className="sm:col-span-2 text-xs font-semibold text-ink-muted uppercase tracking-wider pt-2">Spacing (px)</p>
+                  <SliderRow label="Top margin (logo)" value={design.topMargin} min={4} max={80} step={1} unit="px" onChange={setD("topMargin")} />
+                  <SliderRow label="Logo → Title" value={design.titleMargin} min={4} max={80} step={1} unit="px" onChange={setD("titleMargin")} />
+                  <SliderRow label="Divider top" value={design.dividerTopMargin} min={4} max={60} step={1} unit="px" onChange={setD("dividerTopMargin")} />
+                  <SliderRow label="Divider bottom" value={design.dividerBottomMargin} min={4} max={60} step={1} unit="px" onChange={setD("dividerBottomMargin")} />
+                  <SliderRow label="Label → Name" value={design.nameMargin} min={4} max={60} step={1} unit="px" onChange={setD("nameMargin")} />
+                  <SliderRow label="Name → Body" value={design.bodyMargin} min={4} max={60} step={1} unit="px" onChange={setD("bodyMargin")} />
+                  <SliderRow label="Body → Congratulations" value={design.congratsMargin} min={4} max={60} step={1} unit="px" onChange={setD("congratsMargin")} />
+                </div>
+              </Card>
+            )}
+
+            {/* ── Live preview ── */}
+            <div className="overflow-x-auto">
+              <Certificate
+                name={name}
+                level={level}
+                levelName={levelName}
+                date={date}
+                teacher={teacher}
+                pronoun={pronoun}
+                design={design}
+                logoImg={logoImg}
+                sealImg={sealImg}
+                cefrImg={cefrImg}
+              />
+            </div>
+          </>
+        ) : (
+          /* ── Contract tab ── */
+          <>
+            {/* Student search */}
+            <Card className="space-y-3">
+              <p className="text-sm font-semibold text-ink">Student</p>
+              <div className="relative max-w-sm" ref={searchRef}>
+                <label className="block">
+                  <span className="mb-1.5 block text-sm font-medium text-ink">Search student</span>
+                  <input
+                    className="input-field"
+                    value={userSearch}
+                    onChange={(e) => { setUserSearch(e.target.value); setShowDropdown(true); }}
+                    onFocus={() => setShowDropdown(true)}
+                    placeholder="Type name to search…"
+                    autoComplete="off"
+                  />
+                </label>
+                {showDropdown && filteredUsers.length > 0 && (
+                  <ul className="absolute z-50 top-full mt-1 w-full rounded-lg border border-border bg-surface shadow-lg overflow-hidden">
+                    {filteredUsers.map((u) => (
+                      <li key={u.userId}>
+                        <button
+                          type="button"
+                          className="w-full px-4 py-2.5 text-left text-sm hover:bg-surface-alt transition-colors"
+                          onMouseDown={() => selectUser(u)}
+                        >
+                          <span className="font-medium text-ink">{u.name}</span>
+                          <span className="ml-2 text-xs text-ink-muted">{u.cpf}</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </Card>
+
+            {/* Contract fields */}
+            <Card className="grid gap-4 sm:grid-cols-2">
+              <p className="sm:col-span-2 text-xs font-semibold uppercase tracking-wider text-accent">Contratante / Aluno(a)</p>
+
+              <label className="block sm:col-span-2">
+                <span className="mb-1.5 block text-sm font-medium text-ink">Nome</span>
+                <input className="input-field" value={contractForm.studentName} onChange={(e) => setC("studentName", e.target.value)} />
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-sm font-medium text-ink">CPF</span>
+                <input className="input-field" value={contractForm.studentCpf} onChange={(e) => setC("studentCpf", e.target.value)} />
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-sm font-medium text-ink">Data de nascimento</span>
+                <input type="date" className="input-field" value={contractForm.studentDob} onChange={(e) => setC("studentDob", e.target.value)} />
+              </label>
+              <label className="block sm:col-span-2">
+                <span className="mb-1.5 block text-sm font-medium text-ink">Endereço</span>
+                <input className="input-field" value={contractForm.studentAddress} onChange={(e) => setC("studentAddress", e.target.value)} />
+              </label>
+              <label className="block sm:col-span-2">
+                <span className="mb-1.5 block text-sm font-medium text-ink">Telefone / E-mail</span>
+                <input
+                  className="input-field"
+                  value={contractForm.studentContact}
+                  onChange={(e) => setC("studentContact", e.target.value)}
+                  placeholder="(11) 9 0000-0000 / aluno@email.com"
+                />
+              </label>
+
+              <p className="sm:col-span-2 text-xs font-semibold uppercase tracking-wider text-accent pt-2">Cláusula 2 — Aulas</p>
+
+              <div className="sm:col-span-2">
+                <span className="mb-1.5 block text-sm font-medium text-ink">Modalidade</span>
+                <div className="flex gap-5">
+                  {(["Presencial", "Online"] as const).map((m) => (
+                    <label key={m} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="modalidade"
+                        value={m}
+                        checked={contractForm.modalidade === m}
+                        onChange={() => setC("modalidade", m)}
+                        className="accent-accent"
+                      />
+                      <span className="text-sm text-ink">{m}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <label className="block sm:col-span-2">
+                <span className="mb-1.5 block text-sm font-medium text-ink">Local / plataforma</span>
+                <input className="input-field" value={contractForm.local} onChange={(e) => setC("local", e.target.value)} placeholder="Google Meet, Zoom, endereço físico…" />
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-sm font-medium text-ink">Quantidade de aulas</span>
+                <input className="input-field" value={contractForm.qtdAulas} onChange={(e) => setC("qtdAulas", e.target.value)} placeholder="8 aulas/mês" />
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-sm font-medium text-ink">Duração</span>
+                <input className="input-field" value={contractForm.duracao} onChange={(e) => setC("duracao", e.target.value)} placeholder="60 minutos" />
+              </label>
+              <label className="block sm:col-span-2">
+                <span className="mb-1.5 block text-sm font-medium text-ink">Dias e horários</span>
+                <input className="input-field" value={contractForm.diasHorarios} onChange={(e) => setC("diasHorarios", e.target.value)} placeholder="Terças e quintas, 19h–20h" />
+              </label>
+
+              <p className="sm:col-span-2 text-xs font-semibold uppercase tracking-wider text-accent pt-2">Cláusula 3 — Valor e Pagamento</p>
+
+              <label className="block">
+                <span className="mb-1.5 block text-sm font-medium text-ink">Valor (R$)</span>
+                <input className="input-field" value={contractForm.valor} onChange={(e) => setC("valor", e.target.value)} placeholder="300,00" />
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-sm font-medium text-ink">Forma de pagamento</span>
+                <input className="input-field" value={contractForm.formaPgto} onChange={(e) => setC("formaPgto", e.target.value)} placeholder="PIX, transferência, boleto…" />
+              </label>
+              <label className="block sm:col-span-2">
+                <span className="mb-1.5 block text-sm font-medium text-ink">Vencimento</span>
+                <input className="input-field" value={contractForm.vencimento} onChange={(e) => setC("vencimento", e.target.value)} placeholder="Todo dia 5" />
+              </label>
+
+              <p className="sm:col-span-2 text-xs font-semibold uppercase tracking-wider text-accent pt-2">Cláusula 8 — Foro e Assinatura</p>
+
+              <label className="block">
+                <span className="mb-1.5 block text-sm font-medium text-ink">Comarca</span>
+                <input className="input-field" value={contractForm.comarca} onChange={(e) => setC("comarca", e.target.value)} placeholder="São Paulo" />
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-sm font-medium text-ink">Cidade</span>
+                <input className="input-field" value={contractForm.cidade} onChange={(e) => setC("cidade", e.target.value)} placeholder="São Paulo" />
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-sm font-medium text-ink">Data</span>
+                <input type="date" className="input-field" value={contractForm.dataContrato} onChange={(e) => setC("dataContrato", e.target.value)} />
+              </label>
+
+              <div className="sm:col-span-2 flex gap-3 pt-2">
+                <Button onClick={() => window.print()} disabled={!contractForm.studentName.trim()}>
+                  Download PDF
+                </Button>
+              </div>
+              <p className="sm:col-span-2 text-xs text-ink-subtle -mt-1">
+                Opens the print dialog — choose &ldquo;Save as PDF&rdquo;, portrait, margins: Normal (2 cm).
+              </p>
+            </Card>
+
+            {/* ── Contract preview ── */}
+            <ContractDoc form={contractForm} molenInfo={molenInfo} molenAddress={molenAddress} />
+          </>
+        )}
       </div>
     </>
   );
 }
 
-// ── Slider row component ──────────────────────────────────────────────────────
+// ── Slider row ────────────────────────────────────────────────────────────────
 function SliderRow({
   label, value, min, max, step, unit, onChange,
 }: {
@@ -306,12 +586,7 @@ function SliderRow({
         <span className="text-sm tabular-nums text-ink-muted">{value}{unit}</span>
       </div>
       <input
-        type="range"
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        onChange={onChange}
+        type="range" min={min} max={max} step={step} value={value} onChange={onChange}
         className="w-full accent-accent"
       />
     </label>
@@ -360,7 +635,6 @@ function Certificate({ name, level, levelName, date, teacher, pronoun, design: d
           overflow: "hidden",
         }}
       >
-        {/* Brand */}
         <div style={{ display: "flex", alignItems: "center", gap: 16, marginTop: d.topMargin }}>
           {logoImg
             ? <img src={logoImg} alt="Logo" style={{ height: d.logoSize, maxWidth: d.logoSize * 2, objectFit: "contain", flexShrink: 0 }} />
@@ -374,7 +648,6 @@ function Certificate({ name, level, levelName, date, teacher, pronoun, design: d
           </div>
         </div>
 
-        {/* Title */}
         <h2 style={{ fontFamily: SERIF, fontWeight: 700, color: C.maroon, fontSize: `${d.titleSize}rem`, margin: `${d.titleMargin}px 0 0` }}>
           Certificate of Achievement
         </h2>
@@ -385,24 +658,19 @@ function Certificate({ name, level, levelName, date, teacher, pronoun, design: d
           THIS CERTIFICATE IS PROUDLY PRESENTED TO
         </p>
 
-        {/* Student name */}
         <div style={{ fontFamily: SCRIPT, fontSize: `${d.nameSize}rem`, color: C.green, lineHeight: 1.15, marginTop: d.nameMargin, padding: "0 32px 6px", borderBottom: `1px solid ${C.gold}`, minWidth: "55%" }}>
           {name.trim() || "Student Name"}
         </div>
 
-        {/* Body */}
         <p style={{ maxWidth: "72%", fontSize: `${d.bodySize}rem`, color: C.ink, margin: `${d.bodyMargin}px 0 0`, lineHeight: 1.6 }}>
           for {pronoun} outstanding dedication, active participation and excellent performance in English studies.
         </p>
 
-        {/* Congratulations */}
         <p style={{ fontFamily: SCRIPT, fontSize: `${d.congratsSize}rem`, color: C.greenInk, margin: `${d.congratsMargin}px 0 0` }}>
           Congratulations on your achievement!
         </p>
 
-        {/* Footer */}
         <div style={{ marginTop: "auto", width: "100%", display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
-          {/* CEFR + Date */}
           <div style={{ textAlign: "center", minWidth: "28%" }}>
             <DashLabel>CEFR LEVEL</DashLabel>
             {cefrImg
@@ -421,7 +689,6 @@ function Certificate({ name, level, levelName, date, teacher, pronoun, design: d
             : <Seal />
           }
 
-          {/* Teacher */}
           <div style={{ textAlign: "center", minWidth: "28%" }}>
             <div style={{ fontFamily: SCRIPT, fontSize: `${d.teacherSigSize}rem`, color: C.ink, lineHeight: 1.2 }}>{teacher || " "}</div>
             <div style={{ borderTop: `1px solid ${C.gold}`, marginTop: 8, paddingTop: 6, letterSpacing: "0.2em", fontSize: "0.62rem", color: C.ink, fontWeight: 600 }}>TEACHER</div>
@@ -433,7 +700,176 @@ function Certificate({ name, level, levelName, date, teacher, pronoun, design: d
   );
 }
 
-// ── Sub-components ────────────────────────────────────────────────────────────
+// ── Contract document ─────────────────────────────────────────────────────────
+function Blank({ value, minWidth = 160 }: { value: string; minWidth?: number }) {
+  return (
+    <span style={{
+      display: "inline-block",
+      minWidth,
+      borderBottom: "1px solid #000",
+      paddingBottom: 1,
+      verticalAlign: "bottom",
+    }}>
+      {value || " "}
+    </span>
+  );
+}
+
+interface ContractDocProps {
+  form: ContractForm;
+  molenInfo: MolenCompanyInfo | null;
+  molenAddress: string;
+}
+
+function ContractDoc({ form, molenInfo, molenAddress }: ContractDocProps) {
+  const doc: React.CSSProperties = {
+    fontFamily: "Arial, Helvetica, sans-serif",
+    fontSize: 13,
+    lineHeight: "1.75",
+    color: "#111",
+    maxWidth: 740,
+    margin: "0 auto",
+    padding: "40px 48px",
+    background: "#fff",
+    border: "1px solid #ddd",
+    borderRadius: 6,
+  };
+
+  const sectionHead: React.CSSProperties = {
+    fontWeight: 700,
+    fontSize: 13,
+    marginTop: 22,
+    marginBottom: 2,
+  };
+
+  const clauseHead: React.CSSProperties = {
+    fontWeight: 700,
+    fontSize: 13,
+    marginTop: 20,
+    marginBottom: 4,
+  };
+
+  const p: React.CSSProperties = { margin: "2px 0" };
+
+  return (
+    <div id="contract-doc" style={doc}>
+      {/* Header */}
+      <div style={{ textAlign: "center", marginBottom: 28 }}>
+        <WindmillMark size={60} />
+        <div style={{ marginTop: 14, fontWeight: 700, fontSize: 14, textTransform: "uppercase", letterSpacing: "0.06em", lineHeight: 1.5 }}>
+          Contrato de Prestação de Serviços Educacionais
+          <br />
+          Aulas de Inglês
+        </div>
+      </div>
+
+      <p style={p}>Pelo presente instrumento particular, de um lado:</p>
+
+      {/* CONTRATADA */}
+      <p style={sectionHead}>
+        CONTRATADA: <Blank value={molenInfo?.razaoSocial ?? molenInfo?.nomeFantasia ?? ""} minWidth={240} />
+      </p>
+      <p style={p}>Microempresa inscrita no CNPJ nº <Blank value={molenInfo?.cnpj ?? ""} minWidth={200} /></p>
+      <p style={p}>Endereço: <Blank value={molenAddress} minWidth={260} /></p>
+      <p style={p}>Representante: <Blank value={molenInfo?.responsavelNome ?? ""} minWidth={220} /></p>
+
+      {/* CONTRATANTE */}
+      <p style={{ ...sectionHead, marginTop: 24 }}>CONTRATANTE / ALUNO(A) OU RESPONSÁVEL LEGAL:</p>
+      <p style={p}>Nome: <Blank value={form.studentName} minWidth={240} /></p>
+      <p style={p}>CPF: <Blank value={form.studentCpf} minWidth={160} /></p>
+      <p style={p}>Data de nascimento: <Blank value={brDate(form.studentDob)} minWidth={140} /></p>
+      <p style={p}>Endereço: <Blank value={form.studentAddress} minWidth={260} /></p>
+      <p style={p}>Telefone/E-mail: <Blank value={form.studentContact} minWidth={220} /></p>
+
+      {/* Cláusula 1 */}
+      <p style={clauseHead}>CLÁUSULA 1ª – DO OBJETO</p>
+      <p style={p}>
+        O presente contrato tem como objeto a prestação de serviços de ensino de língua inglesa,
+        incluindo aulas, acompanhamento pedagógico, materiais e atividades relacionadas ao aprendizado do idioma.
+      </p>
+
+      {/* Cláusula 2 */}
+      <p style={clauseHead}>CLÁUSULA 2ª – DAS AULAS</p>
+      <p style={p}>
+        Modalidade:{" "}
+        ({form.modalidade === "Presencial" ? "X" : " "}) Presencial
+        {"   "}
+        ({form.modalidade === "Online" ? "X" : " "}) Online
+      </p>
+      <p style={p}>Local/plataforma: <Blank value={form.local} minWidth={220} /></p>
+      <p style={p}>Quantidade de aulas: <Blank value={form.qtdAulas} minWidth={180} /></p>
+      <p style={p}>Duração: <Blank value={form.duracao} minWidth={180} /></p>
+      <p style={p}>Dias e horários: <Blank value={form.diasHorarios} minWidth={200} /></p>
+
+      {/* Cláusula 3 */}
+      <p style={clauseHead}>CLÁUSULA 3ª – DO VALOR E PAGAMENTO</p>
+      <p style={p}>Valor: R$ <Blank value={form.valor} minWidth={140} /></p>
+      <p style={p}>Forma de pagamento: <Blank value={form.formaPgto} minWidth={200} /></p>
+      <p style={p}>Vencimento: <Blank value={form.vencimento} minWidth={180} /></p>
+
+      {/* Cláusula 4 */}
+      <p style={clauseHead}>CLÁUSULA 4ª – CANCELAMENTO E REMARCAÇÃO</p>
+      <p style={p}>
+        Cancelamentos ou solicitações de remarcação deverão respeitar o prazo informado pela
+        CONTRATADA. Ausências sem aviso prévio poderão resultar na perda da aula.
+      </p>
+
+      {/* Cláusula 5 */}
+      <p style={clauseHead}>CLÁUSULA 5ª – MATERIAIS DIDÁTICOS</p>
+      <p style={p}>
+        Os materiais fornecidos destinam-se exclusivamente ao aluno contratado, sendo proibida
+        sua reprodução ou distribuição sem autorização.
+      </p>
+
+      {/* Cláusula 6 */}
+      <p style={clauseHead}>CLÁUSULA 6ª – PROTEÇÃO DE DADOS</p>
+      <p style={p}>
+        As partes comprometem-se a tratar dados pessoais conforme a Lei Geral de Proteção de
+        Dados (LGPD), utilizando-os exclusivamente para fins relacionados ao serviço contratado.
+      </p>
+
+      {/* Cláusula 7 */}
+      <p style={clauseHead}>CLÁUSULA 7ª – RESCISÃO</p>
+      <p style={p}>
+        O contrato poderá ser encerrado mediante comunicação entre as partes, observadas
+        obrigações financeiras pendentes.
+      </p>
+
+      {/* Cláusula 8 */}
+      <p style={clauseHead}>CLÁUSULA 8ª – FORO</p>
+      <p style={p}>
+        Fica eleito o foro da comarca de <Blank value={form.comarca} minWidth={200} /> para questões
+        decorrentes deste contrato.
+      </p>
+      <div style={{ marginTop: 10 }}>
+        <p style={p}>Cidade: <Blank value={form.cidade} minWidth={200} /></p>
+        <p style={p}>Data: <Blank value={brDate(form.dataContrato)} minWidth={120} /></p>
+      </div>
+
+      {/* Signatures */}
+      <div style={{ marginTop: 56, display: "flex", justifyContent: "space-between", gap: 40 }}>
+        <div style={{ textAlign: "center", flex: 1 }}>
+          <div style={{ borderTop: "1px solid #000", paddingTop: 10, fontWeight: 600, fontSize: 13 }}>
+            CONTRATADA
+          </div>
+          {molenInfo?.responsavelNome && (
+            <div style={{ marginTop: 4, fontSize: 12, color: "#444" }}>{molenInfo.responsavelNome}</div>
+          )}
+        </div>
+        <div style={{ textAlign: "center", flex: 1 }}>
+          <div style={{ borderTop: "1px solid #000", paddingTop: 10, fontWeight: 600, fontSize: 13 }}>
+            CONTRATANTE
+          </div>
+          {form.studentName && (
+            <div style={{ marginTop: 4, fontSize: 12, color: "#444" }}>{form.studentName}</div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Certificate sub-components ────────────────────────────────────────────────
 
 function DashLabel({ children }: { children: React.ReactNode }) {
   return (
@@ -514,19 +950,16 @@ function ImgUpload({ label, value, onChange, onClear }: {
   );
 }
 
-// Rendered 100×120; viewBox 140×168 (same ratio = 0.714 scale).
 function Seal() {
   const cx = 70, cy = 66;
   const GOLD = "#C8A020";
   const DG   = "#182816";
   const MG   = "#263828";
 
-  const scR = 52, scr = 7, numSc = 20; // scallop params
-  const grR = 45;                        // green circle radius
-  const wR  = 33, nLv = 10;             // wreath leaf radius + count
+  const scR = 52, scr = 7, numSc = 20;
+  const grR = 45;
+  const wR  = 33, nLv = 10;
 
-  // Generate leaf positions: angles go from startDeg to endDeg inclusive.
-  // Rotation = tangential (deg + 90) so the long axis follows the wreath arc.
   const mkLeaves = (startDeg: number, endDeg: number) =>
     Array.from({ length: nLv }).map((_, i) => {
       const deg = startDeg + (i / (nLv - 1)) * (endDeg - startDeg);
@@ -534,64 +967,33 @@ function Seal() {
       return { x: cx + Math.cos(rad) * wR, y: cy + Math.sin(rad) * wR, rot: deg + 90 };
     });
 
-  // Left branch: 95° (just right of bottom, SVG y-down) → 235° (upper-left)
   const leftLeaves  = mkLeaves(95, 235);
-  // Right branch: 85° (just left of bottom) → −55° = 305° (upper-right)
   const rightLeaves = mkLeaves(85, -55);
 
   return (
     <svg width="100" height="120" viewBox="0 0 140 168" fill="none" aria-hidden style={{ flexShrink: 0 }}>
-
-      {/* ── Ribbons (behind medal) ── */}
       <path d="M 48 114 L 70 114 L 70 162 L 57 145 L 44 162 Z" fill={DG}/>
       <path d="M 70 114 L 92 114 L 96 162 L 83 145 L 70 162 Z" fill={MG}/>
-
-      {/* ── Scalloped gold outer ring ── */}
       {Array.from({ length: numSc }).map((_, i) => {
         const a = (i / numSc) * Math.PI * 2 - Math.PI / 2;
         return <circle key={i} cx={cx + Math.cos(a) * scR} cy={cy + Math.sin(a) * scR} r={scr} fill={GOLD}/>;
       })}
       <circle cx={cx} cy={cy} r={scR} fill={GOLD}/>
-
-      {/* ── Dark green inner circle ── */}
       <circle cx={cx} cy={cy} r={grR} fill={DG}/>
       <circle cx={cx} cy={cy} r={grR} fill="none" stroke={GOLD} strokeWidth="2.5"/>
-
-      {/* ── Laurel wreath — left branch ── */}
       {leftLeaves.map((lf, i) => (
-        <ellipse key={`l${i}`}
-          cx={lf.x} cy={lf.y} rx="2.8" ry="7.5"
-          fill={GOLD}
-          transform={`rotate(${lf.rot},${lf.x},${lf.y})`}
-        />
+        <ellipse key={`l${i}`} cx={lf.x} cy={lf.y} rx="2.8" ry="7.5" fill={GOLD}
+          transform={`rotate(${lf.rot},${lf.x},${lf.y})`} />
       ))}
-
-      {/* ── Laurel wreath — right branch ── */}
       {rightLeaves.map((lf, i) => (
-        <ellipse key={`r${i}`}
-          cx={lf.x} cy={lf.y} rx="2.8" ry="7.5"
-          fill={GOLD}
-          transform={`rotate(${lf.rot},${lf.x},${lf.y})`}
-        />
+        <ellipse key={`r${i}`} cx={lf.x} cy={lf.y} rx="2.8" ry="7.5" fill={GOLD}
+          transform={`rotate(${lf.rot},${lf.x},${lf.y})`} />
       ))}
-
-      {/* ── Mortarboard ── */}
-      {/* Top board (diamond) */}
-      <polygon
-        points={`${cx},${cy-24} ${cx+21},${cy-14} ${cx},${cy-4} ${cx-21},${cy-14}`}
-        fill={GOLD}
-      />
-      {/* Cap crown below board */}
-      <path
-        d={`M ${cx-17} ${cy-14} Q ${cx-17} ${cy-4} ${cx} ${cy-2} Q ${cx+17} ${cy-4} ${cx+17} ${cy-14}`}
-        fill={GOLD}
-      />
-      {/* Button on top */}
+      <polygon points={`${cx},${cy-24} ${cx+21},${cy-14} ${cx},${cy-4} ${cx-21},${cy-14}`} fill={GOLD}/>
+      <path d={`M ${cx-17} ${cy-14} Q ${cx-17} ${cy-4} ${cx} ${cy-2} Q ${cx+17} ${cy-4} ${cx+17} ${cy-14}`} fill={GOLD}/>
       <circle cx={cx} cy={cy-24} r="2.2" fill={GOLD}/>
-      {/* Tassel cord */}
       <line x1={cx+21} y1={cy-14} x2={cx+21} y2={cy-5} stroke={GOLD} strokeWidth="2.2" strokeLinecap="round"/>
       <line x1={cx+21} y1={cy-5}  x2={cx+26} y2={cy+5}  stroke={GOLD} strokeWidth="2"   strokeLinecap="round"/>
-      {/* Tassel end */}
       <circle cx={cx+26} cy={cy+7} r="2.5" fill={GOLD}/>
     </svg>
   );
