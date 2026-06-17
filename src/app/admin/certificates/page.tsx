@@ -189,6 +189,7 @@ function Certificate({ name, level, levelName, date, teacher, pronoun }: CertPro
           flexDirection: "column",
           alignItems: "center",
           textAlign: "center",
+          overflow: "hidden",
         }}
       >
         {/* Brand row */}
@@ -266,7 +267,6 @@ function Certificate({ name, level, levelName, date, teacher, pronoun }: CertPro
             display: "flex",
             alignItems: "flex-end",
             justifyContent: "space-between",
-            paddingBottom: "0.5%",
           }}
         >
           {/* Level + Date */}
@@ -276,18 +276,18 @@ function Certificate({ name, level, levelName, date, teacher, pronoun }: CertPro
               style={{
                 fontFamily: SERIF,
                 fontWeight: 700,
-                fontSize: "2.8rem",
+                fontSize: "2.2rem",
                 color: C.greenInk,
                 lineHeight: 1,
-                margin: "4% 0 3%",
+                margin: "5px 0 4px",
               }}
             >
               {level}
             </div>
-            <div style={{ borderBottom: `1px solid ${C.gold}`, paddingBottom: "8%", marginBottom: "8%" }}>
+            <div style={{ borderBottom: `1px solid ${C.gold}`, paddingBottom: 8, marginBottom: 10 }}>
               <DashLabel>{levelName.toUpperCase()}</DashLabel>
             </div>
-            <div style={{ fontFamily: SCRIPT, fontSize: "1.35rem", color: C.ink }}>
+            <div style={{ fontFamily: SCRIPT, fontSize: "1.2rem", color: C.ink }}>
               {prettyDate(date)}
             </div>
             <div
@@ -296,8 +296,8 @@ function Certificate({ name, level, levelName, date, teacher, pronoun }: CertPro
                 fontSize: "0.68rem",
                 color: C.ink,
                 borderTop: `1px solid ${C.gold}`,
-                paddingTop: "4%",
-                marginTop: "3%",
+                paddingTop: 6,
+                marginTop: 5,
                 fontWeight: 500,
               }}
             >
@@ -309,14 +309,14 @@ function Certificate({ name, level, levelName, date, teacher, pronoun }: CertPro
 
           {/* Teacher signature */}
           <div style={{ textAlign: "center", minWidth: "28%" }}>
-            <div style={{ fontFamily: SCRIPT, fontSize: "1.9rem", color: C.ink, lineHeight: 1.2 }}>
+            <div style={{ fontFamily: SCRIPT, fontSize: "1.8rem", color: C.ink, lineHeight: 1.2 }}>
               {teacher || " "}
             </div>
             <div
               style={{
                 borderTop: `1px solid ${C.gold}`,
-                marginTop: "4%",
-                paddingTop: "4%",
+                marginTop: 10,
+                paddingTop: 8,
                 letterSpacing: "0.2em",
                 fontSize: "0.68rem",
                 color: C.ink,
@@ -325,7 +325,7 @@ function Certificate({ name, level, levelName, date, teacher, pronoun }: CertPro
             >
               TEACHER
             </div>
-            <div style={{ fontSize: "0.88rem", color: C.ink, marginTop: "2%" }}>{teacher}</div>
+            <div style={{ fontSize: "0.86rem", color: C.ink, marginTop: 4 }}>{teacher}</div>
           </div>
         </div>
       </div>
@@ -430,10 +430,10 @@ function Corner({ pos }: { pos: "tl" | "tr" | "bl" | "br" }) {
 function Seal() {
   const cx = 61, cy = 56;
   return (
-    <svg width="124" height="156" viewBox="0 0 124 156" fill="none" aria-hidden style={{ flexShrink: 0 }}>
+    <svg width="124" height="136" viewBox="0 0 124 136" fill="none" aria-hidden style={{ flexShrink: 0 }}>
       {/* Ribbons */}
-      <path d="M 46 96 L 41 152 L 56 136 L 62 150 L 62 96 Z" fill={C.green} />
-      <path d="M 78 96 L 83 152 L 68 136 L 62 150 L 62 96 Z" fill={C.greenMid} />
+      <path d="M 46 96 L 42 132 L 55 120 L 61 132 L 61 96 Z" fill={C.green} />
+      <path d="M 76 96 L 80 132 L 67 120 L 61 132 L 61 96 Z" fill={C.greenMid} />
 
       {/* Scalloped gold border */}
       {Array.from({ length: 24 }).map((_, i) => {
