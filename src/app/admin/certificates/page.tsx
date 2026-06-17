@@ -188,6 +188,53 @@ export default function AdminCertificatesPage() {
     }
   }, [tab]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Inject print CSS into <head> so browsers reliably apply it
+  useEffect(() => {
+    const id = "molen-print-style";
+    let el = document.getElementById(id) as HTMLStyleElement | null;
+    if (!el) {
+      el = document.createElement("style");
+      el.id = id;
+      document.head.appendChild(el);
+    }
+    if (tab === "certificate") {
+      el.textContent = `
+        @media print {
+          @page { size: A4 landscape; margin: 0; }
+          body * { visibility: hidden !important; }
+          #certificate, #certificate * { visibility: visible !important; }
+          #certificate {
+            position: fixed !important;
+            inset: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            max-width: none !important;
+            aspect-ratio: unset !important;
+            margin: 0 !important;
+            print-color-adjust: exact !important;
+            -webkit-print-color-adjust: exact !important;
+          }
+        }
+      `;
+    } else {
+      el.textContent = `
+        @media print {
+          @page { size: A4 portrait; margin: 1.5cm; }
+          body * { visibility: hidden !important; }
+          #contract-doc, #contract-doc * { visibility: visible !important; }
+          #contract-doc {
+            position: static !important;
+            width: 100% !important;
+            max-width: none !important;
+            print-color-adjust: exact !important;
+            -webkit-print-color-adjust: exact !important;
+          }
+        }
+      `;
+    }
+    return () => { document.getElementById(id)?.remove(); };
+  }, [tab]);
+
   useEffect(() => {
     function handler(e: MouseEvent) {
       if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
@@ -246,35 +293,7 @@ export default function AdminCertificatesPage() {
     : "";
 
   return (
-    <>
-      <style>{`
-        @media print {
-          ${tab === "certificate" ? `
-            @page { size: A4 landscape; margin: 0; }
-            body * { visibility: hidden; }
-            #certificate, #certificate * { visibility: visible; }
-            #certificate {
-              position: fixed !important;
-              inset: 0 !important;
-              width: 100vw !important;
-              height: 100vh !important;
-              max-width: none !important;
-              margin: 0 !important;
-            }
-          ` : `
-            @page { size: A4 portrait; margin: 1.5cm; }
-            body * { visibility: hidden; }
-            #contract-doc, #contract-doc * { visibility: visible; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-            #contract-doc {
-              position: static !important;
-              width: 100% !important;
-              max-width: none !important;
-            }
-          `}
-        }
-      `}</style>
-
-      <div className="mx-auto max-w-wide space-y-6">
+    <div className="mx-auto max-w-wide space-y-6">
         <header className="pt-2">
           <p className="text-xs font-semibold uppercase tracking-wider text-accent">Administration</p>
           <h1 className="mt-1 text-2xl font-bold tracking-tight text-ink sm:text-3xl">Contracts and Certificates</h1>
@@ -548,7 +567,6 @@ export default function AdminCertificatesPage() {
           </>
         )}
       </div>
-    </>
   );
 }
 
