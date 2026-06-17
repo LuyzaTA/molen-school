@@ -43,22 +43,13 @@ export default function LandingPage() {
           display: "flex", alignItems: "center", justifyContent: "space-between",
           height: 72, padding: "0 2rem",
         }}>
-          {/* Brand lockup — icon + wordmark */}
-          <div style={{ display: "flex", alignItems: "center", gap: 13 }}>
-            <Image
-              src="/molen-logo.png"
-              alt="Molen English Classes"
-              width={52} height={52}
-              style={{ borderRadius: 10, display: "block" }}
-              priority
-            />
-            <div style={{ lineHeight: 1 }}>
-              <div style={{ fontFamily: SERIF, fontWeight: 700, fontSize: "1.5rem", color: P.maroon, letterSpacing: "-0.01em" }}>
-                Molen
-              </div>
-              <div style={{ fontSize: "0.54rem", letterSpacing: "0.26em", textTransform: "uppercase", color: P.dark, fontWeight: 700, marginTop: 4 }}>
-                English Classes
-              </div>
+          {/* Brand wordmark only */}
+          <div style={{ lineHeight: 1 }}>
+            <div style={{ fontFamily: SERIF, fontWeight: 700, fontSize: "1.6rem", color: P.maroon, letterSpacing: "-0.01em" }}>
+              Molen
+            </div>
+            <div style={{ fontSize: "0.54rem", letterSpacing: "0.26em", textTransform: "uppercase", color: P.dark, fontWeight: 700, marginTop: 4 }}>
+              English Classes
             </div>
           </div>
 

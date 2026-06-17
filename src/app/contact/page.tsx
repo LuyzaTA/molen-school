@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 
 const P = {
   parchment: "#F4ECDA",
@@ -68,15 +67,12 @@ export default function ContactPage() {
           display: "flex", alignItems: "center", justifyContent: "space-between",
           height: 68,
         }}>
-          <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 12 }}>
-            <Image src="/molen-logo.png" alt="Molen" width={48} height={48} style={{ borderRadius: 9, display: "block" }} />
-            <div style={{ lineHeight: 1 }}>
-              <div style={{ fontFamily: SERIF, fontWeight: 700, fontSize: "1.4rem", color: P.maroon, letterSpacing: "-0.01em" }}>
-                Molen
-              </div>
-              <div style={{ fontSize: "0.52rem", letterSpacing: "0.28em", textTransform: "uppercase", color: P.dark, fontWeight: 700, marginTop: 3 }}>
-                English Classes
-              </div>
+          <Link href="/" style={{ textDecoration: "none", lineHeight: 1 }}>
+            <div style={{ fontFamily: SERIF, fontWeight: 700, fontSize: "1.5rem", color: P.maroon, letterSpacing: "-0.01em" }}>
+              Molen
+            </div>
+            <div style={{ fontSize: "0.52rem", letterSpacing: "0.28em", textTransform: "uppercase", color: P.dark, fontWeight: 700, marginTop: 3 }}>
+              English Classes
             </div>
           </Link>
           <Link href="https://molen-school.vercel.app/login" style={{
