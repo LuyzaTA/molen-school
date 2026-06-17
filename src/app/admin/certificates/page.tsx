@@ -86,9 +86,23 @@ export default function AdminCertificatesPage() {
       return DEFAULTS;
     }
   });
+  const [logoImg,  setLogoImg]  = useState<string | null>(null);
+  const [sealImg,  setSealImg]  = useState<string | null>(null);
+  const [cefrImg,  setCefrImg]  = useState<string | null>(null);
   const [showLayout, setShowLayout] = useState(false);
   const [saved, setSaved]     = useState(false);
   const [saving, setSaving]   = useState(false);
+
+  function onImgUpload(setter: (v: string) => void) {
+    return (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => setter(reader.result as string);
+      reader.readAsDataURL(file);
+      e.target.value = "";
+    };
+  }
 
   const levelName = CEFR_LEVELS.find((l) => l.level === level)?.name ?? "";
 
@@ -185,6 +199,16 @@ export default function AdminCertificatesPage() {
               <option value="their">their</option>
             </select>
           </label>
+          {/* Image uploads */}
+          <div className="sm:col-span-2 space-y-2">
+            <p className="text-sm font-semibold text-ink">Images (optional)</p>
+            <div className="flex flex-wrap gap-6">
+              <ImgUpload label="School logo" value={logoImg} onChange={onImgUpload(setLogoImg)} onClear={() => setLogoImg(null)} />
+              <ImgUpload label="Seal / medallion" value={sealImg} onChange={onImgUpload(setSealImg)} onClear={() => setSealImg(null)} />
+              <ImgUpload label="CEFR badge" value={cefrImg} onChange={onImgUpload(setCefrImg)} onClear={() => setCefrImg(null)} />
+            </div>
+          </div>
+
           <div className="sm:col-span-2 flex flex-wrap gap-3 items-center">
             <Button onClick={() => window.print()} disabled={!name.trim()}>Download PDF</Button>
             <button
@@ -258,6 +282,9 @@ export default function AdminCertificatesPage() {
             teacher={teacher}
             pronoun={pronoun}
             design={design}
+            logoImg={logoImg}
+            sealImg={sealImg}
+            cefrImg={cefrImg}
           />
         </div>
       </div>
@@ -296,9 +323,12 @@ interface CertProps {
   name: string; level: string; levelName: string;
   date: string; teacher: string; pronoun: Pronoun;
   design: Design;
+  logoImg: string | null;
+  sealImg: string | null;
+  cefrImg: string | null;
 }
 
-function Certificate({ name, level, levelName, date, teacher, pronoun, design: d }: CertProps) {
+function Certificate({ name, level, levelName, date, teacher, pronoun, design: d, logoImg, sealImg, cefrImg }: CertProps) {
   return (
     <div
       id="certificate"
@@ -332,7 +362,10 @@ function Certificate({ name, level, levelName, date, teacher, pronoun, design: d
       >
         {/* Brand */}
         <div style={{ display: "flex", alignItems: "center", gap: 16, marginTop: d.topMargin }}>
-          <WindmillMark size={d.logoSize} />
+          {logoImg
+            ? <img src={logoImg} alt="Logo" style={{ height: d.logoSize, maxWidth: d.logoSize * 2, objectFit: "contain", flexShrink: 0 }} />
+            : <WindmillMark size={d.logoSize} />
+          }
           <div style={{ lineHeight: 1, textAlign: "left" }}>
             <div style={{ fontFamily: SERIF, fontWeight: 700, fontSize: "2.1rem", color: C.maroon }}>Molen</div>
             <div style={{ fontSize: "0.72rem", letterSpacing: "0.32em", color: C.greenInk, fontWeight: 700, marginTop: 4 }}>
@@ -372,9 +405,10 @@ function Certificate({ name, level, levelName, date, teacher, pronoun, design: d
           {/* CEFR + Date */}
           <div style={{ textAlign: "center", minWidth: "28%" }}>
             <DashLabel>CEFR LEVEL</DashLabel>
-            <div style={{ fontFamily: SERIF, fontWeight: 700, fontSize: `${d.cefrSize}rem`, color: C.greenInk, lineHeight: 1, margin: "3px 0" }}>
-              {level}
-            </div>
+            {cefrImg
+              ? <img src={cefrImg} alt="CEFR" style={{ height: d.cefrSize * 28, maxWidth: 80, objectFit: "contain", margin: "3px auto", display: "block" }} />
+              : <div style={{ fontFamily: SERIF, fontWeight: 700, fontSize: `${d.cefrSize}rem`, color: C.greenInk, lineHeight: 1, margin: "3px 0" }}>{level}</div>
+            }
             <div style={{ borderBottom: `1px solid ${C.gold}`, paddingBottom: 5, marginBottom: 6 }}>
               <DashLabel>{levelName.toUpperCase()}</DashLabel>
             </div>
@@ -382,7 +416,10 @@ function Certificate({ name, level, levelName, date, teacher, pronoun, design: d
             <div style={{ letterSpacing: "0.2em", fontSize: "0.62rem", color: C.ink, borderTop: `1px solid ${C.gold}`, paddingTop: 4, marginTop: 3, fontWeight: 500 }}>DATE</div>
           </div>
 
-          <Seal />
+          {sealImg
+            ? <img src={sealImg} alt="Seal" style={{ width: 100, height: 120, objectFit: "contain", flexShrink: 0 }} />
+            : <Seal />
+          }
 
           {/* Teacher */}
           <div style={{ textAlign: "center", minWidth: "28%" }}>
@@ -447,6 +484,33 @@ function Corner({ pos }: { pos: "tl" | "tr" | "bl" | "br" }) {
       <circle cx="82" cy="6" r="3.5" fill={g} />
       <circle cx="6" cy="82" r="3.5" fill={g} />
     </svg>
+  );
+}
+
+function ImgUpload({ label, value, onChange, onClear }: {
+  label: string;
+  value: string | null;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onClear: () => void;
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <span className="text-xs font-medium text-ink-muted">{label}</span>
+      {value ? (
+        <div className="flex items-center gap-2">
+          <img src={value} alt={label} className="h-10 max-w-[90px] object-contain rounded border border-border" />
+          <button type="button" onClick={onClear} className="text-xs text-ink-muted underline hover:text-ink">Remove</button>
+        </div>
+      ) : (
+        <label className="cursor-pointer inline-flex items-center gap-1.5 text-sm text-accent hover:underline">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
+            <path d="M7 1v8M4 4l3-3 3 3M2 11h10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          Upload
+          <input type="file" accept="image/*" className="sr-only" onChange={onChange} />
+        </label>
+      )}
+    </div>
   );
 }
 
