@@ -29,6 +29,7 @@ export interface UserProfile {
 export interface WarmUpStep {
   questions: string[]; // 3 personal questions
   questionsPt?: string[]; // A1: PT translations, parallel to questions
+  grammarNote?: string; // brief student-friendly explanation of today's grammar focus
 }
 
 export interface VocabItem {

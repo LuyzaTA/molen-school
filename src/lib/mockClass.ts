@@ -16,6 +16,18 @@ function isAdvanced(level: string) {
   return level === "C1" || level === "C2";
 }
 
+function buildGrammarNote(beginner: boolean, advanced: boolean, business: boolean): string {
+  let note = beginner
+    ? "Today you'll practice the **present simple** — use it for habits and facts. Watch the 's' ending on he/she/it verbs (*he likes*, not *he like*). **Personal pronouns** (I, you, he, she…) and **possessive adjectives** (my, your, his, her…) will come up in the warm-up."
+    : advanced
+      ? "Today's focus includes the **present perfect** for recent events (*I've done…*). **Second and third conditionals** let you speculate (*If I had…, I would have…*). **Relative clauses** (*which*, *who*, *that*) add detail without starting a new sentence — a key marker of fluency."
+      : "Today you'll practice the **past simple** for storytelling — use irregular forms (*went*, *said*, *thought*). **Comparatives** (*more… than*, *-er than*) and **superlatives** (*the most…*, *the -est*) help you compare ideas. **Linking words** (because, so, although) make your speaking flow naturally.";
+  if (business) {
+    note += " In the business track, pay attention to **polite requests** (*Could you…? Would you mind…?*) — essential for professional tone. **Future plans** (*going to* for intentions, *will* for offers and predictions) appear in every meeting.";
+  }
+  return note;
+}
+
 function buildGrammar(beginner: boolean, advanced: boolean, business: boolean): string[] {
   const base = beginner
     ? ["Present simple", "Personal pronouns", "Possessive adjectives"]
@@ -159,6 +171,7 @@ export function buildMockClass(input: ClassGenInput): GeneratedClass {
         `Como você se sente em relação a ${t} — interessado(a), neutro(a) ou cansado(a)?`,
         `Qual é uma palavra que vem à sua mente quando você pensa em ${t}?`,
       ],
+      grammarNote: buildGrammarNote(beginner, advanced, business),
     },
     targetLanguage: {
       vocab: business ? buildBusinessVocab(t) : buildVocab(t),

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import type { GeneratedClass } from "@/lib/types";
 import { StepShell } from "./StepShell";
 import { SpeakPrompt } from "./SpeakPrompt";
@@ -17,6 +18,10 @@ function usePt(): boolean {
 // 1 — Warm-up -------------------------------------------------
 export function WarmUpStepView({ klass }: { klass: GeneratedClass }) {
   const showPt = usePt();
+  const [grammarOpen, setGrammarOpen] = useState(false);
+  const { grammarNote } = klass.warmUp;
+  const grammarPoints = klass.grammar;
+
   return (
     <StepShell
       stepNumber={1}
@@ -33,6 +38,41 @@ export function WarmUpStepView({ klass }: { klass: GeneratedClass }) {
           translation={showPt ? klass.warmUp.questionsPt?.[i] : undefined}
         />
       ))}
+
+      {/* Grammar guide button */}
+      {(grammarNote || grammarPoints.length > 0) && (
+        <div className="pt-2">
+          <button
+            type="button"
+            onClick={() => setGrammarOpen((o) => !o)}
+            className="inline-flex items-center gap-2 rounded-xl border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-ink transition-colors hover:border-accent/60 hover:bg-accent-soft"
+          >
+            <span aria-hidden>📖</span>
+            Grammar guide
+            <span aria-hidden className="ml-auto text-ink-subtle">{grammarOpen ? "▲" : "▼"}</span>
+          </button>
+
+          {grammarOpen && (
+            <div className="mt-3 rounded-xl border border-accent/30 bg-accent-soft p-4 space-y-3 animate-fade-in">
+              {grammarPoints.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {grammarPoints.map((g, i) => (
+                    <span key={i} className="rounded-pill bg-white/60 px-3 py-1 text-xs font-semibold text-ink">
+                      {g}
+                    </span>
+                  ))}
+                </div>
+              )}
+              {grammarNote && (
+                <p
+                  className="text-sm leading-relaxed text-ink-muted [&_strong]:font-semibold [&_strong]:text-ink"
+                  dangerouslySetInnerHTML={{ __html: grammarNote.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>") }}
+                />
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </StepShell>
   );
 }

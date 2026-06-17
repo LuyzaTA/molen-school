@@ -29,8 +29,9 @@ export function buildClassSchema(level: CEFRLevel) {
 
   const warmUpProps: Record<string, unknown> = {
     questions: { type: "array", items: { type: "string" } },
+    grammarNote: { type: "string" },
   };
-  const warmUpRequired = ["questions"];
+  const warmUpRequired = ["questions", "grammarNote"];
   if (a1) {
     warmUpProps.questionsPt = { type: "array", items: { type: "string" } };
     warmUpRequired.push("questionsPt");
@@ -203,6 +204,9 @@ Content requirements:
 - agenda: 5 short human-readable labels, one per stage, for an at-a-glance preview.
 - grammar: 3–5 named grammar points the class practises (e.g. "Past simple",
   "Possessive pronouns", "Present perfect", "Comparatives"). Short labels only.
+- warmUp.grammarNote: a 2–3 sentence student-friendly explanation of today's grammar
+  focus. Use **bold** for grammar term names. Explain what to watch out for and why
+  these points matter in speaking. Write it directly to the learner (use "you").
 
 Return ONLY the structured JSON. Be encouraging, practical, and concrete.`;
 }
