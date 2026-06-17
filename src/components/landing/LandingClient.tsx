@@ -186,7 +186,7 @@ export function LandingClient() {
               ))}
             </div>
 
-            <Link href="https://molen-school.vercel.app/login" className="hover:bg-[#EAE0C8]" style={{ padding: "7px 20px", borderRadius: 999, fontSize: 14, fontWeight: 600, color: P.ink, textDecoration: "none" }}>
+            <Link href="/login" className="hover:bg-[#EAE0C8]" style={{ padding: "7px 20px", borderRadius: 999, fontSize: 14, fontWeight: 600, color: P.ink, textDecoration: "none" }}>
               {s(C.signIn)}
             </Link>
             <Link href="/contact" className="hover:opacity-90" style={{ padding: "8px 22px", borderRadius: 999, fontSize: 14, fontWeight: 700, backgroundColor: P.green, color: P.cream, textDecoration: "none" }}>
@@ -221,7 +221,7 @@ export function LandingClient() {
               <Link href="/contact" className="hover:-translate-y-0.5 hover:shadow-[0_8px_32px_rgba(194,154,87,0.45)]" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "13px 30px", borderRadius: 999, backgroundColor: P.gold, color: P.dark, fontSize: 15, fontWeight: 700, textDecoration: "none", boxShadow: "0 4px 24px rgba(194,154,87,0.35)" }}>
                 {s(C.heroCta1)} <span aria-hidden>→</span>
               </Link>
-              <Link href="https://molen-school.vercel.app/login" className="hover:bg-white/10" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "13px 28px", borderRadius: 999, border: "1.5px solid rgba(244,236,218,0.28)", color: "rgba(244,236,218,0.88)", fontSize: 15, fontWeight: 500, textDecoration: "none" }}>
+              <Link href="/login" className="hover:bg-white/10" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "13px 28px", borderRadius: 999, border: "1.5px solid rgba(244,236,218,0.28)", color: "rgba(244,236,218,0.88)", fontSize: 15, fontWeight: 500, textDecoration: "none" }}>
                 {s(C.heroCta2)}
               </Link>
             </div>
@@ -366,7 +366,7 @@ export function LandingClient() {
           <div style={{ display: "flex", gap: 28, fontSize: 13 }}>
             <a href="#about"   style={{ color: P.inkMuted, textDecoration: "none" }} className="hover:text-[#2A2D28]">{s(C.footerAbout)}</a>
             <a href="#contact" style={{ color: P.inkMuted, textDecoration: "none" }} className="hover:text-[#2A2D28]">{s(C.footerContact)}</a>
-            <Link href="https://molen-school.vercel.app/login" style={{ color: P.inkMuted, textDecoration: "none" }} className="hover:text-[#2A2D28]">{s(C.footerSignIn)}</Link>
+            <Link href="/login" style={{ color: P.inkMuted, textDecoration: "none" }} className="hover:text-[#2A2D28]">{s(C.footerSignIn)}</Link>
           </div>
         </div>
       </footer>
