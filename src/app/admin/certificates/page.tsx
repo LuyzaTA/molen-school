@@ -450,30 +450,85 @@ function Corner({ pos }: { pos: "tl" | "tr" | "bl" | "br" }) {
   );
 }
 
+// Rendered 100×120; viewBox 140×168 (same ratio = 0.714 scale).
 function Seal() {
-  const cx = 61, cy = 56;
+  const cx = 70, cy = 66;
+  const GOLD = "#C8A020";
+  const DG   = "#182816";
+  const MG   = "#263828";
+
+  const scR = 52, scr = 7, numSc = 20; // scallop params
+  const grR = 45;                        // green circle radius
+  const wR  = 33, nLv = 10;             // wreath leaf radius + count
+
+  // Generate leaf positions: angles go from startDeg to endDeg inclusive.
+  // Rotation = tangential (deg + 90) so the long axis follows the wreath arc.
+  const mkLeaves = (startDeg: number, endDeg: number) =>
+    Array.from({ length: nLv }).map((_, i) => {
+      const deg = startDeg + (i / (nLv - 1)) * (endDeg - startDeg);
+      const rad = deg * Math.PI / 180;
+      return { x: cx + Math.cos(rad) * wR, y: cy + Math.sin(rad) * wR, rot: deg + 90 };
+    });
+
+  // Left branch: 95° (just right of bottom, SVG y-down) → 235° (upper-left)
+  const leftLeaves  = mkLeaves(95, 235);
+  // Right branch: 85° (just left of bottom) → −55° = 305° (upper-right)
+  const rightLeaves = mkLeaves(85, -55);
+
   return (
-    <svg width="91" height="100" viewBox="0 0 124 136" fill="none" aria-hidden style={{ flexShrink: 0 }}>
-      <path d="M 46 96 L 42 132 L 55 120 L 61 132 L 61 96 Z" fill={C.green} />
-      <path d="M 76 96 L 80 132 L 67 120 L 61 132 L 61 96 Z" fill={C.greenMid} />
-      {Array.from({ length: 24 }).map((_, i) => {
-        const a = (i / 24) * Math.PI * 2 - Math.PI / 2;
-        return <circle key={i} cx={cx + Math.cos(a) * 46} cy={cy + Math.sin(a) * 46} r="7.5" fill={C.gold} />;
+    <svg width="100" height="120" viewBox="0 0 140 168" fill="none" aria-hidden style={{ flexShrink: 0 }}>
+
+      {/* ── Ribbons (behind medal) ── */}
+      <path d="M 48 114 L 70 114 L 70 162 L 57 145 L 44 162 Z" fill={DG}/>
+      <path d="M 70 114 L 92 114 L 96 162 L 83 145 L 70 162 Z" fill={MG}/>
+
+      {/* ── Scalloped gold outer ring ── */}
+      {Array.from({ length: numSc }).map((_, i) => {
+        const a = (i / numSc) * Math.PI * 2 - Math.PI / 2;
+        return <circle key={i} cx={cx + Math.cos(a) * scR} cy={cy + Math.sin(a) * scR} r={scr} fill={GOLD}/>;
       })}
-      <circle cx={cx} cy={cy} r="46" fill={C.gold} />
-      <circle cx={cx} cy={cy} r="40" fill={C.green} />
-      <circle cx={cx} cy={cy} r="38" fill="none" stroke={C.gold} strokeWidth="2" />
-      <path d="M 30 58 Q 33 48 40 44" stroke={C.gold} strokeWidth="2.2" fill="none" strokeLinecap="round" />
-      <path d="M 34 63 Q 37 54 45 49" stroke={C.gold} strokeWidth="1.6" fill="none" strokeLinecap="round" opacity="0.85" />
-      <path d="M 38 68 Q 42 60 50 56" stroke={C.gold} strokeWidth="1.2" fill="none" strokeLinecap="round" opacity="0.65" />
-      <path d="M 92 58 Q 89 48 82 44" stroke={C.gold} strokeWidth="2.2" fill="none" strokeLinecap="round" />
-      <path d="M 88 63 Q 85 54 77 49" stroke={C.gold} strokeWidth="1.6" fill="none" strokeLinecap="round" opacity="0.85" />
-      <path d="M 84 68 Q 80 60 72 56" stroke={C.gold} strokeWidth="1.2" fill="none" strokeLinecap="round" opacity="0.65" />
-      <polygon points={`${cx},${cy - 18} ${cx + 22},${cy - 8} ${cx},${cy + 2} ${cx - 22},${cy - 8}`} fill={C.gold} />
-      <path d={`M ${cx + 22} ${cy - 8} L ${cx + 22} ${cy + 6} Q ${cx} ${cy + 17} ${cx - 22} ${cy + 6} L ${cx - 22} ${cy - 8}`} stroke={C.gold} strokeWidth="2" fill={C.gold} opacity="0.35" />
-      <line x1={cx + 22} y1={cy - 8} x2={cx + 22} y2={cy + 6} stroke={C.gold} strokeWidth="2.5" strokeLinecap="round" />
-      <line x1={cx + 22} y1={cy + 6} x2={cx + 27} y2={cy + 15} stroke={C.gold} strokeWidth="2" strokeLinecap="round" />
-      <circle cx={cx + 27} cy={cy + 17} r="2.2" fill={C.gold} />
+      <circle cx={cx} cy={cy} r={scR} fill={GOLD}/>
+
+      {/* ── Dark green inner circle ── */}
+      <circle cx={cx} cy={cy} r={grR} fill={DG}/>
+      <circle cx={cx} cy={cy} r={grR} fill="none" stroke={GOLD} strokeWidth="2.5"/>
+
+      {/* ── Laurel wreath — left branch ── */}
+      {leftLeaves.map((lf, i) => (
+        <ellipse key={`l${i}`}
+          cx={lf.x} cy={lf.y} rx="2.8" ry="7.5"
+          fill={GOLD}
+          transform={`rotate(${lf.rot},${lf.x},${lf.y})`}
+        />
+      ))}
+
+      {/* ── Laurel wreath — right branch ── */}
+      {rightLeaves.map((lf, i) => (
+        <ellipse key={`r${i}`}
+          cx={lf.x} cy={lf.y} rx="2.8" ry="7.5"
+          fill={GOLD}
+          transform={`rotate(${lf.rot},${lf.x},${lf.y})`}
+        />
+      ))}
+
+      {/* ── Mortarboard ── */}
+      {/* Top board (diamond) */}
+      <polygon
+        points={`${cx},${cy-24} ${cx+21},${cy-14} ${cx},${cy-4} ${cx-21},${cy-14}`}
+        fill={GOLD}
+      />
+      {/* Cap crown below board */}
+      <path
+        d={`M ${cx-17} ${cy-14} Q ${cx-17} ${cy-4} ${cx} ${cy-2} Q ${cx+17} ${cy-4} ${cx+17} ${cy-14}`}
+        fill={GOLD}
+      />
+      {/* Button on top */}
+      <circle cx={cx} cy={cy-24} r="2.2" fill={GOLD}/>
+      {/* Tassel cord */}
+      <line x1={cx+21} y1={cy-14} x2={cx+21} y2={cy-5} stroke={GOLD} strokeWidth="2.2" strokeLinecap="round"/>
+      <line x1={cx+21} y1={cy-5}  x2={cx+26} y2={cy+5}  stroke={GOLD} strokeWidth="2"   strokeLinecap="round"/>
+      {/* Tassel end */}
+      <circle cx={cx+26} cy={cy+7} r="2.5" fill={GOLD}/>
     </svg>
   );
 }
