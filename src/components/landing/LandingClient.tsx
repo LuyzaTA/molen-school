@@ -265,7 +265,22 @@ export function LandingClient() {
 
             {/* Story */}
             <div>
-              <h2 style={{ fontFamily: SERIF, fontWeight: 700, color: P.ink, fontSize: "clamp(1.8rem, 4vw, 2.3rem)", marginBottom: 28, lineHeight: 1.15 }}>Luyza Alexandre</h2>
+              <div style={{ display: "flex", alignItems: "center", gap: 20, marginBottom: 28 }}>
+                <Image
+                  src="/luyza.jpg"
+                  alt="Luyza Alexandre"
+                  width={100}
+                  height={100}
+                  style={{
+                    borderRadius: "50%",
+                    objectFit: "cover",
+                    flexShrink: 0,
+                    border: `3px solid ${P.gold}`,
+                    boxShadow: "0 4px 20px rgba(42,45,40,0.15)",
+                  }}
+                />
+                <h2 style={{ fontFamily: SERIF, fontWeight: 700, color: P.ink, fontSize: "clamp(1.8rem, 4vw, 2.3rem)", lineHeight: 1.15, margin: 0 }}>Luyza Alexandre</h2>
+              </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 16, fontSize: 15, lineHeight: 1.75, color: P.inkMuted }}>
 
                 {lang === "pt" ? (
