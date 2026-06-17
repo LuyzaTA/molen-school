@@ -14,3 +14,5 @@ backup_*.tgz
 
 # Local-only Claude Code settings (personal hooks/overrides)
 .claude/settings.local.json
+
+.env*
