@@ -21,6 +21,7 @@ interface EditDraft {
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<AdminUserRow[] | null>(null);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "pending">("all");
@@ -28,11 +29,22 @@ export default function AdminUsersPage() {
   const [draft, setDraft] = useState<EditDraft | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
-  useEffect(() => {
+  function loadUsers() {
+    setFetchError(null);
+    setUsers(null);
     fetch("/api/admin/users", { cache: "no-store" })
-      .then((r) => (r.ok ? r.json() : { users: [] }))
-      .then((d) => setUsers(d.users ?? []));
-  }, []);
+      .then(async (r) => {
+        if (!r.ok) {
+          const d = await r.json().catch(() => ({}));
+          throw new Error(d.error || `HTTP ${r.status}`);
+        }
+        return r.json();
+      })
+      .then((d) => setUsers(d.users ?? []))
+      .catch((e) => setFetchError(e.message));
+  }
+
+  useEffect(() => { loadUsers(); }, []);
 
   const filtered = useMemo(() => {
     if (!users) return [];
@@ -164,7 +176,12 @@ export default function AdminUsersPage() {
         </div>
       </div>
 
-      {users === null ? (
+      {fetchError ? (
+        <Card className="space-y-3 text-center">
+          <p className="text-sm text-danger">{fetchError}</p>
+          <Button size="sm" variant="secondary" onClick={loadUsers}>Retry</Button>
+        </Card>
+      ) : users === null ? (
         <p className="py-8 text-center text-ink-subtle">Loading users…</p>
       ) : filtered.length === 0 ? (
         <Card className="text-center text-ink-muted">No users match.</Card>
