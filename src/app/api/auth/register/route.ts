@@ -62,13 +62,6 @@ export async function POST(req: NextRequest) {
   const level = body.level && VALID_LEVELS.includes(body.level) ? body.level : "A1";
 
   try {
-    if (await accountExists(body.cpf as string)) {
-      return NextResponse.json(
-        { error: "An account with this CPF already exists." },
-        { status: 409 },
-      );
-    }
-
     const isAdmin = body.isAdmin === true;
 
     // Rule: only ONE administrator account may exist. Re-validated on every
