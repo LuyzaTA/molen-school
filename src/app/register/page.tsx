@@ -202,65 +202,65 @@ export default function RegisterPage() {
           </Grid>
         </Section>
 
-        {/* Learning path — CEFR, Business Vocabulary, or Admin */}
-        <Section title="Your learning path" hint="Choose General English to progress through CEFR levels, or Business Vocabulary for a work-focused curriculum.">
-          {/* General English — CEFR levels */}
-          <p className="text-xs font-semibold uppercase tracking-wider text-ink-subtle">General English (CEFR)</p>
-          <div className="grid gap-2 sm:grid-cols-2">
-            {CEFR_LEVELS.map((l) => {
-              const selected = !form.isAdmin && form.settings.track !== "business" && form.level === l.level;
-              return (
-                <button
-                  type="button"
-                  key={l.level}
-                  onClick={() => setForm((f) => ({ ...f, level: l.level, isAdmin: false, settings: { ...f.settings, track: "general" as LearningTrack } }))}
-                  className={cn(
-                    "rounded-xl border p-3 text-left transition-colors",
-                    selected ? "border-accent bg-accent-soft" : "border-border hover:border-accent/60",
-                  )}
-                >
-                  <span className="font-semibold text-ink">{l.level} · {l.name}</span>
-                  <span className="mt-0.5 block text-sm text-ink-muted">{l.canDo}</span>
-                </button>
-              );
-            })}
-          </div>
+        {/* Role selection */}
+        <Section title="Role">
+          {/* Admin option */}
+          <button
+            type="button"
+            onClick={() => setForm((f) => ({ ...f, isAdmin: !f.isAdmin }))}
+            className={cn(
+              "w-full rounded-xl border p-3 text-left transition-colors",
+              form.isAdmin ? "border-accent bg-accent-soft" : "border-border hover:border-accent/60",
+            )}
+          >
+            <span className="font-semibold text-ink">🛡️ Platform Administrator</span>
+            <span className="mt-0.5 block text-sm text-ink-muted">
+              Manage students, approvals, analytics, and class schedules. Only one administrator can exist.
+            </span>
+          </button>
 
-          {/* Business Vocabulary */}
-          <div className="mt-2 grid gap-2">
-            <p className="text-xs font-semibold uppercase tracking-wider text-ink-subtle">Business Vocabulary</p>
-            <button
-              type="button"
-              onClick={() => setForm((f) => ({ ...f, isAdmin: false, settings: { ...f.settings, track: "business" as LearningTrack } }))}
-              className={cn(
-                "rounded-xl border p-3 text-left transition-colors",
-                !form.isAdmin && form.settings.track === "business" ? "border-accent bg-accent-soft" : "border-border hover:border-accent/60",
-              )}
-            >
-              <span className="font-semibold text-ink">💼 Business Vocabulary</span>
-              <span className="mt-0.5 block text-sm text-ink-muted">
-                Classes built around the workplace — emails, meetings, negotiations, and presentations. Ideal if you need English for your career.
-              </span>
-            </button>
-          </div>
+          {/* Learning path — only shown for non-admin */}
+          {!form.isAdmin && (
+            <div className="mt-4 space-y-4">
+              <p className="text-sm font-medium text-ink">Learning path</p>
 
-          {/* Admin */}
-          <div className="mt-2 grid gap-2">
-            <button
-              type="button"
-              onClick={() => setForm((f) => ({ ...f, isAdmin: true }))}
-              className={cn(
-                "rounded-xl border p-3 text-left transition-colors",
-                form.isAdmin ? "border-accent bg-accent-soft" : "border-border hover:border-accent/60",
-              )}
-            >
-              <span className="font-semibold text-ink">🛡️ Platform Administrator</span>
-              <span className="mt-0.5 block text-sm text-ink-muted">
-                Manage students, approvals, analytics, and class schedules. Only one
-                administrator can exist.
-              </span>
-            </button>
-          </div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-ink-subtle">General English (CEFR)</p>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {CEFR_LEVELS.map((l) => {
+                  const selected = form.settings.track !== "business" && form.level === l.level;
+                  return (
+                    <button
+                      type="button"
+                      key={l.level}
+                      onClick={() => setForm((f) => ({ ...f, level: l.level, settings: { ...f.settings, track: "general" as LearningTrack } }))}
+                      className={cn(
+                        "rounded-xl border p-3 text-left transition-colors",
+                        selected ? "border-accent bg-accent-soft" : "border-border hover:border-accent/60",
+                      )}
+                    >
+                      <span className="font-semibold text-ink">{l.level} · {l.name}</span>
+                      <span className="mt-0.5 block text-sm text-ink-muted">{l.canDo}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <p className="text-xs font-semibold uppercase tracking-wider text-ink-subtle">Business Vocabulary</p>
+              <button
+                type="button"
+                onClick={() => setForm((f) => ({ ...f, settings: { ...f.settings, track: "business" as LearningTrack } }))}
+                className={cn(
+                  "w-full rounded-xl border p-3 text-left transition-colors",
+                  form.settings.track === "business" ? "border-accent bg-accent-soft" : "border-border hover:border-accent/60",
+                )}
+              >
+                <span className="font-semibold text-ink">💼 Business Vocabulary</span>
+                <span className="mt-0.5 block text-sm text-ink-muted">
+                  Classes built around the workplace — emails, meetings, negotiations, and presentations.
+                </span>
+              </button>
+            </div>
+          )}
         </Section>
 
         {/* Comfort settings */}
