@@ -16,3 +16,4 @@ backup_*.tgz
 .claude/settings.local.json
 
 .env*
+.vercel
