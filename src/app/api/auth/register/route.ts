@@ -83,9 +83,8 @@ export async function POST(req: NextRequest) {
     const record: AccountRecord = {
       userId,
       isAdmin,
-      // Admins are auto-approved (they approve everyone else); students start
-      // pending until an admin approves them. Everyone starts active.
-      approved: isAdmin,
+      // Admins are always approved; students start pending until an admin approves.
+      approved: isAdmin === true,
       active: true,
       schedule: null,
       name: (body.name as string).trim(),
