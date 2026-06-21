@@ -105,7 +105,20 @@ export function saveHomeworkForDay(homework: DailyHomework): void {
 
 // ---- In-progress class (survives a page refresh) -----------
 
+// Bump this string whenever the class content schema or prompt changes
+// significantly. Any saved class from a previous version is discarded so
+// users get a fresh, curriculum-aligned class on their next visit.
+const CLASS_CONTENT_VERSION = "2";
+const CLASS_VERSION_KEY = "fluentbr.classContentVersion";
+
 export function loadCurrentClass(): GeneratedClass | null {
+  if (typeof window === "undefined") return null;
+  const savedVersion = window.localStorage.getItem(CLASS_VERSION_KEY);
+  if (savedVersion !== CLASS_CONTENT_VERSION) {
+    window.localStorage.removeItem(KEYS.currentClass);
+    window.localStorage.setItem(CLASS_VERSION_KEY, CLASS_CONTENT_VERSION);
+    return null;
+  }
   return read<GeneratedClass | null>(KEYS.currentClass, null);
 }
 
@@ -113,6 +126,9 @@ export function saveCurrentClass(klass: GeneratedClass | null): void {
   if (klass === null) {
     if (typeof window !== "undefined") window.localStorage.removeItem(KEYS.currentClass);
     return;
+  }
+  if (typeof window !== "undefined") {
+    window.localStorage.setItem(CLASS_VERSION_KEY, CLASS_CONTENT_VERSION);
   }
   write(KEYS.currentClass, klass);
 }
