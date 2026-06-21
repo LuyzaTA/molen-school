@@ -277,6 +277,22 @@ Set the "speakingRatio" field to ${info.speakingRatio}.
 Calibrate vocabulary difficulty, sentence length, and abstraction to ${input.level}.
 ${autisticGuidance}${spiral}${ptGuidance}${curriculumGuidance}${businessFocus}
 
+CRITICAL — TEACH THE TOPIC, NOT ABOUT THE TOPIC:
+Every vocabulary item, sentence frame, role-play, and prompt must contain language
+the student actually learns and uses IN this topic — never generic phrases adapted
+to the topic name.
+
+  ✓ Topic "Greetings & Introductions" → vocab: Hello, Good morning, My name is ___,
+    Nice to meet you, How are you?, I'm fine — frames: "Hello! My name is ___.  I'm from ___."
+  ✗ Topic "Greetings & Introductions" → vocab: "I'm really into greetings",
+    "The thing about introductions is that…", "in my experience" — these are wrong.
+
+  ✓ Topic "Food & drink" → vocab: water, bread, eat, drink, hungry, delicious, I like ___
+  ✗ Topic "Food & drink" → vocab: "to keep up with", "a big deal", "it depends" — wrong.
+
+Apply this rule at every level: for "Travel experiences" (B1) teach: delayed, depart,
+luggage, customs, book a hotel, recommend, journey — not meta-discussion phrases about travel.
+
 Content requirements:
 - warmUp.questions: exactly 5 personal, easy-to-answer questions to break the ice.
 - targetLanguage.vocab: 8–12 useful words/phrases for the topic at this level, each
@@ -301,5 +317,6 @@ Return ONLY the structured JSON. Be encouraging, practical, and concrete.`;
 }
 
 export function buildUserPrompt(input: ClassGenInput): string {
-  return `Create today's speaking class. Topic: "${input.topic}". Level: ${input.level}.`;
+  return `Create today's speaking class. Topic: "${input.topic}". Level: ${input.level}.
+Teach the actual language content OF this topic — the words and phrases a student says and hears in "${input.topic}" situations. Do NOT use generic discussion phrases adapted to the topic name.`;
 }

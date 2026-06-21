@@ -1,5 +1,6 @@
 import type { ClassGenInput, GeneratedClass, VocabItem } from "./types";
 import { getCEFRInfo } from "./cefr";
+import { getA1TopicContent } from "./a1TopicMocks";
 
 // ============================================================
 // Deterministic offline fallback. Used when the AI endpoint is
@@ -148,121 +149,164 @@ export function buildMockClass(input: ClassGenInput): GeneratedClass {
     : advanced ? "debate"
     : "discussion";
 
-  return {
-    topic: t,
-    level: input.level,
-    autisticMode: input.autisticMode,
-    track: input.track ?? "general",
-    grammar: buildGrammar(beginner, advanced, business),
-    speakingRatio: info.speakingRatio,
-    estimatedMinutes: beginner ? 45 : advanced ? 60 : 50,
-    generatedBy: "mock",
-    agenda: [
-      "Warm-up: 5 quick questions",
-      "Target language: 10 words + 2 structures",
-      "Guided production: frames & role-play",
-      "Free production: speak freely",
-      "Feedback: self-check",
-    ],
-    warmUp: {
-      questions: [
+  // Use topic-specific content for A1 when available
+  const a1Content = input.level === "A1" && !business ? getA1TopicContent(t) : undefined;
+
+  const warmUpQuestions = a1Content
+    ? a1Content.warmUpQuestions
+    : [
         `When did you last talk about ${t}? Who with?`,
         `How do you feel about ${t} — interested, neutral, or tired of it?`,
         `What is one word that comes to mind when you think of ${t}?`,
         `Have you ever tried or experienced something related to ${t}?`,
         `Who in your life is also interested in ${t}?`,
-      ],
-      questionsPt: [
+      ];
+
+  const warmUpQuestionsPt = a1Content
+    ? a1Content.warmUpQuestionsPt
+    : [
         `Quando foi a última vez que você falou sobre ${t}? Com quem?`,
         `Como você se sente em relação a ${t} — interessado(a), neutro(a) ou cansado(a)?`,
         `Qual é uma palavra que vem à sua mente quando você pensa em ${t}?`,
         `Você já tentou ou experimentou algo relacionado a ${t}?`,
         `Quem na sua vida também tem interesse em ${t}?`,
-      ],
-      grammarNote: buildGrammarNote(beginner, advanced, business),
+      ];
+
+  return {
+    topic: t,
+    level: input.level,
+    autisticMode: input.autisticMode,
+    track: input.track ?? "general",
+    grammar: a1Content ? a1Content.grammarPoints : buildGrammar(beginner, advanced, business),
+    speakingRatio: info.speakingRatio,
+    estimatedMinutes: beginner ? 45 : advanced ? 60 : 50,
+    generatedBy: "mock",
+    agenda: [
+      "Warm-up: 5 questions",
+      "Target language: vocabulary + 2 structures",
+      "Guided production: frames & role-play",
+      a1Content ? "Vocabulary practice" : "Free production: speak freely",
+      "Feedback: self-check",
+    ],
+    warmUp: {
+      questions: warmUpQuestions,
+      questionsPt: warmUpQuestionsPt,
+      grammarNote: a1Content ? a1Content.grammarNote : buildGrammarNote(beginner, advanced, business),
     },
     targetLanguage: {
-      vocab: business ? buildBusinessVocab(t) : buildVocab(t),
-      structures: [
-        {
-          pattern: beginner ? "I like ___ because ___" : "I'd say (that) + opinion",
-          example: beginner
-            ? `I like ${t} because it is fun.`
-            : `I'd say that ${t} is worth it.`,
-        },
-        {
-          pattern: advanced
-            ? "What strikes me about ___ is that ___"
-            : "The thing about ___ is that ___",
-          example: advanced
-            ? `What strikes me about ${t} is that opinions are so divided.`
-            : `The thing about ${t} is that it takes practice.`,
-        },
-      ],
+      vocab: a1Content ? a1Content.vocab : business ? buildBusinessVocab(t) : buildVocab(t),
+      structures: a1Content
+        ? [
+            { pattern: "I am / I have ___", example: `I am a student. I have a ${t.split(" ")[0].toLowerCase()}.` },
+            { pattern: "I like ___ because ___", example: `I like ${t} because it is interesting.` },
+          ]
+        : [
+            {
+              pattern: beginner ? "I like ___ because ___" : "I'd say (that) + opinion",
+              example: beginner
+                ? `I like ${t} because it is fun.`
+                : `I'd say that ${t} is worth it.`,
+            },
+            {
+              pattern: advanced
+                ? "What strikes me about ___ is that ___"
+                : "The thing about ___ is that ___",
+              example: advanced
+                ? `What strikes me about ${t} is that opinions are so divided.`
+                : `The thing about ${t} is that it takes practice.`,
+            },
+          ],
     },
     guidedProduction: {
-      intro: "Complete each frame out loud, then say it again a little faster.",
-      sentenceFrames: [
-        `I'm into ${t} because ___.`,
-        `The thing about ${t} is that ___.`,
-        `Honestly, I'd say ___.`,
-        `It depends on ___.`,
-        `I look forward to ___.`,
-        `In my experience, ___.`,
-      ],
-      rolePlay: {
-        scenario: `A new friend asks you about ${t} at a café. Keep the chat going for two minutes — ask them a question back.`,
-        roles: ["You (the enthusiast)", "A curious new friend"],
-      },
-      picturePrompts: [
-        `Picture a scene related to ${t}. Describe what you see for 30 seconds.`,
-        `Imagine explaining ${t} to a 10-year-old. Try it out loud.`,
-      ],
+      intro: a1Content
+        ? "Complete each sentence out loud. Short and simple is perfect!"
+        : "Complete each frame out loud, then say it again a little faster.",
+      sentenceFrames: a1Content
+        ? a1Content.sentenceFrames
+        : [
+            `I'm into ${t} because ___.`,
+            `The thing about ${t} is that ___.`,
+            `Honestly, I'd say ___.`,
+            `It depends on ___.`,
+            `I look forward to ___.`,
+            `In my experience, ___.`,
+          ],
+      rolePlay: a1Content
+        ? { scenario: a1Content.rolePlayScenario, roles: a1Content.rolePlayRoles }
+        : {
+            scenario: `A new friend asks you about ${t} at a café. Keep the chat going for two minutes — ask them a question back.`,
+            roles: ["You (the enthusiast)", "A curious new friend"],
+          },
+      picturePrompts: a1Content
+        ? [
+            `Look around the room. Point to something and say its name in English.`,
+            `Draw or imagine a simple picture related to ${t}. Describe it in two sentences.`,
+          ]
+        : [
+            `Picture a scene related to ${t}. Describe what you see for 30 seconds.`,
+            `Imagine explaining ${t} to a 10-year-old. Try it out loud.`,
+          ],
     },
     freeProduction: {
-      intro:
-        input.level === "A1"
-          ? "Now use today's words. Say each answer out loud — short, simple sentences are perfect."
-          : advanced
-          ? "Now speak freely and push for precision — aim for nuance, not just fluency."
-          : "Now speak freely. Aim for longer turns — don't stop at one sentence.",
-      prompts:
-        input.level === "A1"
-          ? [
-              `Say your name and one thing you like about ${t}.`,
-              `Point to something related to ${t} and say what it is.`,
-              `Complete: "I like ${t} because ___."`,
-              `Say two words you remember from today about ${t}.`,
-              `Say one sentence: "My favourite ___ is ___."`,
-            ]
-          : [
-              `Tell a short story about a time ${t} surprised you.`,
-              `Argue for or against this: "${t} is overrated."`,
-              `If you had to teach a class on ${t}, what would you start with?`,
-              advanced
-                ? `Where do you think ${t} will be in ten years, and why?`
-                : `What is one thing about ${t} you'd like to be better at?`,
-            ],
+      intro: a1Content
+        ? "Now use today's words. Say each answer out loud — short, simple sentences are perfect."
+        : advanced
+        ? "Now speak freely and push for precision — aim for nuance, not just fluency."
+        : "Now speak freely. Aim for longer turns — don't stop at one sentence.",
+      prompts: a1Content
+        ? a1Content.practicePrompts
+        : input.level !== "A1"
+        ? [
+            `Tell a short story about a time ${t} surprised you.`,
+            `Argue for or against this: "${t} is overrated."`,
+            `If you had to teach a class on ${t}, what would you start with?`,
+            advanced
+              ? `Where do you think ${t} will be in ten years, and why?`
+              : `What is one thing about ${t} you'd like to be better at?`,
+          ]
+        : [
+            `Say your name and one thing you know about ${t}.`,
+            `Name three words from today's lesson.`,
+            `Complete: "I like ___ because ___.`,
+            `Say two things you can see right now.`,
+            `Say one sentence about yourself.`,
+          ],
       format,
     },
     feedback: {
       intro: "Listen back to your speaking and check yourself concretely.",
-      checklist: [
-        "Did I use at least 4 of today's target words?",
-        "Did I speak in full sentences, not just single words?",
-        "Did I use the past tense correctly when telling a story?",
-        "Did I keep going instead of switching to Portuguese when stuck?",
-        advanced
-          ? "Did I add nuance (hedging, contrast) rather than flat statements?"
-          : "Did I link ideas with 'and', 'but', 'because', 'so'?",
-      ],
-      commonErrors: [
-        "Saying 'I have 30 years' instead of 'I am 30 years old'.",
-        "Dropping the -s on he/she/it verbs (he like → he likes).",
-        "Using 'people is' instead of 'people are'.",
-        "Pronouncing the -ed ending as an extra syllable everywhere.",
-        "Saying 'I have doubt' instead of 'I have a question'.",
-      ],
+      checklist: a1Content
+        ? [
+            "Did I say the target words correctly?",
+            "Did I speak in short, complete sentences?",
+            "Did I use 'I am' and 'I have' correctly?",
+            "Did I keep speaking in English without stopping?",
+            "Did I remember at least 5 words from today?",
+          ]
+        : [
+            "Did I use at least 4 of today's target words?",
+            "Did I speak in full sentences, not just single words?",
+            "Did I use the past tense correctly when telling a story?",
+            "Did I keep going instead of switching to Portuguese when stuck?",
+            advanced
+              ? "Did I add nuance (hedging, contrast) rather than flat statements?"
+              : "Did I link ideas with 'and', 'but', 'because', 'so'?",
+          ],
+      commonErrors: a1Content
+        ? [
+            "Saying word order in Portuguese order (adjective after noun): say 'a big dog', not 'a dog big'.",
+            "Forgetting the verb 'to be': say 'I am happy', not 'I happy'.",
+            "Saying 'I have 20 years' — correct: 'I am 20 years old'.",
+            "Forgetting the -s on he/she/it: 'She has', not 'She have'.",
+            "Mixing up 'I like' (habit) and 'I am liking' — use 'I like' for general preferences.",
+          ]
+        : [
+            "Saying 'I have 30 years' instead of 'I am 30 years old'.",
+            "Dropping the -s on he/she/it verbs (he like → he likes).",
+            "Using 'people is' instead of 'people are'.",
+            "Pronouncing the -ed ending as an extra syllable everywhere.",
+            "Saying 'I have doubt' instead of 'I have a question'.",
+          ],
     },
   };
 }
