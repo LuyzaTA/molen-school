@@ -11,7 +11,6 @@ import type { CEFRLevel, LearningTrack } from "@/lib/types";
 import {
   PAYMENT_METHODS,
   DEFAULT_SETTINGS,
-  formatCPF,
   formatRG,
   type PaymentMethod,
   type AccountSettings,
@@ -166,16 +165,6 @@ export default function RegisterPage() {
                 maxLength={12}
                 value={form.rg}
                 onChange={(e) => set("rg", formatRG(e.target.value))}
-              />
-            </Field>
-            <Field label="CPF">
-              <input
-                className="input-field"
-                inputMode="numeric"
-                placeholder="000.000.000-00"
-                maxLength={14}
-                value={form.cpf}
-                onChange={(e) => set("cpf", formatCPF(e.target.value))}
               />
             </Field>
             <Field label="Address" className="sm:col-span-2">

@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { isValidUserId, digitsOnly, DEFAULT_SETTINGS } from "@/lib/account";
 import type { RegistrationInput, PaymentMethod } from "@/lib/account";
@@ -32,7 +33,6 @@ export async function POST(req: NextRequest) {
   const required: (keyof RegistrationInput)[] = [
     "name",
     "rg",
-    "cpf",
     "address",
     "city",
     "state",
@@ -62,9 +62,12 @@ export async function POST(req: NextRequest) {
   const level = body.level && VALID_LEVELS.includes(body.level) ? body.level : "A1";
 
   try {
-    if (await accountExists(body.cpf as string)) {
+    const cpf = (body.cpf as string | undefined)?.trim()
+      || randomUUID().replace(/-/g, "");
+
+    if (body.cpf && (await accountExists(body.cpf as string))) {
       return NextResponse.json(
-        { error: "An account with this CPF already exists." },
+        { error: "An account already exists." },
         { status: 409 },
       );
     }
@@ -97,7 +100,7 @@ export async function POST(req: NextRequest) {
       schedule: null,
       name: (body.name as string).trim(),
       rg: (body.rg as string).trim(),
-      cpf: digitsOnly(body.cpf as string),
+      cpf: digitsOnly(cpf),
       address: (body.address as string).trim(),
       city: (body.city as string).trim(),
       state: (body.state as string).trim(),
