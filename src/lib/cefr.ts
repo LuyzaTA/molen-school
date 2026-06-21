@@ -11,13 +11,13 @@ export const CEFR_LEVELS: CEFRInfo[] = [
   {
     level: "A1",
     name: "Beginner",
-    canDo: "Introduce yourself and ask simple, familiar questions.",
+    canDo: "Handle very basic interactions: introduce themselves, understand familiar words, fill simple forms, ask/answer basic questions.",
     speakingRatio: 0.4,
   },
   {
     level: "A2",
     name: "Elementary",
-    canDo: "Handle short social exchanges about everyday topics.",
+    canDo: "Manage predictable everyday communication: shopping, travel, routine work conversations, simple descriptions of experiences.",
     speakingRatio: 0.49,
   },
   {
