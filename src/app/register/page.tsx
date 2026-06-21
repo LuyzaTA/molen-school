@@ -56,6 +56,8 @@ export default function RegisterPage() {
   const [form, setForm] = useState<FormState>(INITIAL);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showRepeat, setShowRepeat] = useState(false);
 
   // Fetch a unique, read-only student ID for display.
   useEffect(() => {
@@ -295,10 +297,50 @@ export default function RegisterPage() {
         <Section title="Security">
           <Grid>
             <Field label="Password">
-              <input className="input-field" type="password" autoComplete="new-password" value={form.password} onChange={(e) => set("password", e.target.value)} />
+              <div className="relative">
+                <input
+                  className="input-field pr-10"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="new-password"
+                  value={form.password}
+                  onChange={(e) => set("password", e.target.value)}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute inset-y-0 right-3 flex items-center text-ink-muted hover:text-ink"
+                  tabIndex={-1}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff /> : <Eye />}
+                </button>
+              </div>
             </Field>
             <Field label="Repeat password">
-              <input className="input-field" type="password" autoComplete="new-password" value={form.repeatPassword} onChange={(e) => set("repeatPassword", e.target.value)} />
+              <div className="relative">
+                <input
+                  className={cn("input-field pr-10", form.repeatPassword && (form.password === form.repeatPassword ? "border-green-500" : "border-danger"))}
+                  type={showRepeat ? "text" : "password"}
+                  autoComplete="new-password"
+                  value={form.repeatPassword}
+                  onChange={(e) => set("repeatPassword", e.target.value)}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowRepeat((v) => !v)}
+                  className="absolute inset-y-0 right-3 flex items-center text-ink-muted hover:text-ink"
+                  tabIndex={-1}
+                  aria-label={showRepeat ? "Hide password" : "Show password"}
+                >
+                  {showRepeat ? <EyeOff /> : <Eye />}
+                </button>
+              </div>
+              {form.repeatPassword && form.password !== form.repeatPassword && (
+                <span className="mt-1 block text-xs text-danger">Passwords do not match.</span>
+              )}
+              {form.repeatPassword && form.password === form.repeatPassword && (
+                <span className="mt-1 block text-xs text-green-600">Passwords match.</span>
+              )}
             </Field>
           </Grid>
         </Section>
@@ -337,5 +379,25 @@ function Field({ label, className, children }: { label: string; className?: stri
       <span className="mb-1.5 block text-sm font-medium text-ink">{label}</span>
       {children}
     </label>
+  );
+}
+
+function Eye() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
+
+function EyeOff() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+      <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
+      <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
+      <line x1="2" x2="22" y1="2" y2="22" />
+    </svg>
   );
 }
