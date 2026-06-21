@@ -122,7 +122,7 @@ export async function countAdmins(): Promise<number> {
   return (await listAccounts()).filter((a) => a.isAdmin).length;
 }
 
-async function getSubByUserId(userId: string): Promise<string | null> {
+export async function getSubByUserId(userId: string): Promise<string | null> {
   const idx = await kvGet<{ sub: string }>(userIdKey(userId));
   return idx?.sub ?? null;
 }

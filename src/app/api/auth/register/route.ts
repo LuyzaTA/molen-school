@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { randomBytes } from "crypto";
 import { isValidUserId, digitsOnly, DEFAULT_SETTINGS } from "@/lib/account";
 import type { RegistrationInput, PaymentMethod } from "@/lib/account";
 import { hashPassword } from "@/lib/server/auth";
@@ -7,7 +8,6 @@ import {
   saveAccount,
   saveState,
   defaultState,
-  cpfToSub,
   userIdExists,
   generateUniqueUserId,
   reserveUserId,
@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
       createdAt: new Date().toISOString(),
     };
 
-    const sub = cpfToSub(record.cpf);
+    const sub = randomBytes(16).toString("hex");
     await saveAccount(sub, record);
     await saveState(sub, defaultState());
     await reserveUserId(userId, sub);

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyPassword, setSessionCookie } from "@/lib/server/auth";
-import { getAccountByUserId, cpfToSub } from "@/lib/server/store";
+import { getSubByUserId, getAccount } from "@/lib/server/store";
 
 export const runtime = "nodejs";
 
@@ -18,13 +18,13 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const account = await getAccountByUserId(userId);
+    const sub = await getSubByUserId(userId);
+    const account = sub ? await getAccount(sub) : null;
     // Same generic error whether the user is missing or the password is wrong.
     if (!account || !verifyPassword(body.password, account.passwordHash)) {
       return NextResponse.json({ error: "Invalid User ID or password." }, { status: 401 });
     }
-    const sub = cpfToSub(account.cpf);
-    await setSessionCookie(sub, account.name);
+    await setSessionCookie(sub!, account.name);
     return NextResponse.json({ ok: true, name: account.name });
   } catch (err) {
     console.error("login error:", err);
