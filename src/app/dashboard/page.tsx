@@ -141,6 +141,22 @@ export default function DashboardPage() {
         </div>
       </section>
 
+      {/* ---- Grammar reference ---- */}
+      <Link href="/sos-gramatica" className="group block">
+        <Card className="flex items-center gap-4 transition-all group-hover:-translate-y-0.5 group-hover:border-accent/60">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-2xl">
+            📖
+          </span>
+          <div className="min-w-0 flex-1">
+            <h3 className="font-bold text-ink">SOS Gramática</h3>
+            <p className="mt-0.5 text-sm text-ink-muted">
+              Referência rápida: as 10 classes gramaticais em Português → Inglês. Sempre à mão.
+            </p>
+          </div>
+          <span className="shrink-0 text-sm font-semibold text-accent">Ver guia →</span>
+        </Card>
+      </Link>
+
     </div>
   );
 }

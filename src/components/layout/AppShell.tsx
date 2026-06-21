@@ -42,6 +42,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const isBare = BARE_ROUTES.some((p) => p === "/" ? pathname === "/" : pathname === p || pathname.startsWith(p + "/"));
   const isAdminPath = pathname === "/admin" || pathname.startsWith("/admin/");
   const isSettings = pathname === "/settings";
+  const isGrammarRef = pathname === "/sos-gramatica";
   const isAdmin = !!account?.isAdmin;
   const approved = account?.approved !== false;
   const active = account?.active !== false;
@@ -69,7 +70,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   }
 
   // Student access gate (pending approval or deactivated).
-  if (!isAdmin && (!approved || !active)) {
+  // Grammar reference is always accessible so students can study while waiting.
+  if (!isAdmin && (!approved || !active) && !isGrammarRef) {
     return <AccessGate approved={approved} active={active} />;
   }
 
@@ -156,6 +158,15 @@ function AccessGate({ approved, active }: { approved: boolean; active: boolean }
         </p>
         <SignOutButton />
       </Card>
+      {pending && (
+        <Link
+          href="/sos-gramatica"
+          className="mt-5 inline-flex items-center gap-2 rounded-xl border border-accent/40 bg-accent-soft px-5 py-3 text-sm font-semibold text-accent transition-colors hover:bg-accent/10"
+        >
+          📖 Study while you wait — SOS Gramática
+          <span aria-hidden>→</span>
+        </Link>
+      )}
     </div>
   );
 }
