@@ -142,7 +142,11 @@ export function buildMockClass(input: ClassGenInput): GeneratedClass {
   const advanced = isAdvanced(input.level);
   const business = input.track === "business";
 
-  const format = beginner ? "storytelling" : advanced ? "debate" : "discussion";
+  const format =
+    input.level === "A1" ? "vocabulary_practice"
+    : input.level === "A2" ? "discussion"
+    : advanced ? "debate"
+    : "discussion";
 
   return {
     topic: t,
@@ -154,7 +158,7 @@ export function buildMockClass(input: ClassGenInput): GeneratedClass {
     estimatedMinutes: beginner ? 45 : advanced ? 60 : 50,
     generatedBy: "mock",
     agenda: [
-      "Warm-up: 3 quick questions",
+      "Warm-up: 5 quick questions",
       "Target language: 10 words + 2 structures",
       "Guided production: frames & role-play",
       "Free production: speak freely",
@@ -165,11 +169,15 @@ export function buildMockClass(input: ClassGenInput): GeneratedClass {
         `When did you last talk about ${t}? Who with?`,
         `How do you feel about ${t} — interested, neutral, or tired of it?`,
         `What is one word that comes to mind when you think of ${t}?`,
+        `Have you ever tried or experienced something related to ${t}?`,
+        `Who in your life is also interested in ${t}?`,
       ],
       questionsPt: [
         `Quando foi a última vez que você falou sobre ${t}? Com quem?`,
         `Como você se sente em relação a ${t} — interessado(a), neutro(a) ou cansado(a)?`,
         `Qual é uma palavra que vem à sua mente quando você pensa em ${t}?`,
+        `Você já tentou ou experimentou algo relacionado a ${t}?`,
+        `Quem na sua vida também tem interesse em ${t}?`,
       ],
       grammarNote: buildGrammarNote(beginner, advanced, business),
     },
@@ -212,17 +220,29 @@ export function buildMockClass(input: ClassGenInput): GeneratedClass {
       ],
     },
     freeProduction: {
-      intro: advanced
-        ? "Now speak freely and push for precision — aim for nuance, not just fluency."
-        : "Now speak freely. Aim for longer turns — don't stop at one sentence.",
-      prompts: [
-        `Tell a short story about a time ${t} surprised you.`,
-        `Argue for or against this: "${t} is overrated."`,
-        `If you had to teach a class on ${t}, what would you start with?`,
-        advanced
-          ? `Where do you think ${t} will be in ten years, and why?`
-          : `What is one thing about ${t} you'd like to be better at?`,
-      ],
+      intro:
+        input.level === "A1"
+          ? "Now use today's words. Say each answer out loud — short, simple sentences are perfect."
+          : advanced
+          ? "Now speak freely and push for precision — aim for nuance, not just fluency."
+          : "Now speak freely. Aim for longer turns — don't stop at one sentence.",
+      prompts:
+        input.level === "A1"
+          ? [
+              `Say your name and one thing you like about ${t}.`,
+              `Point to something related to ${t} and say what it is.`,
+              `Complete: "I like ${t} because ___."`,
+              `Say two words you remember from today about ${t}.`,
+              `Say one sentence: "My favourite ___ is ___."`,
+            ]
+          : [
+              `Tell a short story about a time ${t} surprised you.`,
+              `Argue for or against this: "${t} is overrated."`,
+              `If you had to teach a class on ${t}, what would you start with?`,
+              advanced
+                ? `Where do you think ${t} will be in ten years, and why?`
+                : `What is one thing about ${t} you'd like to be better at?`,
+            ],
       format,
     },
     feedback: {

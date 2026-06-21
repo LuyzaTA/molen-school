@@ -1,6 +1,86 @@
 import type { ClassGenInput, CEFRLevel } from "./types";
 import { getCEFRInfo } from "./cefr";
 
+function levelCurriculum(level: CEFRLevel): string {
+  switch (level) {
+    case "A1":
+      return `
+A1 CEFR CURRICULUM — STRICT RULES:
+- Every sentence must be SHORT and SIMPLE: Subject + Verb + (Object). Maximum 8 words.
+- Use ONLY high-frequency vocabulary from A1 CEFR domains: greetings, self-introductions,
+  family, numbers, colours, daily routines, food & drink, home & furniture, animals,
+  weather, basic shopping, body parts, classroom objects, days/months/seasons.
+- No idioms, phrasal verbs, or abstract concepts. No conditionals. No passive voice.
+- Grammar focus: am/is/are, have/has, simple present tense, basic pronouns, a/an/the,
+  imperatives, there is/there are, possessives (my/your/his/her).
+- freeProduction MUST be a structured vocabulary or sentence-building activity — NOT open
+  discussion. Examples: "Say your name, age, and one thing you like", "Name 5 things in
+  your room using today's words", "Complete: I am ___, I have ___, I like ___".
+  Prompts must be completable with 1–3 simple words or a single short sentence.
+  Choose format "vocabulary_practice", "sentence_building", or "picture_description".`;
+    case "A2":
+      return `
+A2 CEFR CURRICULUM:
+- Grammar focus: past simple (regular & irregular verbs), future (will / going to),
+  comparatives & superlatives, countable/uncountable nouns, modals (can, should, must),
+  present continuous (current actions and future arrangements).
+- Vocabulary: shopping, travel & transport, work & colleagues, health, food & restaurants,
+  describing people and places, making arrangements, feelings & emotions, simple experiences.
+- Sentences may be compound (and/but/because/so). Avoid complex embedded clauses.
+- freeProduction: simple discussion of personal experiences and everyday situations.
+  Use concrete, relatable scenarios — no abstract debates. Format: "discussion".`;
+    case "B1":
+      return `
+B1 CEFR CURRICULUM:
+- Grammar focus: present perfect (just/already/yet/for/since), past continuous, first
+  conditional, passive voice (simple present/past), reported speech (basic), relative
+  clauses (who/which/that).
+- Vocabulary: opinions & arguments, storytelling, career & plans, social media, health &
+  lifestyle, environment, cultural differences, travel problems, social conversations.
+- Learner can express and justify opinions, describe experiences, and explain plans with
+  some fluency.
+- freeProduction: open discussion or storytelling around real-world, relatable topics.`;
+    case "B2":
+      return `
+B2 CEFR CURRICULUM:
+- Grammar focus: second & third conditionals, mixed conditionals, advanced passive
+  structures, modal perfects (should have, might have, could have), advanced linking
+  words (however, nevertheless, in contrast, despite), cleft sentences.
+- Vocabulary: professional communication, debate language, abstract ideas, argumentative
+  phrases, cohesive devices, nuanced adjectives, presentations, reports.
+- Learner can discuss complex and abstract topics fluently and can argue a position with
+  structured reasoning.
+- freeProduction: structured debate or discussion on substantive topics. Push for
+  well-organised arguments with evidence and counter-arguments, not just opinions.`;
+    case "C1":
+      return `
+C1 CEFR CURRICULUM:
+- Grammar focus: complex sentence structures, inversion for emphasis (Not only did…,
+  Rarely have…), advanced discourse markers (notwithstanding, insofar as), mixed
+  conditionals, concession clauses (even though, while, albeit), cleft/pseudo-cleft.
+- Vocabulary: academic register, negotiation & persuasion language, leadership &
+  management, idiomatic expressions in context, specialized vocabulary, register shifts.
+- Learner uses English professionally or academically. Expects nuance, stylistic variety,
+  and register awareness. Push for spontaneity and precision.
+- freeProduction: sophisticated debate or academic discussion with rhetorical structure.
+  Expect longer, well-organised turns with precise vocabulary and stylistic range.`;
+    case "C2":
+      return `
+C2 CEFR CURRICULUM:
+- Grammar: full grammatical flexibility and stylistic control. No single grammar point to
+  drill — focus on precision, register, elegance, and nuance of expression.
+- Vocabulary: literature, academic texts, humour, cultural references & allusions, subtle
+  connotations, nuanced collocations, specialised professional/academic fields, slang in
+  appropriate context.
+- Learner has near-native command. Classes should challenge with complexity, subtlety, and
+  cultural depth. Push for sophisticated self-expression and stylistic range.
+- freeProduction: high-level debate, literary or cultural analysis, or professional
+  discourse — challenge the learner to reach for precision and rhetorical sophistication.`;
+    default:
+      return "";
+  }
+}
+
 // ============================================================
 // Prompt construction for the AI class generator. Kept separate
 // from the API route so it can be unit-tested and swapped.
@@ -173,22 +253,7 @@ Also fill warmUp.questionsPt with Brazilian-Portuguese translations of each warm
 question, in the same order. Keep the English itself simple and short.`
       : "";
 
-  const a1Curriculum =
-    input.level === "A1"
-      ? `
-A1 CEFR CURRICULUM — STRICT RULES FOR THIS CLASS:
-- Every sentence must be SHORT and SIMPLE: Subject + Verb + (Object). Maximum 8 words.
-- Use ONLY high-frequency vocabulary from A1 CEFR domains: greetings, self-introductions,
-  family, numbers, colours, daily routines, food & drink, home & furniture, animals,
-  weather, basic shopping, body parts, classroom objects, days/months/seasons.
-- No idioms, phrasal verbs, or abstract concepts. No conditionals. No passive voice.
-- Grammar focus: am/is/are, have/has, simple present tense, basic pronouns, a/an/the.
-- freeProduction MUST be a structured vocabulary or sentence-building activity — NOT open
-  discussion. Examples: "Say your name, age, and one thing you like", "Name 5 things in
-  your room using today's words", "Complete: I am ___, I have ___, I like ___".
-  Prompts must be completable with 1–3 simple words or a single short sentence.
-  Choose format "vocabulary_practice", "sentence_building", or "picture_description".`
-      : "";
+  const curriculumGuidance = levelCurriculum(input.level);
 
   const businessFocus =
     input.track === "business"
@@ -210,7 +275,7 @@ Target speaking ratio: about ${speakingPct}% of class time is the learner speaki
 Set the "speakingRatio" field to ${info.speakingRatio}.
 
 Calibrate vocabulary difficulty, sentence length, and abstraction to ${input.level}.
-${autisticGuidance}${spiral}${ptGuidance}${a1Curriculum}${businessFocus}
+${autisticGuidance}${spiral}${ptGuidance}${curriculumGuidance}${businessFocus}
 
 Content requirements:
 - warmUp.questions: exactly 5 personal, easy-to-answer questions to break the ice.
