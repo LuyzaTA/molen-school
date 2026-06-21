@@ -91,6 +91,8 @@ export interface ClassGenInput {
   autisticMode: boolean;
   track?: LearningTrack;
   knownVocab?: string[]; // spiral review: surface earlier vocab
+  priorTopicVocab?: string[]; // words already learned — avoid repeating them
+  topicRepeatCount?: number; // 0 = first time studying this topic, 1 = second, etc.
 }
 
 // ---- Homework ---------------------------------------------

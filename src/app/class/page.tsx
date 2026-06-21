@@ -55,13 +55,21 @@ export default function ClassPage() {
   async function runGeneration(topic: string) {
     setLastTopic(topic);
     setPhase("loading");
+
+    const topicLower = topic.toLowerCase().trim();
+    const topicRepeatCount = progress.history.filter(
+      (h) => h.topic.toLowerCase().trim() === topicLower,
+    ).length;
+    const allLearnedTerms = progress.learnedVocab.map((v) => v.term);
+
     const generated = await generateClass({
       topic,
       level: profile.level,
       autisticMode: profile.autisticMode,
       track: profile.track,
-      // Spiral review: pass previously learned terms so the AI can reuse them.
-      knownVocab: progress.learnedVocab.map((v) => v.term),
+      knownVocab: allLearnedTerms,
+      topicRepeatCount,
+      priorTopicVocab: topicRepeatCount > 0 ? allLearnedTerms : undefined,
     });
     setKlass(generated);
     saveCurrentClass(generated); // survive a refresh

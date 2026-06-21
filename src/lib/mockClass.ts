@@ -149,8 +149,10 @@ export function buildMockClass(input: ClassGenInput): GeneratedClass {
     : advanced ? "debate"
     : "discussion";
 
-  // Use topic-specific content for A1 when available
-  const a1Content = input.level === "A1" && !business ? getA1TopicContent(t) : undefined;
+  // Use topic-specific A1 content only on the FIRST visit — subsequent visits
+  // fall through to the generic builder so content is not repeated verbatim.
+  const isRepeat = (input.topicRepeatCount ?? 0) > 0;
+  const a1Content = input.level === "A1" && !business && !isRepeat ? getA1TopicContent(t) : undefined;
 
   const warmUpQuestions = a1Content
     ? a1Content.warmUpQuestions

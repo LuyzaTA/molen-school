@@ -218,6 +218,12 @@ export function buildClassSchema(level: CEFRLevel) {
   } as const;
 }
 
+function ordinal(n: number): string {
+  const s = ["th", "st", "nd", "rd"];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] ?? s[v] ?? s[0]);
+}
+
 export function buildSystemPrompt(input: ClassGenInput): string {
   const info = getCEFRInfo(input.level);
   const speakingPct = Math.round(info.speakingRatio * 100);
@@ -241,6 +247,26 @@ literalMeaning for any idiomatic items so learners can study them.`;
 naturally into examples and prompts where they fit: ${input.knownVocab
           .slice(0, 24)
           .join(", ")}.`
+      : "";
+
+  const repeatTopic =
+    input.topicRepeatCount && input.topicRepeatCount > 0
+      ? `
+REPEAT TOPIC — MANDATORY NEW CONTENT:
+The student is studying "${input.topic}" for the ${ordinal(input.topicRepeatCount + 1)} time.
+You MUST produce entirely different content from any previous class on this topic.
+${
+  input.priorTopicVocab?.length
+    ? `BANNED VOCABULARY — do NOT teach any of these words, they are already known:
+${input.priorTopicVocab.slice(0, 50).join(", ")}.`
+    : ""
+}
+Rules for this repeat class:
+- Teach the NEXT LAYER of vocabulary: synonyms, collocations, sub-topics, more nuanced expressions.
+- Use a completely different scenario for the role-play.
+- Write all-new sentence frames and prompts — zero overlap with the previous class.
+- Take a fresh angle on the topic (e.g. "Food & drink" visit 1 → basic words (bread, water, eat);
+  visit 2 → restaurant ordering & preferences; visit 3 → cooking verbs, recipes, cultural food).`
       : "";
 
   // A1 learners get Portuguese support; every other level is English-only.
@@ -275,7 +301,7 @@ Target speaking ratio: about ${speakingPct}% of class time is the learner speaki
 Set the "speakingRatio" field to ${info.speakingRatio}.
 
 Calibrate vocabulary difficulty, sentence length, and abstraction to ${input.level}.
-${autisticGuidance}${spiral}${ptGuidance}${curriculumGuidance}${businessFocus}
+${autisticGuidance}${spiral}${repeatTopic}${ptGuidance}${curriculumGuidance}${businessFocus}
 
 CRITICAL — TEACH THE TOPIC, NOT ABOUT THE TOPIC:
 Every vocabulary item, sentence frame, role-play, and prompt must contain language
