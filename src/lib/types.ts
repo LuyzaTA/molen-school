@@ -55,8 +55,9 @@ export interface GuidedProductionStep {
 
 export interface FreeProductionStep {
   intro: string;
-  prompts: string[]; // discussion / debate / storytelling prompts
-  format: "discussion" | "debate" | "storytelling";
+  prompts: string[];
+  // A1: vocabulary/sentence-building activities. A2+: open-ended speaking formats.
+  format: "discussion" | "debate" | "storytelling" | "vocabulary_practice" | "sentence_building" | "picture_description";
 }
 
 export interface FeedbackStep {

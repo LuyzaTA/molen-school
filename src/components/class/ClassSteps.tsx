@@ -27,7 +27,7 @@ export function WarmUpStepView({ klass }: { klass: GeneratedClass }) {
       stepNumber={1}
       totalSteps={TOTAL}
       title="Warm-up"
-      preview="Answer three easy personal questions out loud. No pressure — just get talking."
+      preview="Answer five easy personal questions out loud. No pressure — just get talking."
       speakingHeavy
     >
       {klass.warmUp.questions.map((q, i) => (
@@ -172,19 +172,33 @@ export function GuidedProductionStepView({ klass }: { klass: GeneratedClass }) {
   );
 }
 
-// 4 — Free production ----------------------------------------
+// 4 — Free production (A2+) / Vocabulary practice (A1) ------
+const A1_PRACTICE_FORMATS = ["vocabulary_practice", "sentence_building", "picture_description"];
+
+const PRACTICE_FORMAT_LABELS: Record<string, string> = {
+  vocabulary_practice: "vocabulary practice",
+  sentence_building: "sentence building",
+  picture_description: "picture description",
+};
+
 export function FreeProductionStepView({ klass }: { klass: GeneratedClass }) {
   const f = klass.freeProduction;
+  const isA1Practice = A1_PRACTICE_FORMATS.includes(f.format);
+  const formatLabel = PRACTICE_FORMAT_LABELS[f.format] ?? f.format;
   return (
     <StepShell
       stepNumber={4}
       totalSteps={TOTAL}
-      title="Free production"
-      preview={`Speak freely using a ${f.format} format. Aim for longer turns — keep going past the first sentence.`}
+      title={isA1Practice ? "Vocabulary practice" : "Free production"}
+      preview={
+        isA1Practice
+          ? `Put today's words into action. Say each answer out loud — short, simple sentences are perfect.`
+          : `Speak freely using a ${f.format} format. Aim for longer turns — keep going past the first sentence.`
+      }
       speakingHeavy
     >
       <div className="flex items-center gap-2">
-        <Badge tone="accent">{f.format}</Badge>
+        <Badge tone="accent">{formatLabel}</Badge>
       </div>
       <p className="text-[15px] text-ink-muted">{f.intro}</p>
       <div className="space-y-2.5">

@@ -103,7 +103,12 @@ export function buildClassSchema(level: CEFRLevel) {
       properties: {
         intro: { type: "string" },
         prompts: { type: "array", items: { type: "string" } },
-        format: { type: "string", enum: ["discussion", "debate", "storytelling"] },
+        format: {
+          type: "string",
+          enum: a1
+            ? ["vocabulary_practice", "sentence_building", "picture_description"]
+            : ["discussion", "debate", "storytelling"],
+        },
       },
       required: ["intro", "prompts", "format"],
     },
@@ -168,6 +173,23 @@ Also fill warmUp.questionsPt with Brazilian-Portuguese translations of each warm
 question, in the same order. Keep the English itself simple and short.`
       : "";
 
+  const a1Curriculum =
+    input.level === "A1"
+      ? `
+A1 CEFR CURRICULUM — STRICT RULES FOR THIS CLASS:
+- Every sentence must be SHORT and SIMPLE: Subject + Verb + (Object). Maximum 8 words.
+- Use ONLY high-frequency vocabulary from A1 CEFR domains: greetings, self-introductions,
+  family, numbers, colours, daily routines, food & drink, home & furniture, animals,
+  weather, basic shopping, body parts, classroom objects, days/months/seasons.
+- No idioms, phrasal verbs, or abstract concepts. No conditionals. No passive voice.
+- Grammar focus: am/is/are, have/has, simple present tense, basic pronouns, a/an/the.
+- freeProduction MUST be a structured vocabulary or sentence-building activity — NOT open
+  discussion. Examples: "Say your name, age, and one thing you like", "Name 5 things in
+  your room using today's words", "Complete: I am ___, I have ___, I like ___".
+  Prompts must be completable with 1–3 simple words or a single short sentence.
+  Choose format "vocabulary_practice", "sentence_building", or "picture_description".`
+      : "";
+
   const businessFocus =
     input.track === "business"
       ? `
@@ -188,17 +210,19 @@ Target speaking ratio: about ${speakingPct}% of class time is the learner speaki
 Set the "speakingRatio" field to ${info.speakingRatio}.
 
 Calibrate vocabulary difficulty, sentence length, and abstraction to ${input.level}.
-${autisticGuidance}${spiral}${ptGuidance}${businessFocus}
+${autisticGuidance}${spiral}${ptGuidance}${a1Curriculum}${businessFocus}
 
 Content requirements:
-- warmUp.questions: exactly 3 personal, easy-to-answer questions to break the ice.
+- warmUp.questions: exactly 5 personal, easy-to-answer questions to break the ice.
 - targetLanguage.vocab: 8–12 useful words/phrases for the topic at this level, each
   with a plain meaning and a natural example sentence.
 - targetLanguage.structures: exactly 2 sentence structures/patterns with an example.
 - guidedProduction: a short intro, 4–6 sentence frames the learner completes, one
   role-play (scenario + roles), and 2–3 picture/visualisation prompts.
-- freeProduction: a short intro, 3–5 open prompts, and pick a format
-  (discussion, debate, or storytelling) appropriate to the level.
+- freeProduction: a short intro and 3–5 prompts. For A1: structured vocabulary/sentence-
+  building activities (format: vocabulary_practice, sentence_building, or
+  picture_description). For A2+: open-ended speaking (format: discussion, debate,
+  or storytelling) appropriate to the level.
 - feedback: a short intro, a 4–6 item self-correction checklist, and 3–5 concrete
   common errors Brazilian learners make on this topic to listen for.
 - agenda: 5 short human-readable labels, one per stage, for an at-a-glance preview.

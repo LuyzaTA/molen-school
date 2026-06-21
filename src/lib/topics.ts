@@ -1,3 +1,21 @@
+// A1 CEFR curriculum topics — concrete, high-frequency, beginner-safe.
+export const A1_TOPICS: string[] = [
+  "Greetings & introductions",
+  "My family",
+  "Numbers & colours",
+  "Daily routines",
+  "Food & drink",
+  "My home",
+  "Animals",
+  "The weather",
+  "Shopping & prices",
+  "Days, months & seasons",
+  "School & classroom",
+  "My body",
+  "Clothes",
+  "Hobbies I like",
+];
+
 // Preset topic chips for the Daily Class picker. Free-text custom
 // topics and special-interest deep dives are encouraged alongside these.
 export const PRESET_TOPICS: string[] = [

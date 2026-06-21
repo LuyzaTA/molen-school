@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { PRESET_TOPICS, BUSINESS_TOPICS } from "@/lib/topics";
+import { PRESET_TOPICS, BUSINESS_TOPICS, A1_TOPICS } from "@/lib/topics";
 import { Chip } from "@/components/ui/Chip";
 import { Button } from "@/components/ui/Button";
 import { Card, SectionHeading } from "@/components/ui/Card";
@@ -19,7 +19,8 @@ export function TopicPicker({
 
   const info = getCEFRInfo(profile.level);
   const business = profile.track === "business";
-  const topics = business ? BUSINESS_TOPICS : PRESET_TOPICS;
+  const isA1 = profile.level === "A1" && !business;
+  const topics = business ? BUSINESS_TOPICS : isA1 ? A1_TOPICS : PRESET_TOPICS;
   const chosen = custom.trim() || selected;
 
   return (
@@ -32,16 +33,19 @@ export function TopicPicker({
         <h1 className="mt-1 text-2xl font-bold tracking-tight text-ink sm:text-3xl">
           {business
             ? "Which work situation do you want to practise?"
+            : isA1
+            ? "Choose a topic for today's class"
             : "What do you want to talk about today?"}
         </h1>
         <p className="mt-2 text-[15px] text-ink-muted">
-          Pick anything. A special interest you could talk about for hours works
-          brilliantly — the deeper you go, the more you&apos;ll speak.
+          {isA1
+            ? "Pick a beginner topic from the A1 curriculum. You can also type your own — keep it simple and familiar."
+            : "Pick anything. A special interest you could talk about for hours works brilliantly — the deeper you go, the more you’ll speak."}
         </p>
       </header>
 
       <Card>
-        <SectionHeading title={business ? "Business topics" : "Popular topics"} />
+        <SectionHeading title={business ? "Business topics" : isA1 ? "A1 beginner topics" : "Popular topics"} />
         <div className="flex flex-wrap gap-2">
           {topics.map((t) => (
             <Chip
