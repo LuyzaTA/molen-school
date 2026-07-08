@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { NAV_ITEMS } from "./navItems";
 import { QuickSettings } from "./QuickSettings";
 import { SiteFooter } from "./SiteFooter";
@@ -38,6 +38,12 @@ export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { ready, authenticated, account } = useSettings();
+  const [moreOpen, setMoreOpen] = useState(false);
+
+  // Close the mobile "More" sheet whenever navigation happens.
+  useEffect(() => {
+    setMoreOpen(false);
+  }, [pathname]);
 
   const isBare = BARE_ROUTES.some((p) => p === "/" ? pathname === "/" : pathname === p || pathname.startsWith(p + "/"));
   const isAdminPath = pathname === "/admin" || pathname.startsWith("/admin/");
@@ -105,7 +111,8 @@ export function AppShell({ children }: { children: ReactNode }) {
           {!isAdmin && <SettingsNavLink active={pathname === "/settings"} />}
         </nav>
 
-        <main className="min-w-0 flex-1 py-6">{children}</main>
+        {/* Bottom padding on mobile so the fixed bottom nav never covers content */}
+        <main className="min-w-0 flex-1 py-6 pb-24 md:pb-6">{children}</main>
       </div>
 
       {!isAdmin && (
@@ -114,10 +121,105 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       )}
 
-      {/* Mobile bottom nav */}
-      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/95 backdrop-blur md:hidden">
+      <MobileNav
+        items={navItems}
+        isAdmin={isAdmin}
+        pathname={pathname}
+        moreOpen={moreOpen}
+        onToggleMore={() => setMoreOpen((o) => !o)}
+      />
+    </div>
+  );
+}
+
+const SETTINGS_ITEM: NavItem = {
+  href: "/settings",
+  label: "Settings",
+  icon: (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      className="h-5 w-5"
+      aria-hidden
+    >
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" />
+    </svg>
+  ),
+};
+
+/**
+ * Mobile bottom navigation: the first four sections are always visible;
+ * everything else (including Settings) lives behind a "More" sheet so
+ * every page stays reachable on a phone.
+ */
+function MobileNav({
+  items,
+  isAdmin,
+  pathname,
+  moreOpen,
+  onToggleMore,
+}: {
+  items: NavItem[];
+  isAdmin: boolean;
+  pathname: string;
+  moreOpen: boolean;
+  onToggleMore: () => void;
+}) {
+  const primary = items.slice(0, 4);
+  const overflow: NavItem[] = [
+    ...items.slice(4),
+    ...(!isAdmin ? [SETTINGS_ITEM] : []),
+  ];
+  const overflowActive = overflow.some((item) => isActive(pathname, item.href));
+
+  return (
+    <>
+      {/* Backdrop + sheet for the overflow items */}
+      {moreOpen && (
+        <>
+          <button
+            type="button"
+            aria-label="Close menu"
+            onClick={onToggleMore}
+            className="fixed inset-0 z-40 bg-black/40 md:hidden"
+          />
+          <div
+            role="dialog"
+            aria-label="More pages"
+            className="fixed inset-x-0 bottom-[3.75rem] z-50 animate-fade-in rounded-t-2xl border-t border-border bg-surface p-3 pb-2 shadow-2xl md:hidden"
+          >
+            <div className="mx-auto mb-2 h-1 w-10 rounded-full bg-border" aria-hidden />
+            <ul className="grid grid-cols-3 gap-1">
+              {overflow.map((item) => {
+                const active = isActive(pathname, item.href);
+                return (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      className={cn(
+                        "flex flex-col items-center gap-1 rounded-xl px-2 py-3 text-center text-xs font-medium transition-colors",
+                        active ? "bg-accent-soft text-accent" : "text-ink-muted hover:bg-accent-soft/60",
+                      )}
+                      aria-current={active ? "page" : undefined}
+                    >
+                      {item.icon}
+                      {item.label}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        </>
+      )}
+
+      {/* Bottom bar */}
+      <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-surface/95 backdrop-blur md:hidden">
         <ul className="mx-auto flex max-w-wide items-stretch justify-around">
-          {navItems.slice(0, 5).map((item) => {
+          {primary.map((item) => {
             const active = isActive(pathname, item.href);
             return (
               <li key={item.href} className="flex-1">
@@ -135,9 +237,27 @@ export function AppShell({ children }: { children: ReactNode }) {
               </li>
             );
           })}
+          <li className="flex-1">
+            <button
+              type="button"
+              onClick={onToggleMore}
+              aria-expanded={moreOpen}
+              className={cn(
+                "flex w-full flex-col items-center gap-0.5 py-2.5 text-[11px] font-medium transition-colors",
+                moreOpen || overflowActive ? "text-accent" : "text-ink-subtle",
+              )}
+            >
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden>
+                <circle cx="5" cy="12" r="1.8" />
+                <circle cx="12" cy="12" r="1.8" />
+                <circle cx="19" cy="12" r="1.8" />
+              </svg>
+              More
+            </button>
+          </li>
         </ul>
       </nav>
-    </div>
+    </>
   );
 }
 

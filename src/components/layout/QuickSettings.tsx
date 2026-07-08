@@ -56,7 +56,7 @@ export function QuickSettings() {
         <div
           role="dialog"
           aria-label="Quick settings"
-          className="absolute right-0 z-50 mt-2 w-80 animate-fade-in rounded-card border border-border bg-surface-raised p-4 shadow-xl"
+          className="absolute right-0 z-50 mt-2 w-80 max-w-[calc(100vw-2rem)] animate-fade-in rounded-card border border-border bg-surface-raised p-4 shadow-xl"
         >
           <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-accent">
             Quick settings

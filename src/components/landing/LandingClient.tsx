@@ -160,9 +160,9 @@ export function LandingClient() {
         backgroundColor: P.parchment, borderBottom: `1px solid ${P.tan}`,
         backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)",
       }}>
-        <div style={{ maxWidth: "72rem", margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 72, padding: "0 2rem" }}>
+        <div style={{ maxWidth: "72rem", margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 72, padding: "0 clamp(0.9rem, 4vw, 2rem)" }}>
           <div style={{ lineHeight: 1 }}>
-            <div style={{ fontFamily: SERIF, fontWeight: 700, fontSize: "2.2rem", color: P.maroon, letterSpacing: "-0.01em" }}>Molen</div>
+            <div style={{ fontFamily: SERIF, fontWeight: 700, fontSize: "clamp(1.7rem, 5.5vw, 2.2rem)", color: P.maroon, letterSpacing: "-0.01em" }}>Molen</div>
             <div style={{ fontSize: "0.68rem", letterSpacing: "0.28em", textTransform: "uppercase", color: P.dark, fontWeight: 700, marginTop: 5 }}>English Classes</div>
           </div>
 
@@ -186,10 +186,10 @@ export function LandingClient() {
               ))}
             </div>
 
-            <Link href="/login" className="hover:bg-[#EAE0C8]" style={{ padding: "7px 20px", borderRadius: 999, fontSize: 14, fontWeight: 600, color: P.ink, textDecoration: "none" }}>
+            <Link href="/login" className="hidden hover:bg-[#EAE0C8] sm:inline-block" style={{ padding: "7px 20px", borderRadius: 999, fontSize: 14, fontWeight: 600, color: P.ink, textDecoration: "none" }}>
               {s(C.signIn)}
             </Link>
-            <Link href="/contact" className="hover:opacity-90" style={{ padding: "8px 22px", borderRadius: 999, fontSize: 14, fontWeight: 700, backgroundColor: P.green, color: P.cream, textDecoration: "none" }}>
+            <Link href="/contact" className="hover:opacity-90" style={{ padding: "8px clamp(14px, 3vw, 22px)", borderRadius: 999, fontSize: 14, fontWeight: 700, backgroundColor: P.green, color: P.cream, textDecoration: "none", whiteSpace: "nowrap" }}>
               {s(C.getStarted)}
             </Link>
           </div>
@@ -199,7 +199,7 @@ export function LandingClient() {
       {/* ── Hero ── */}
       <section style={{
         background: `radial-gradient(ellipse 60% 80% at 80% 20%, rgba(194,154,87,0.18) 0%, transparent 70%), linear-gradient(145deg, ${P.dark} 0%, ${P.darkMid} 60%, #1A2E12 100%)`,
-        color: P.parchment, padding: "80px 2rem 96px", overflow: "hidden", position: "relative",
+        color: P.parchment, padding: "80px clamp(1rem, 4vw, 2rem) 96px", overflow: "hidden", position: "relative",
       }}>
         <div aria-hidden style={{ position: "absolute", top: -80, right: -80, width: 480, height: 480, borderRadius: "50%", background: "radial-gradient(circle, rgba(194,154,87,0.14) 0%, transparent 70%)", pointerEvents: "none" }} />
         <div aria-hidden style={{ position: "absolute", bottom: -100, left: -60, width: 360, height: 360, borderRadius: "50%", background: "radial-gradient(circle, rgba(93,122,70,0.18) 0%, transparent 70%)", pointerEvents: "none" }} />
@@ -227,8 +227,8 @@ export function LandingClient() {
             </div>
           </div>
 
-          <div style={{ position: "relative", flexShrink: 0, paddingTop: 32, paddingBottom: 32 }}>
-            <Image src="/circular_logo.png" alt="Molen English Classes" width={300} height={300} style={{ display: "block", filter: "drop-shadow(0 16px 56px rgba(0,0,0,0.5))" }} priority />
+          <div style={{ position: "relative", maxWidth: "100%", paddingTop: 32, paddingBottom: 32 }}>
+            <Image src="/circular_logo.png" alt="Molen English Classes" width={300} height={300} style={{ display: "block", maxWidth: "100%", height: "auto", filter: "drop-shadow(0 16px 56px rgba(0,0,0,0.5))" }} priority />
             <div style={{ position: "absolute", top: 0, right: -16, maxWidth: 168, transform: "rotate(3deg)", backgroundColor: P.cream, color: P.ink, borderRadius: 16, padding: "12px 16px", fontSize: 13, fontWeight: 500, lineHeight: 1.45, boxShadow: "0 8px 32px rgba(0,0,0,0.22)" }}>
               {s(C.heroQuote)}
             </div>
