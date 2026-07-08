@@ -15,6 +15,18 @@ export const metadata: Metadata = {
   title: "Molen English Classes — Speak English with confidence",
   description:
     "A speaking-first English course for Brazilian learners. You understand English — now let's get you talking.",
+  icons: {
+    icon: [
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: "/apple-touch-icon.png",
+  },
+  appleWebApp: {
+    capable: true,
+    title: "Molen",
+    statusBarStyle: "black-translucent",
+  },
 };
 
 export const viewport: Viewport = {

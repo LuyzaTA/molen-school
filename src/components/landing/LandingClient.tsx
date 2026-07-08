@@ -227,7 +227,7 @@ export function LandingClient() {
             </div>
           </div>
 
-          <div style={{ position: "relative", maxWidth: "100%", paddingTop: 32, paddingBottom: 32 }}>
+          <div style={{ position: "relative", maxWidth: "100%", paddingTop: 32, paddingBottom: 32, margin: "0 auto" }}>
             <Image src="/circular_logo.png" alt="Molen English Classes" width={300} height={300} style={{ display: "block", maxWidth: "100%", height: "auto", filter: "drop-shadow(0 16px 56px rgba(0,0,0,0.5))" }} priority />
             <div style={{ position: "absolute", top: 0, right: -16, maxWidth: 168, transform: "rotate(3deg)", backgroundColor: P.cream, color: P.ink, borderRadius: 16, padding: "12px 16px", fontSize: 13, fontWeight: 500, lineHeight: 1.45, boxShadow: "0 8px 32px rgba(0,0,0,0.22)" }}>
               {s(C.heroQuote)}
