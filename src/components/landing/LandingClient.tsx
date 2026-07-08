@@ -70,8 +70,8 @@ const C = {
 
   aboutEyebrow: b("Meet your teacher", "Conheça sua professora"),
   aboutQuote:   b(
-    "Fluency isn't reserved for the gifted or the lucky — it's built, class by class, mistakes by mistakes, conversation by conversation. I'm here to walk every step of that journey with you.",
-    "A fluência não é reservada para os talentosos ou para os sortudos — ela é construída aula por aula, erro por erro, conversa por conversa. Estou aqui para caminhar cada passo dessa jornada com você.",
+    "Fluency is built, class by class, mistakes by mistakes, conversation by conversation. I'm here to walk every step of that journey with you.",
+    "A fluência é construída aula por aula, erro por erro, conversa por conversa. Estou aqui para caminhar cada passo dessa jornada com você.",
   ),
   aboutIt:      b("IT background", "Background em TI"),
   aboutItDesc:  b(
