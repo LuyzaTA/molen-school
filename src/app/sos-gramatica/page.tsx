@@ -140,6 +140,22 @@ const GRAMMAR_CLASSES: GrammarClass[] = [
     sentencePt: "Tenho dois irmãos.",
     sentenceEn: "I have two brothers.",
   },
+  {
+    number: 11,
+    ptName: "Verbo Auxiliar",
+    enName: "Auxiliary Verb",
+    definition: "Verbo que acompanha o verbo principal para formar tempos verbais, perguntas, negações ou expressar modalidade (possibilidade, obrigação, permissão). Em inglês, os auxiliares são essenciais e muito diferentes do português.",
+    examples: [
+      { pt: "ser/estar (presente)", en: "am / is / are" },
+      { pt: "ter (passado/perfeito)", en: "have / has / had" },
+      { pt: "fazer (perguntas/negação)", en: "do / does / did" },
+      { pt: "poder / conseguir", en: "can / could" },
+      { pt: "dever / precisar", en: "must / should / need" },
+      { pt: "vou / vai (futuro)", en: "will / shall" },
+    ],
+    sentencePt: "Você pode me ajudar? Eu não entendo.",
+    sentenceEn: "Can you help me? I don't understand.",
+  },
 ];
 
 const SUMMARY = [
@@ -153,6 +169,7 @@ const SUMMARY = [
   ["Conjunção", "Conjunction"],
   ["Interjeição", "Interjection"],
   ["Numeral", "Numeral"],
+  ["Verbo Auxiliar", "Auxiliary Verb"],
 ];
 
 export default function SosGramaticaPage() {
