@@ -211,4 +211,5 @@ export interface ResourceItem {
   free: boolean;
   description: string;
   url: string;
+  featured?: boolean; // pinned at the top of the resources page
 }

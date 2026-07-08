@@ -160,14 +160,48 @@ export const BOOKING_SLOTS: BookingSlot[] = [
 ];
 
 export const RESOURCES: ResourceItem[] = [
-  // Podcasts (all free)
+  // ---- Favourites (pinned at top) ----
+  {
+    name: "HelloTalk",
+    category: "community",
+    free: true,
+    featured: true,
+    description: "Chat with native speakers and correct each other in real time.",
+    url: "https://www.hellotalk.com/",
+  },
+  {
+    name: "Meetup",
+    category: "community",
+    free: true,
+    featured: true,
+    description: "Find local or online English-speaking groups near you.",
+    url: "https://www.meetup.com/",
+  },
+  {
+    name: "Tandem",
+    category: "community",
+    free: true,
+    featured: true,
+    description: "Language exchange via text, voice, and video with native speakers.",
+    url: "https://www.tandem.net/",
+  },
   {
     name: "6 Minute English (BBC)",
     category: "podcast",
     free: true,
-    description: "Short, topical episodes with vocabulary breakdowns.",
+    featured: true,
+    description: "Short, topical episodes with vocabulary breakdowns — perfect for busy days.",
     url: "https://www.bbc.co.uk/learningenglish/english/features/6-minute-english",
   },
+  {
+    name: "ESL Pod",
+    category: "podcast",
+    free: true,
+    featured: true,
+    description: "Slow, clear dialogues with detailed explanations for every level.",
+    url: "https://www.eslpod.com/",
+  },
+  // ---- Podcasts ----
   {
     name: "Luke's English Podcast",
     category: "podcast",
@@ -197,34 +231,13 @@ export const RESOURCES: ResourceItem[] = [
     url: "https://www.culips.com/",
   },
   {
-    name: "ESL Pod",
-    category: "podcast",
-    free: true,
-    description: "Slow, clear dialogues with detailed explanations.",
-    url: "https://www.eslpod.com/",
-  },
-  {
     name: "Plain English",
     category: "podcast",
     free: true,
     description: "Current events told at a comfortable pace.",
     url: "https://plainenglish.com/",
   },
-  // Platforms
-  {
-    name: "Spotify",
-    category: "platform",
-    free: true,
-    description: "Host for most learner podcasts above.",
-    url: "https://www.spotify.com/",
-  },
-  {
-    name: "Apple Podcasts",
-    category: "platform",
-    free: true,
-    description: "Subscribe and download episodes offline.",
-    url: "https://podcasts.apple.com/",
-  },
+  // ---- Platforms ----
   {
     name: "BBC Learning English (YouTube)",
     category: "platform",
@@ -236,7 +249,7 @@ export const RESOURCES: ResourceItem[] = [
     name: "Rachel's English (YouTube)",
     category: "platform",
     free: true,
-    description: "Deep dives on American pronunciation and the mouth.",
+    description: "Deep dives on American pronunciation and mouth position.",
     url: "https://www.youtube.com/@rachelsenglish",
   },
   {
@@ -250,30 +263,16 @@ export const RESOURCES: ResourceItem[] = [
     name: "Speechling",
     category: "platform",
     free: false,
-    description: "Record sentences and get coach feedback (free tier).",
+    description: "Record sentences and get coach feedback.",
     url: "https://speechling.com/",
   },
-  // Communities for native practice
+  // ---- Communities ----
   {
     name: "italki",
     category: "community",
     free: false,
     description: "Book 1:1 lessons or community tutors worldwide.",
     url: "https://www.italki.com/",
-  },
-  {
-    name: "Tandem",
-    category: "community",
-    free: true,
-    description: "Language exchange via text, voice, and video.",
-    url: "https://www.tandem.net/",
-  },
-  {
-    name: "HelloTalk",
-    category: "community",
-    free: true,
-    description: "Chat with native speakers and correct each other.",
-    url: "https://www.hellotalk.com/",
   },
   {
     name: "Speaky",
@@ -286,22 +285,8 @@ export const RESOURCES: ResourceItem[] = [
     name: "Conversation Exchange",
     category: "community",
     free: true,
-    description: "Classic pen-pal style exchange for speaking practice.",
+    description: "Pen-pal style exchange for text and speaking practice.",
     url: "https://www.conversationexchange.com/",
-  },
-  {
-    name: "Meetup",
-    category: "community",
-    free: true,
-    description: "Find local or online English-speaking groups.",
-    url: "https://www.meetup.com/",
-  },
-  {
-    name: "r/EnglishLearning",
-    category: "community",
-    free: true,
-    description: "Reddit community for questions and resources.",
-    url: "https://www.reddit.com/r/EnglishLearning/",
   },
 ];
 
