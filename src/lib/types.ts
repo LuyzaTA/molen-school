@@ -48,14 +48,18 @@ export interface TargetLanguageStep {
 
 export interface GuidedProductionStep {
   intro: string;
+  introPt?: string; // A1: PT translation of intro
   sentenceFrames: string[]; // fill-in frames
+  sentenceFramesPt?: string[]; // A1: PT translations, parallel to sentenceFrames
   rolePlay?: { scenario: string; roles: string[] };
   picturePrompts?: string[];
 }
 
 export interface FreeProductionStep {
   intro: string;
+  introPt?: string; // A1: PT translation of intro
   prompts: string[];
+  promptsPt?: string[]; // A1: PT translations, parallel to prompts
   // A1: vocabulary/sentence-building activities. A2+: open-ended speaking formats.
   format: "discussion" | "debate" | "storytelling" | "vocabulary_practice" | "sentence_building" | "picture_description";
 }

@@ -353,6 +353,7 @@ export function TargetLanguageStepView({ klass }: { klass: GeneratedClass }) {
 
 // 4 — Guided production --------------------------------------
 export function GuidedProductionStepView({ klass }: { klass: GeneratedClass }) {
+  const showPt = usePt();
   const g = klass.guidedProduction;
   return (
     <StepShell
@@ -362,11 +363,23 @@ export function GuidedProductionStepView({ klass }: { klass: GeneratedClass }) {
       preview="Complete sentence frames aloud, then try a short role-play. Structure first, freedom next."
       speakingHeavy
     >
-      <p className="text-[15px] text-ink-muted">{g.intro}</p>
+      <p className="text-[15px] text-ink-muted">
+        {showPt && g.introPt ? (
+          <>
+            <span className="block">{g.introPt}</span>
+            <span className="mt-0.5 block text-sm text-ink-subtle">{g.intro}</span>
+          </>
+        ) : g.intro}
+      </p>
 
       <div className="space-y-2.5">
         {g.sentenceFrames.map((f, i) => (
-          <SpeakPrompt key={i} text={f} index={i} />
+          <SpeakPrompt
+            key={i}
+            text={f}
+            index={i}
+            translation={showPt ? g.sentenceFramesPt?.[i] : undefined}
+          />
         ))}
       </div>
 
@@ -406,6 +419,7 @@ const PRACTICE_FORMAT_LABELS: Record<string, string> = {
 };
 
 export function FreeProductionStepView({ klass }: { klass: GeneratedClass }) {
+  const showPt = usePt();
   const f = klass.freeProduction;
   const isA1Practice = A1_PRACTICE_FORMATS.includes(f.format);
   const formatLabel = PRACTICE_FORMAT_LABELS[f.format] ?? f.format;
@@ -424,37 +438,99 @@ export function FreeProductionStepView({ klass }: { klass: GeneratedClass }) {
       <div className="flex items-center gap-2">
         <Badge tone="accent">{formatLabel}</Badge>
       </div>
-      <p className="text-[15px] text-ink-muted">{f.intro}</p>
+      <p className="text-[15px] text-ink-muted">
+        {showPt && f.introPt ? (
+          <>
+            <span className="block">{f.introPt}</span>
+            <span className="mt-0.5 block text-sm text-ink-subtle">{f.intro}</span>
+          </>
+        ) : f.intro}
+      </p>
       <div className="space-y-2.5">
         {f.prompts.map((p, i) => (
-          <SpeakPrompt key={i} text={p} index={i} />
+          <SpeakPrompt
+            key={i}
+            text={p}
+            index={i}
+            translation={showPt ? f.promptsPt?.[i] : undefined}
+          />
         ))}
       </div>
     </StepShell>
   );
 }
 
-// 6 — Delayed feedback ---------------------------------------
+// 6 — Delayed feedback (self-evaluation) ---------------------
 export function FeedbackStepView({ klass }: { klass: GeneratedClass }) {
   const f = klass.feedback;
+  const [checked, setChecked] = useState<Record<number, boolean>>({});
+  const checkedCount = Object.values(checked).filter(Boolean).length;
+
+  function toggle(i: number) {
+    setChecked((prev) => ({ ...prev, [i]: !prev[i] }));
+  }
+
   return (
     <StepShell
       stepNumber={6}
       totalSteps={TOTAL}
       title="Delayed feedback"
-      preview="Now check your own speaking against a concrete list. This is where the learning sticks."
+      preview="Class finished. Now look back at your own speaking — this is self-evaluation, not a new exercise."
     >
+      {/* Debrief banner — visually distinct from class exercises */}
+      <div className="flex items-start gap-3 rounded-xl border border-amber-300/60 bg-amber-50 px-4 py-3.5 dark:border-amber-700/40 dark:bg-amber-950/25">
+        <span className="mt-0.5 shrink-0 text-xl">🔁</span>
+        <div>
+          <p className="font-semibold text-amber-900 dark:text-amber-300">Self-evaluation — not a new task</p>
+          <p className="mt-0.5 text-sm text-amber-800/80 dark:text-amber-400/70">
+            Tick what you managed during the class. These are checkpoints to help you notice your progress — there are no wrong answers here.
+          </p>
+        </div>
+      </div>
+
       <p className="text-[15px] text-ink-muted">{f.intro}</p>
 
       <div>
-        <h3 className="mb-2 text-sm font-semibold uppercase tracking-wider text-ink-subtle">
-          Self-correction checklist
-        </h3>
+        <div className="mb-2.5 flex items-center justify-between gap-2">
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-ink-subtle">
+            Self-correction checklist
+          </h3>
+          {checkedCount > 0 && (
+            <span className="text-xs font-bold text-accent">
+              {checkedCount} / {f.checklist.length}
+            </span>
+          )}
+        </div>
         <ul className="space-y-2">
           {f.checklist.map((c, i) => (
-            <li key={i} className="flex items-start gap-3 rounded-xl border border-border bg-surface p-3">
-              <span className="mt-0.5 text-accent">✓</span>
-              <span className="text-sm text-ink">{c}</span>
+            <li key={i}>
+              <label className={cn(
+                "flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition-colors",
+                checked[i]
+                  ? "border-accent/40 bg-accent-soft"
+                  : "border-border bg-surface hover:border-accent/30 hover:bg-accent-soft/40",
+              )}>
+                <input
+                  type="checkbox"
+                  className="sr-only"
+                  checked={!!checked[i]}
+                  onChange={() => toggle(i)}
+                />
+                <span className={cn(
+                  "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-colors",
+                  checked[i]
+                    ? "border-accent bg-accent text-accent-ink"
+                    : "border-border bg-surface",
+                )}>
+                  {checked[i] && <span className="text-[11px] font-black leading-none">✓</span>}
+                </span>
+                <span className={cn(
+                  "text-sm leading-relaxed transition-colors",
+                  checked[i] ? "font-medium text-ink" : "text-ink-muted",
+                )}>
+                  {c}
+                </span>
+              </label>
             </li>
           ))}
         </ul>
@@ -462,11 +538,12 @@ export function FeedbackStepView({ klass }: { klass: GeneratedClass }) {
 
       <div>
         <h3 className="mb-2 text-sm font-semibold uppercase tracking-wider text-ink-subtle">
-          Listen out for these common slips
+          Common slips to watch for next time
         </h3>
         <ul className="space-y-2">
           {f.commonErrors.map((c, i) => (
-            <li key={i} className="rounded-xl bg-warning/10 px-3 py-2 text-sm text-ink-muted">
+            <li key={i} className="flex items-start gap-2.5 rounded-xl bg-warning/10 px-3 py-2.5 text-sm text-ink-muted">
+              <span className="mt-0.5 shrink-0 text-warning">!</span>
               {c}
             </li>
           ))}

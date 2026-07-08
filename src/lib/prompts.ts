@@ -185,7 +185,9 @@ export function buildClassSchema(level: CEFRLevel) {
       additionalProperties: false,
       properties: {
         intro: { type: "string" },
+        ...(a1 ? { introPt: { type: "string" } } : {}),
         sentenceFrames: { type: "array", items: { type: "string" } },
+        ...(a1 ? { sentenceFramesPt: { type: "array", items: { type: "string" } } } : {}),
         rolePlay: {
           type: "object",
           additionalProperties: false,
@@ -197,14 +199,16 @@ export function buildClassSchema(level: CEFRLevel) {
         },
         picturePrompts: { type: "array", items: { type: "string" } },
       },
-      required: ["intro", "sentenceFrames", "rolePlay", "picturePrompts"],
+      required: ["intro", "sentenceFrames", "rolePlay", "picturePrompts", ...(a1 ? ["introPt", "sentenceFramesPt"] : [])],
     },
     freeProduction: {
       type: "object",
       additionalProperties: false,
       properties: {
         intro: { type: "string" },
+        ...(a1 ? { introPt: { type: "string" } } : {}),
         prompts: { type: "array", items: { type: "string" } },
+        ...(a1 ? { promptsPt: { type: "array", items: { type: "string" } } } : {}),
         format: {
           type: "string",
           enum: a1
@@ -212,7 +216,7 @@ export function buildClassSchema(level: CEFRLevel) {
             : ["discussion", "debate", "storytelling"],
         },
       },
-      required: ["intro", "prompts", "format"],
+      required: ["intro", "prompts", "format", ...(a1 ? ["introPt", "promptsPt"] : [])],
     },
     feedback: {
       type: "object",
@@ -299,7 +303,14 @@ Rules for this repeat class:
 PORTUGUESE SUPPORT (A1 only): this is an absolute beginner. For EVERY vocab item,
 also fill "meaningPt" with a short Brazilian-Portuguese translation of the meaning.
 Also fill warmUp.questionsPt with Brazilian-Portuguese translations of each warm-up
-question, in the same order. Keep the English itself simple and short.`
+question, in the same order.
+Also fill guidedProduction.introPt with a PT translation of the intro sentence.
+Also fill guidedProduction.sentenceFramesPt with PT translations of every sentence
+frame, in the same order (parallel array).
+Also fill freeProduction.introPt with a PT translation of the intro sentence.
+Also fill freeProduction.promptsPt with PT translations of every prompt, in the
+same order (parallel array).
+Keep the English itself simple and short.`
       : "";
 
   const curriculumGuidance = levelCurriculum(input.level);

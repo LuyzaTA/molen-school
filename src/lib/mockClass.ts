@@ -411,6 +411,11 @@ export function buildMockClass(input: ClassGenInput): GeneratedClass {
       intro: a1Content
         ? "Complete each sentence out loud. Short and simple is perfect!"
         : "Complete each frame out loud, then say it again a little faster.",
+      ...(input.level === "A1" ? {
+        introPt: a1Content
+          ? "Complete cada frase em voz alta. Curto e simples é perfeito!"
+          : "Complete cada estrutura em voz alta, depois diga novamente um pouco mais rápido.",
+      } : {}),
       sentenceFrames: a1Content
         ? a1Content.sentenceFrames
         : [
@@ -421,6 +426,16 @@ export function buildMockClass(input: ClassGenInput): GeneratedClass {
             `I look forward to ___.`,
             `In my experience, ___.`,
           ],
+      ...(input.level === "A1" && !a1Content ? {
+        sentenceFramesPt: [
+          `Eu gosto muito de ${t} porque ___.`,
+          `O que eu acho de ${t} é que ___.`,
+          `Honestamente, eu diria ___.`,
+          `Depende de ___.`,
+          `Estou animado(a) para ___.`,
+          `Na minha experiência, ___.`,
+        ],
+      } : {}),
       rolePlay: a1Content
         ? { scenario: a1Content.rolePlayScenario, roles: a1Content.rolePlayRoles }
         : {
@@ -443,6 +458,11 @@ export function buildMockClass(input: ClassGenInput): GeneratedClass {
         : advanced
         ? "Now speak freely and push for precision — aim for nuance, not just fluency."
         : "Now speak freely. Aim for longer turns — don't stop at one sentence.",
+      ...(input.level === "A1" ? {
+        introPt: a1Content
+          ? "Agora use as palavras de hoje. Diga cada resposta em voz alta — frases curtas e simples são perfeitas."
+          : "Agora fale livremente. Tente frases mais longas — não pare na primeira frase.",
+      } : {}),
       prompts: a1Content
         ? a1Content.practicePrompts
         : input.level !== "A1"
@@ -461,6 +481,15 @@ export function buildMockClass(input: ClassGenInput): GeneratedClass {
             `Say two things you can see right now.`,
             `Say one sentence about yourself.`,
           ],
+      ...(input.level === "A1" && !a1Content ? {
+        promptsPt: [
+          `Diga seu nome e uma coisa que você sabe sobre ${t}.`,
+          `Nomeie três palavras da aula de hoje.`,
+          `Complete: "Eu gosto de ___ porque ___.`,
+          `Diga duas coisas que você pode ver agora.`,
+          `Diga uma frase sobre você mesmo(a).`,
+        ],
+      } : {}),
       format,
     },
     feedback: {
