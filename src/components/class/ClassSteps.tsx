@@ -22,39 +22,89 @@ function escapeRegex(s: string) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-function HighlightedText({ text, vocab }: { text: string; vocab: string[] }) {
-  if (!vocab.length) return <>{text}</>;
-  const lower = new Set(vocab.map((v) => v.toLowerCase()));
-  const parts = text.split(new RegExp(`(${vocab.map(escapeRegex).join("|")})`, "gi"));
+interface VocabInfo {
+  meaning: string;
+  meaningPt?: string;
+}
+
+/** Map every vocab term (and each "a / b" variant) to its meaning. */
+function buildVocabLookup(klass: GeneratedClass): Map<string, VocabInfo> {
+  const map = new Map<string, VocabInfo>();
+  for (const item of klass.targetLanguage.vocab) {
+    for (const variant of item.term.split("/")) {
+      const key = variant.trim().toLowerCase();
+      if (key) map.set(key, { meaning: item.meaning, meaningPt: item.meaningPt });
+    }
+  }
+  return map;
+}
+
+/**
+ * Story text with tappable vocabulary: highlighted terms show their meaning
+ * (and PT translation for A1 with the toggle on) in a small popover.
+ */
+function VocabText({
+  text,
+  vocab,
+  lookup,
+}: {
+  text: string;
+  vocab: string[];
+  lookup: Map<string, VocabInfo>;
+}) {
+  const showPt = usePt();
+  const [open, setOpen] = useState<number | null>(null);
+  const clean = vocab.filter(Boolean);
+  if (!clean.length) return <>{text}</>;
+  const lower = new Set(clean.map((v) => v.toLowerCase()));
+  const parts = text.split(new RegExp(`(${clean.map(escapeRegex).join("|")})`, "gi"));
   return (
     <>
-      {parts.map((part, i) =>
-        lower.has(part.toLowerCase()) ? (
-          <mark key={i} className="rounded bg-gold/30 px-0.5 font-semibold not-italic text-ink">
-            {part}
-          </mark>
-        ) : (
-          part
-        ),
-      )}
+      {parts.map((part, i) => {
+        if (!lower.has(part.toLowerCase())) return <span key={i}>{part}</span>;
+        const info = lookup.get(part.toLowerCase());
+        const isOpen = open === i;
+        return (
+          <span key={i} className="relative inline-block">
+            <button
+              type="button"
+              onClick={() => setOpen(isOpen ? null : i)}
+              onMouseEnter={() => setOpen(i)}
+              onMouseLeave={() => setOpen(null)}
+              className="rounded bg-gold/25 px-0.5 font-semibold not-italic text-ink underline decoration-gold decoration-dotted underline-offset-2"
+            >
+              {part}
+            </button>
+            {isOpen && info && (
+              <span className="pointer-events-none absolute -top-9 left-1/2 z-30 w-max max-w-[240px] -translate-x-1/2 rounded-md bg-ink px-2.5 py-1 text-center text-xs font-medium not-italic text-base shadow-lg">
+                {info.meaning}
+                {showPt && info.meaningPt ? ` · 🇧🇷 ${info.meaningPt}` : ""}
+              </span>
+            )}
+          </span>
+        );
+      })}
     </>
   );
 }
 
-// Graphic-novel panel themes — cinematic, dark, atmospheric
-const PANEL_THEMES = [
-  { bg: "#0f0c1a", glow: "#7c4dff" },
-  { bg: "#1a0f08", glow: "#ff6b35" },
-  { bg: "#081828", glow: "#29b6f6" },
-  { bg: "#091a09", glow: "#57cc04" },
-  { bg: "#1e0808", glow: "#ef5350" },
-  { bg: "#1a1508", glow: "#ffc107" },
+// Character colours, assigned by order of first appearance
+const SPEAKER_STYLES = [
+  { avatar: "bg-indigo-500", name: "text-indigo-600 dark:text-indigo-400" },
+  { avatar: "bg-rose-500", name: "text-rose-600 dark:text-rose-400" },
+  { avatar: "bg-emerald-600", name: "text-emerald-600 dark:text-emerald-400" },
+  { avatar: "bg-amber-500", name: "text-amber-600 dark:text-amber-400" },
 ];
 
-// 1 — Story (graphic novel panels) ----------------------------
+function sceneIsGated(panel: StoryPanel): boolean {
+  return (panel.dialogue?.length ?? 0) > 0 || !!panel.check;
+}
+
+// 1 — Story (interactive scenes) ------------------------------
 export function StoryStepView({ klass }: { klass: GeneratedClass }) {
   const [idx, setIdx] = useState(0);
   const [animDir, setAnimDir] = useState<"fwd" | "back">("fwd");
+  const [done, setDone] = useState<Record<number, boolean>>({});
   const story = klass.story;
 
   if (!story || story.panels.length === 0) {
@@ -68,6 +118,22 @@ export function StoryStepView({ klass }: { klass: GeneratedClass }) {
   const panels = story.panels;
   const isFinal = idx >= panels.length;
   const totalSlides = panels.length + 1;
+  const lookup = buildVocabLookup(klass);
+
+  // Consistent colour per character across the whole story
+  const speakerIdx = new Map<string, number>();
+  for (const p of panels) {
+    for (const d of p.dialogue ?? []) {
+      if (!speakerIdx.has(d.speaker)) speakerIdx.set(d.speaker, speakerIdx.size);
+    }
+  }
+
+  const sceneDone = (i: number) => !!done[i] || !sceneIsGated(panels[i]);
+  // First scene that is not finished — everything up to it is reachable
+  let unlocked = 0;
+  while (unlocked < panels.length && sceneDone(unlocked)) unlocked++;
+
+  const canAdvance = !isFinal && sceneDone(idx);
 
   function goTo(newIdx: number) {
     setAnimDir(newIdx > idx ? "fwd" : "back");
@@ -79,7 +145,7 @@ export function StoryStepView({ klass }: { klass: GeneratedClass }) {
       stepNumber={1}
       totalSteps={TOTAL}
       title="Story"
-      preview="Each click reveals the next scene. Read it like a graphic novel — let the story unfold. Write the full text in your notebook at the end."
+      preview="Read each scene, reveal the conversation line by line, and answer a quick question to unlock the next scene. Tap highlighted words to see their meaning."
     >
       {/* Slide animation keyframes */}
       <style>{`
@@ -92,42 +158,54 @@ export function StoryStepView({ klass }: { klass: GeneratedClass }) {
       {/* Progress indicator */}
       <div className="flex items-center justify-between gap-2">
         <span className="text-xs font-semibold uppercase tracking-wider text-ink-subtle">
-          {isFinal ? "Full story" : `Panel ${idx + 1} of ${panels.length}`}
+          {isFinal ? "Full story" : `Scene ${idx + 1} of ${panels.length}`}
         </span>
         <div className="flex gap-1.5">
-          {Array.from({ length: totalSlides }).map((_, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => goTo(i)}
-              aria-label={i < panels.length ? `Panel ${i + 1}` : "Full story"}
-              className={cn(
-                "h-2 rounded-full transition-all",
-                i === idx ? "w-6 bg-ink" : "w-2 bg-border hover:bg-ink/40",
-              )}
-            />
-          ))}
+          {Array.from({ length: totalSlides }).map((_, i) => {
+            const reachable = i <= unlocked;
+            return (
+              <button
+                key={i}
+                type="button"
+                disabled={!reachable}
+                onClick={() => goTo(i)}
+                aria-label={i < panels.length ? `Scene ${i + 1}` : "Full story"}
+                className={cn(
+                  "h-2 rounded-full transition-all",
+                  i === idx ? "w-6 bg-accent" : reachable ? "w-2 bg-ink/30 hover:bg-accent/60" : "w-2 bg-border",
+                )}
+              />
+            );
+          })}
         </div>
       </div>
 
-      {/* Panel — key forces remount so animation replays on every change */}
+      {/* Scene — key forces remount so reveal state resets per scene */}
       <div key={`gn-${idx}`} className={animDir === "fwd" ? "gn-slide-fwd" : "gn-slide-back"}>
         {isFinal ? (
-          <FullStoryPanel story={story} />
+          <FullStoryPanel story={story} lookup={lookup} />
         ) : (
-          <NovelPanel panel={panels[idx]} panelIndex={idx} />
+          <ScenePanel
+            panel={panels[idx]}
+            index={idx}
+            total={panels.length}
+            lookup={lookup}
+            speakerIdx={speakerIdx}
+            initiallyDone={sceneDone(idx)}
+            onComplete={() => setDone((d) => ({ ...d, [idx]: true }))}
+          />
         )}
       </div>
 
-      {/* Navigation — comic-book button style */}
+      {/* Navigation */}
       <div className="flex items-center justify-between gap-3">
         <button
           type="button"
           disabled={idx === 0}
           onClick={() => goTo(idx - 1)}
-          className="flex items-center gap-1.5 rounded-xl border-2 border-black/20 px-4 py-2.5 text-sm font-bold uppercase tracking-wide text-ink transition-colors hover:border-black hover:bg-black hover:text-white disabled:pointer-events-none disabled:opacity-25 dark:border-border dark:hover:border-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-white"
+          className="rounded-xl px-4 py-2.5 text-sm font-semibold text-ink-muted transition-colors hover:bg-accent-soft hover:text-ink disabled:pointer-events-none disabled:opacity-30"
         >
-          ← Prev
+          ← Back
         </button>
 
         <span className="truncate text-center text-sm font-semibold text-ink-subtle">
@@ -136,104 +214,219 @@ export function StoryStepView({ klass }: { klass: GeneratedClass }) {
 
         <button
           type="button"
-          disabled={isFinal}
+          disabled={isFinal || !canAdvance}
           onClick={() => goTo(idx + 1)}
-          className="flex shrink-0 items-center gap-1.5 rounded-xl border-2 border-black bg-black px-4 py-2.5 text-sm font-bold uppercase tracking-wide text-white transition-colors hover:bg-zinc-800 disabled:pointer-events-none disabled:opacity-25 dark:border-zinc-600 dark:bg-zinc-800 dark:hover:bg-zinc-700"
+          className="shrink-0 rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-accent-ink transition-opacity hover:opacity-90 disabled:pointer-events-none disabled:opacity-30"
         >
-          {idx === panels.length - 1 ? "Read all →" : "Next →"}
+          {idx === panels.length - 1 ? "Full story →" : "Next scene →"}
         </button>
       </div>
+      {!isFinal && !canAdvance && (
+        <p className="text-center text-xs text-ink-subtle">
+          Reveal the whole conversation and answer the quick check to unlock the next scene.
+        </p>
+      )}
 
       {/* Persistent notebook reminder */}
       <div className="flex items-center gap-2.5 rounded-xl border border-gold/40 bg-gold/5 px-4 py-3 text-sm text-ink-muted">
-        <span className="shrink-0 text-base">✏️</span>
+        <span className="shrink-0 font-serif text-base font-bold text-gold" aria-hidden>✎</span>
         <span>Always copy this story into your <strong className="text-ink">notebook by hand</strong> — handwriting locks vocabulary into memory.</span>
       </div>
     </StepShell>
   );
 }
 
-function NovelPanel({ panel, panelIndex }: { panel: StoryPanel; panelIndex: number }) {
-  const theme = PANEL_THEMES[panelIndex % PANEL_THEMES.length];
+function ScenePanel({
+  panel,
+  index,
+  total,
+  lookup,
+  speakerIdx,
+  initiallyDone,
+  onComplete,
+}: {
+  panel: StoryPanel;
+  index: number;
+  total: number;
+  lookup: Map<string, VocabInfo>;
+  speakerIdx: Map<string, number>;
+  initiallyDone: boolean;
+  onComplete: () => void;
+}) {
+  const dialogue = panel.dialogue ?? [];
+  const check = panel.check;
+  const [shown, setShown] = useState(initiallyDone ? dialogue.length : 0);
+  const [wrong, setWrong] = useState<number[]>([]);
+  const [solved, setSolved] = useState(initiallyDone);
+
+  const allShown = shown >= dialogue.length;
+
+  function revealNext() {
+    const n = shown + 1;
+    setShown(n);
+    if (n >= dialogue.length && !check) {
+      setSolved(true);
+      onComplete();
+    }
+  }
+
+  function pick(i: number) {
+    if (solved || !check) return;
+    if (i === check.answer) {
+      setSolved(true);
+      onComplete();
+    } else {
+      setWrong((w) => (w.includes(i) ? w : [...w, i]));
+    }
+  }
+
   return (
-    <div className="overflow-hidden rounded-xl border-[3px] border-black shadow-[5px_5px_0_rgba(0,0,0,0.85)] dark:border-zinc-700 dark:shadow-[5px_5px_0_rgba(0,0,0,0.5)]">
-      {/* Illustration — dark atmospheric panel */}
-      <div
-        className="relative flex items-center justify-center overflow-hidden"
-        style={{ background: theme.bg, minHeight: "230px" }}
-      >
-        {/* Atmospheric glow around emoji */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: `radial-gradient(ellipse 55% 55% at 50% 55%, ${theme.glow}22 0%, transparent 70%)`,
-          }}
-        />
-        {/* Main visual — large emoji with colour-matched glow */}
-        <span
-          className="relative z-10 select-none leading-none"
-          style={{
-            fontSize: "clamp(90px, 18vw, 124px)",
-            filter: `drop-shadow(0 0 32px ${theme.glow}77)`,
-          }}
-        >
-          {panel.emoji}
+    <div className="overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
+      {/* Setting slug line — like a screenplay header */}
+      <div className="flex items-center justify-between gap-3 bg-ink px-5 py-2.5">
+        <span className="shrink-0 text-[11px] font-black uppercase tracking-[0.2em] text-base/70">
+          Scene {index + 1}/{total}
         </span>
-        {/* Scene narration box — top-left, graphic-novel caption style */}
-        <div className="absolute top-3 left-3 z-20 max-w-[calc(100%-3rem)]">
-          <div className="rounded bg-black/72 px-2.5 py-1.5 backdrop-blur-sm">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-white/85 leading-snug">
-              {panel.scene}
-            </p>
-          </div>
-        </div>
-        {/* Panel counter — top-right */}
-        <span className="absolute top-3 right-3.5 z-20 text-xs font-black tabular-nums text-white/20">
-          #{panelIndex + 1}
+        <span className="truncate text-[11px] font-semibold uppercase tracking-wider text-base">
+          {panel.scene}
         </span>
-        {/* Soft bottom vignette merging into caption */}
-        <div
-          className="absolute bottom-0 left-0 right-0 h-12 pointer-events-none"
-          style={{ background: `linear-gradient(to bottom, transparent, ${theme.bg}bb)` }}
-        />
       </div>
-      {/* Caption strip — classic comic-book cream */}
-      <div className="border-t-[3px] border-black bg-[#FFFDE7] px-5 py-4 dark:border-zinc-700 dark:bg-[#1c1a00]">
-        <p className="text-[15px] leading-relaxed text-gray-900 dark:text-[#f0e0a0]">
-          <HighlightedText text={panel.text} vocab={panel.vocab} />
+
+      <div className="space-y-4 px-5 py-5">
+        {/* Narration */}
+        <p className="font-serif text-[16.5px] leading-relaxed text-ink">
+          <VocabText text={panel.text} vocab={panel.vocab} lookup={lookup} />
         </p>
+
+        {/* Dialogue — revealed line by line */}
+        {dialogue.slice(0, shown).map((d, i) => {
+          const s = SPEAKER_STYLES[(speakerIdx.get(d.speaker) ?? 0) % SPEAKER_STYLES.length];
+          return (
+            <div key={i} className="flex animate-fade-in items-start gap-2.5">
+              <span
+                className={cn(
+                  "mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white",
+                  s.avatar,
+                )}
+              >
+                {d.speaker.charAt(0).toUpperCase()}
+              </span>
+              <div className="min-w-0">
+                <span className={cn("text-[11px] font-bold uppercase tracking-wider", s.name)}>
+                  {d.speaker}
+                </span>
+                <p className="mt-0.5 rounded-xl rounded-tl-sm border border-border bg-base/60 px-3.5 py-2 text-[15px] leading-relaxed text-ink">
+                  <VocabText text={d.line} vocab={panel.vocab} lookup={lookup} />
+                </p>
+              </div>
+            </div>
+          );
+        })}
+
+        {/* Reveal button */}
+        {!allShown && (
+          <button
+            type="button"
+            onClick={revealNext}
+            className="w-full rounded-xl border-2 border-dashed border-border py-2.5 text-sm font-semibold text-ink-muted transition-colors hover:border-accent hover:bg-accent-soft/50 hover:text-accent"
+          >
+            {shown === 0 ? "▾ Reveal the conversation" : "▾ Continue"}
+          </button>
+        )}
+
+        {/* Comprehension check — gate to the next scene */}
+        {allShown && check && (
+          <div className="animate-fade-in rounded-xl border border-accent/40 bg-accent-soft p-4">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-accent">Quick check</p>
+            <p className="mt-1 font-semibold text-ink">{check.question}</p>
+            <div className="mt-3 flex flex-col gap-2">
+              {check.options.map((opt, i) => {
+                const isWrong = wrong.includes(i);
+                const isCorrect = solved && i === check.answer;
+                return (
+                  <button
+                    key={i}
+                    type="button"
+                    disabled={isWrong || solved}
+                    onClick={() => pick(i)}
+                    className={cn(
+                      "rounded-lg border px-3.5 py-2 text-left text-sm font-medium transition-colors",
+                      isCorrect
+                        ? "border-success bg-success/10 text-success"
+                        : isWrong
+                          ? "border-warning/60 bg-warning/10 text-ink-subtle line-through"
+                          : "border-border bg-surface text-ink hover:border-accent",
+                    )}
+                  >
+                    {opt}
+                    {isCorrect ? "  ✓" : ""}
+                  </button>
+                );
+              })}
+            </div>
+            {solved && (
+              <p className="mt-2.5 text-sm font-semibold text-success">
+                Correct — the next scene is unlocked.
+              </p>
+            )}
+            {wrong.length > 0 && !solved && (
+              <p className="mt-2.5 text-sm text-ink-muted">
+                Not quite — read the scene again and try another answer.
+              </p>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-function FullStoryPanel({ story }: { story: NonNullable<GeneratedClass["story"]> }) {
+function FullStoryPanel({
+  story,
+  lookup,
+}: {
+  story: NonNullable<GeneratedClass["story"]>;
+  lookup: Map<string, VocabInfo>;
+}) {
   return (
-    <div className="overflow-hidden rounded-xl border-[3px] border-black shadow-[5px_5px_0_rgba(0,0,0,0.85)] dark:border-zinc-700 dark:shadow-[5px_5px_0_rgba(0,0,0,0.5)]">
-      {/* Title bar */}
-      <div className="bg-black px-5 py-4 dark:bg-zinc-900">
-        <p className="text-center text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">
-          Complete Story
-        </p>
-        <p className="mt-1 text-center text-base font-black text-white">{story.title}</p>
-      </div>
-      {/* Notebook CTA */}
-      <div className="flex items-start gap-3 border-b-[3px] border-black bg-[#FFFDE7] px-5 py-4 dark:border-zinc-700 dark:bg-[#1c1a00]">
-        <span className="mt-0.5 shrink-0 text-xl">✏️</span>
+    <div className="space-y-4">
+      {/* Notebook call-to-action */}
+      <div className="flex items-start gap-3 rounded-xl border-2 border-gold/60 bg-gold/8 p-4">
+        <span className="mt-0.5 shrink-0 font-serif text-2xl font-bold text-gold" aria-hidden>✎</span>
         <div>
-          <p className="font-bold text-gray-900 dark:text-[#f0e0a0]">Copy this into your notebook by hand</p>
-          <p className="mt-0.5 text-sm text-gray-600 dark:text-[#a09050]">
-            Handwriting vocabulary in context is one of the most effective ways to make new words stick.
+          <p className="font-bold text-ink">Write this story in your notebook now</p>
+          <p className="mt-0.5 text-sm text-ink-muted">
+            Copy the narration and the dialogue by hand. Handwriting the vocabulary in context is one of the most effective ways to make new words stick.
           </p>
         </div>
       </div>
-      {/* Full story text */}
-      <div className="space-y-3.5 bg-white px-5 py-5 dark:bg-zinc-900/80">
-        {story.panels.map((panel, i) => (
-          <p key={i} className="text-[15px] leading-relaxed text-gray-900 dark:text-zinc-200">
-            <HighlightedText text={panel.text} vocab={panel.vocab} />
-          </p>
-        ))}
+
+      {/* Full story as a readable script */}
+      <div className="overflow-hidden rounded-2xl border border-border bg-surface">
+        <div className="bg-ink px-5 py-3 text-center">
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-base/60">The full story</p>
+          <p className="mt-0.5 text-[16px] font-black text-base">{story.title}</p>
+        </div>
+        <div className="space-y-5 px-5 py-5">
+          {story.panels.map((panel, i) => (
+            <div key={i}>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-ink-subtle">
+                Scene {i + 1} — {panel.scene}
+              </p>
+              <p className="mt-1.5 font-serif text-[15.5px] leading-relaxed text-ink">
+                <VocabText text={panel.text} vocab={panel.vocab} lookup={lookup} />
+              </p>
+              {(panel.dialogue ?? []).map((d, j) => (
+                <p key={j} className="mt-1 pl-4 text-[15px] leading-relaxed text-ink">
+                  <span className="font-bold">{d.speaker}:</span>{" "}
+                  <span className="italic">
+                    <VocabText text={d.line} vocab={panel.vocab} lookup={lookup} />
+                  </span>
+                </p>
+              ))}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

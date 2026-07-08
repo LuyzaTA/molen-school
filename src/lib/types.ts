@@ -70,13 +70,25 @@ export interface FeedbackStep {
   commonErrors: string[]; // concrete things to listen for
 }
 
-// ---- Story (Step 1 — comic panels) --------------------------------
+// ---- Story (Step 1 — interactive scenes) --------------------------
+
+export interface StoryDialogueLine {
+  speaker: string; // character name, consistent across the story
+  line: string;    // spoken line at the learner's CEFR level
+}
+
+export interface StoryCheck {
+  question: string;  // quick comprehension question about this scene
+  options: string[]; // 2–3 short answer options
+  answer: number;    // index of the correct option
+}
 
 export interface StoryPanel {
-  text: string;    // panel prose at the learner's CEFR level
-  scene: string;   // 4–8 word visual description of the scene
-  emoji: string;   // 1–3 emojis representing the scene illustration
-  vocab: string[]; // target vocab terms that appear in this panel's text
+  text: string;      // scene narration at the learner's CEFR level
+  scene: string;     // setting slug line, e.g. "A café in São Paulo — Monday morning"
+  dialogue?: StoryDialogueLine[]; // character conversation, revealed line by line
+  check?: StoryCheck;             // gate to the next scene
+  vocab: string[];   // target vocab terms appearing in this scene
 }
 
 export interface ClassStory {

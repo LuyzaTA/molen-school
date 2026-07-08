@@ -108,7 +108,7 @@ export function saveHomeworkForDay(homework: DailyHomework): void {
 // Bump this string whenever the class content schema or prompt changes
 // significantly. Any saved class from a previous version is discarded so
 // users get a fresh, curriculum-aligned class on their next visit.
-const CLASS_CONTENT_VERSION = "4"; // bumped: guided/free PT fields + feedback redesign
+const CLASS_CONTENT_VERSION = "5"; // bumped: story rebuilt as interactive scenes (dialogue + checks)
 const CLASS_VERSION_KEY = "fluentbr.classContentVersion";
 
 export function loadCurrentClass(): GeneratedClass | null {

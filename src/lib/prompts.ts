@@ -137,10 +137,31 @@ export function buildClassSchema(level: CEFRLevel) {
             properties: {
               text: { type: "string" },
               scene: { type: "string" },
-              emoji: { type: "string" },
+              dialogue: {
+                type: "array",
+                items: {
+                  type: "object",
+                  additionalProperties: false,
+                  properties: {
+                    speaker: { type: "string" },
+                    line: { type: "string" },
+                  },
+                  required: ["speaker", "line"],
+                },
+              },
+              check: {
+                type: "object",
+                additionalProperties: false,
+                properties: {
+                  question: { type: "string" },
+                  options: { type: "array", items: { type: "string" } },
+                  answer: { type: "integer" },
+                },
+                required: ["question", "options", "answer"],
+              },
               vocab: { type: "array", items: { type: "string" } },
             },
-            required: ["text", "scene", "emoji", "vocab"],
+            required: ["text", "scene", "dialogue", "check", "vocab"],
           },
         },
       },
@@ -353,30 +374,41 @@ to the topic name.
 Apply this rule at every level: for "Travel experiences" (B1) teach: delayed, depart,
 luggage, customs, book a hotel, recommend, journey — not meta-discussion phrases about travel.
 
-STORY (Step 1 — comic-panel illustrated story):
-Before the warm-up, write a short illustrated story set in the world of the topic.
-The story is shown to the student as comic panels; they click Next to reveal each one.
+STORY (Step 1 — interactive scene-by-scene story):
+Before the warm-up, write a short story set in the world of the topic, told scene by
+scene like an episode of a series. The student reveals each scene's dialogue line by
+line and must answer a quick comprehension check to unlock the next scene — so every
+scene must create a reason to keep reading.
 
-Panel count and sentence depth by CEFR level:
-  A1 → 3 panels · 1–2 simple sentences each · present simple only · very short words
-  A2 → 4 panels · 2–3 sentences each · past simple + simple present
-  B1 → 5 panels · 3–4 sentences each · varied tenses · linking words
-  B2 → 5 panels · 4–5 sentences each · subordinate clauses · discourse markers
-  C1 → 6 panels · 5–6 sentences each · complex structures · precise vocabulary
-  C2 → 6 panels · 5–7 literary-quality sentences each · nuanced expression
+Scene count and depth by CEFR level:
+  A1 → 3 scenes · 1–2 simple narration sentences · 2 short dialogue lines · present simple only
+  A2 → 4 scenes · 2–3 narration sentences · 2–3 dialogue lines · past simple + present
+  B1 → 5 scenes · 3–4 narration sentences · 3–4 dialogue lines · varied tenses, linking words
+  B2 → 5 scenes · 4–5 narration sentences · 3–4 dialogue lines · subordinate clauses, discourse markers
+  C1 → 6 scenes · 5–6 narration sentences · 4–5 dialogue lines · complex structures, precise vocabulary
+  C2 → 6 scenes · 5–7 literary-quality sentences · 4–5 dialogue lines · nuanced, idiomatic expression
 
-For each panel provide:
-  • text  — the panel's story prose at exactly ${input.level} level
-  • scene — 4–8 words describing what would be illustrated (e.g. "Two friends ordering coffee at a café")
-  • emoji — 1–3 emojis that visually represent the scene
-  • vocab — list of target vocabulary terms (exact strings from targetLanguage.vocab) that appear in this panel's text
+For each panel (scene) provide:
+  • text     — the scene's narration at exactly ${input.level} level
+  • scene    — a setting slug line: place + moment, e.g. "A bakery in São Paulo — Saturday morning"
+  • dialogue — the characters' spoken lines (speaker + line). Natural spoken English at
+               ${input.level} level. Use the SAME 2–3 named adult characters across the whole story.
+  • check    — ONE quick comprehension question about THIS scene: a short question, 2–3 short
+               options (1–5 words each), and the zero-based index of the correct option.
+               A1–A2: literal questions ("Where is Ana?"). B1+: may require light inference.
+               Make wrong options plausible but clearly wrong to someone who read the scene.
+  • vocab    — target vocabulary terms (exact strings from targetLanguage.vocab) that appear
+               in this scene's text or dialogue
 
 Story rules:
-  - Use at least 6 target vocabulary words spread naturally across all panels
-  - Clear arc: setup → development → resolution
-  - Relatable adult characters in realistic situations matching the topic
-  - Vocabulary must appear in genuine context, never forced
-  - story.title should be a short engaging title for the story
+  - NO emojis anywhere in the story — this is prose and dialogue, like a real book.
+  - Real tension or curiosity: give the characters a concrete problem, goal, or surprise.
+    End middle scenes on a small hook so the student wants to see the next scene.
+  - Use at least 6 target vocabulary words across the scenes, in genuine context — much of
+    the vocabulary should live in the DIALOGUE, where the student hears how it is really used.
+  - Clear arc: setup → complication → resolution.
+  - Relatable adult characters in realistic situations matching the topic.
+  - story.title should be a short, intriguing title for the story.
 
 Content requirements:
 - warmUp.questions: exactly 5 personal, easy-to-answer questions to break the ice.
@@ -393,7 +425,8 @@ Content requirements:
   or storytelling) appropriate to the level.
 - feedback: a short intro, a 4–6 item self-correction checklist, and 3–5 concrete
   common errors Brazilian learners make on this topic to listen for.
-- agenda: 5 short human-readable labels, one per stage, for an at-a-glance preview.
+- agenda: 6 short human-readable labels, one per stage (story, warm-up, target
+  language, guided production, free production, feedback), for an at-a-glance preview.
 - grammar: 3–5 named grammar points the class practises (e.g. "Past simple",
   "Possessive pronouns", "Present perfect", "Comparatives"). Short labels only.
 - warmUp.grammarNote: a 2–3 sentence student-friendly explanation of today's grammar

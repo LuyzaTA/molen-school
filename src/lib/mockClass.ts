@@ -136,70 +136,60 @@ function buildVocab(topic: string): VocabItem[] {
   ];
 }
 
-// ---- Topic emoji map (best-effort visual matching) ----
-const TOPIC_EMOJI_MAP: [string, string[]][] = [
-  ["greet|introduc",   ["👋", "😊", "🤝"]],
-  ["family|parents",   ["👨‍👩‍👧", "🏠", "❤️"]],
-  ["food|drink|eat|restaurant|café|cafe", ["🍽️", "☕", "🥗"]],
-  ["travel|transport|trip|flight|airport", ["✈️", "🗺️", "🚂"]],
-  ["work|job|office|business|meeting",    ["💼", "📊", "🤝"]],
-  ["school|class|study|learn|education",  ["📚", "✏️", "🎓"]],
-  ["weather|rain|sun|cloud|season",       ["☀️", "🌧️", "🌤️"]],
-  ["sport|exercise|gym|fitness|football", ["⚽", "🏃", "💪"]],
-  ["music|concert|song|band|play",        ["🎵", "🎸", "🎤"]],
-  ["home|house|room|apartment|flat",      ["🏠", "🛋️", "🪟"]],
-  ["technology|tech|computer|phone|internet", ["💻", "📱", "🔧"]],
-  ["health|doctor|hospital|medicine|sick", ["🏥", "💊", "🩺"]],
-  ["animal|pet|dog|cat|zoo",             ["🐕", "🐈", "🦁"]],
-  ["shopping|shop|store|buy|price",      ["🛍️", "💳", "🏪"]],
-  ["colour|color|number|count",          ["🎨", "🔢", "✨"]],
-  ["body|exercise|yoga|stretch",         ["🧘", "💪", "🏃"]],
-  ["clothes|fashion|wear|dress",         ["👗", "👔", "👟"]],
-  ["hobby|read|draw|paint|game",         ["🎮", "📖", "🎨"]],
-];
-
-function topicEmojis(topic: string): string[] {
-  const t = topic.toLowerCase();
-  for (const [pattern, emojis] of TOPIC_EMOJI_MAP) {
-    if (new RegExp(pattern).test(t)) return emojis;
-  }
-  return ["📖", "💡", "🌟", "🎯", "✨", "🗣️"];
-}
-
 function buildMockStory(topic: string, level: string, vocab: VocabItem[]): ClassStory {
   const t = topic.trim();
   const terms = vocab.slice(0, 8).map(v => v.term.split("/")[0].trim());
-  const emojis = topicEmojis(t);
+  const v = (i: number) => terms[i] ?? t;
 
   const isA1 = level === "A1";
   const isA2 = level === "A2";
   const isAdvanced = level === "C1" || level === "C2";
-  const panelCount = isA1 ? 3 : isA2 ? 4 : isAdvanced ? 6 : 5;
-
-  // Build natural sentences that embed the vocab terms
-  const v = (i: number) => terms[i] ?? t;
 
   if (isA1) {
     return {
-      title: `A ${t} Story`,
+      title: `Ana Learns About ${t}`,
       panels: [
         {
-          text: `This is Ana. She is a student. Today she learns about ${t}.`,
-          scene: `Student at desk with book`,
-          emoji: emojis[0],
-          vocab: terms.slice(0, 2),
+          text: `Ana is at a café with her friend Leo. Today they talk about ${t}.`,
+          scene: `A small café — Monday morning`,
+          dialogue: [
+            { speaker: "Ana", line: `Hi Leo! Can we practice ${t} today?` },
+            { speaker: "Leo", line: `Yes! Let's start with "${v(0)}".` },
+          ],
+          check: {
+            question: "Where are Ana and Leo?",
+            options: ["At a café", "At home", "At work"],
+            answer: 0,
+          },
+          vocab: [v(0)],
         },
         {
-          text: `Ana says: "${v(0)}!" She uses ${v(1)}. It is easy and fun.`,
-          scene: `Student speaking and smiling`,
-          emoji: emojis[1],
-          vocab: terms.slice(0, 3),
+          text: `Leo teaches Ana new words. She learns "${v(0)}" and "${v(1)}". One word is difficult for her.`,
+          scene: `The same café — a little later`,
+          dialogue: [
+            { speaker: "Ana", line: `"${v(1)}" is difficult. Can you help me?` },
+            { speaker: "Leo", line: `Of course. Listen and repeat: "${v(1)}".` },
+          ],
+          check: {
+            question: "Who helps Ana?",
+            options: ["Leo", "The waiter", "Nobody"],
+            answer: 0,
+          },
+          vocab: [v(0), v(1)],
         },
         {
-          text: `At the end, Ana is happy. She says: "${v(2)}!" She practices every day.`,
-          scene: `Happy student giving thumbs up`,
-          emoji: emojis[2] ?? "🌟",
-          vocab: terms.slice(2, 4),
+          text: `Now Ana knows the new words. She is happy. She wants to practice "${v(2)}" tomorrow.`,
+          scene: `Outside the café — afternoon`,
+          dialogue: [
+            { speaker: "Ana", line: `Thank you, Leo! Now I understand.` },
+            { speaker: "Leo", line: `You are welcome. See you tomorrow!` },
+          ],
+          check: {
+            question: "How does Ana feel at the end?",
+            options: ["Happy", "Sad", "Angry"],
+            answer: 0,
+          },
+          vocab: [v(1), v(2)],
         },
       ],
     };
@@ -207,31 +197,63 @@ function buildMockStory(topic: string, level: string, vocab: VocabItem[]): Class
 
   if (isA2) {
     return {
-      title: `A Story About ${t}`,
+      title: `Marco's ${t} Surprise`,
       panels: [
         {
-          text: `Last week, Marco decided to explore ${t}. He was nervous at first, but he knew it was important.`,
-          scene: `Person thinking about starting something new`,
-          emoji: emojis[0],
+          text: `Last Saturday, Marco met his friend Julia at the market. He wanted to get better at ${t}, but he had a problem.`,
+          scene: `A busy street market — Saturday morning`,
+          dialogue: [
+            { speaker: "Marco", line: `Julia, can you help me with ${t}?` },
+            { speaker: "Julia", line: `Of course! But why do you look so worried?` },
+          ],
+          check: {
+            question: "When did Marco meet Julia?",
+            options: ["On Saturday", "On Monday", "Last year"],
+            answer: 0,
+          },
+          vocab: [v(0)],
+        },
+        {
+          text: `Marco explained his problem. He tried to use "${v(0)}" and "${v(1)}" before, but he made many mistakes.`,
+          scene: `Julia's kitchen — later that morning`,
+          dialogue: [
+            { speaker: "Marco", line: `I tried "${v(0)}", but everything went wrong.` },
+            { speaker: "Julia", line: `Don't worry — everyone makes mistakes at first.` },
+          ],
+          check: {
+            question: "How does Julia react?",
+            options: ["She is kind and helps", "She laughs at Marco", "She goes home"],
+            answer: 0,
+          },
           vocab: [v(0), v(1)],
         },
         {
-          text: `He used ${v(0)} and ${v(1)} to get started. It was simpler than he expected.`,
-          scene: `Person actively doing the activity`,
-          emoji: emojis[1],
-          vocab: [v(0), v(1), v(2)],
+          text: `They practiced together for an hour. Slowly, Marco got better. Then Julia had a surprise for him.`,
+          scene: `The kitchen — one hour later`,
+          dialogue: [
+            { speaker: "Julia", line: `Close your eyes, Marco. I have a surprise!` },
+            { speaker: "Marco", line: `A surprise? What is it?` },
+          ],
+          check: {
+            question: "What does Julia have?",
+            options: ["A surprise", "A problem", "A new job"],
+            answer: 0,
+          },
+          vocab: [v(2)],
         },
         {
-          text: `Marco made a small mistake with ${v(2)}, but he didn't give up. He tried again.`,
-          scene: `Person overcoming a challenge`,
-          emoji: emojis[2] ?? "💪",
+          text: `The surprise was a small test — and Marco passed it! He felt proud. Now he uses "${v(2)}" and "${v(3)}" every day.`,
+          scene: `The living room — that evening`,
+          dialogue: [
+            { speaker: "Marco", line: `I did it! Thank you for your help.` },
+            { speaker: "Julia", line: `You worked hard. You should be proud!` },
+          ],
+          check: {
+            question: "Did Marco pass the test?",
+            options: ["Yes", "No"],
+            answer: 0,
+          },
           vocab: [v(2), v(3)],
-        },
-        {
-          text: `In the end, Marco felt confident. He understood ${v(3)} and ${v(4)} much better now.`,
-          scene: `Person smiling, looking confident`,
-          emoji: "🌟",
-          vocab: [v(3), v(4)],
         },
       ],
     };
@@ -239,81 +261,169 @@ function buildMockStory(topic: string, level: string, vocab: VocabItem[]): Class
 
   if (isAdvanced) {
     return {
-      title: `The Art of ${t}`,
+      title: `A Question of ${t}`,
       panels: [
         {
-          text: `Elena had always been fascinated by ${t}. She had grown up surrounded by it, absorbing its nuances without ever formally studying them.`,
-          scene: `Person reflecting on a lifelong passion`,
-          emoji: emojis[0],
+          text: `Elena had spent years studying ${t}, yet one question continued to trouble her — a question nobody around her seemed able, or perhaps willing, to answer.`,
+          scene: `A university library — late autumn`,
+          dialogue: [
+            { speaker: "Elena", line: `Rafael, have you ever wondered why we take ${t} for granted?` },
+            { speaker: "Rafael", line: `Constantly. Though I suspect the answer is more uncomfortable than we'd like.` },
+          ],
+          check: {
+            question: "What troubled Elena?",
+            options: ["An unanswered question", "A broken computer", "Her schedule"],
+            answer: 0,
+          },
+          vocab: [v(0)],
+        },
+        {
+          text: `Determined to investigate, Elena organised a small seminar. She began with "${v(0)}" — a concept her colleagues thought they understood, until she pressed them on it.`,
+          scene: `A seminar room — the following week`,
+          dialogue: [
+            { speaker: "Rafael", line: `You're suggesting we've all been working from a flawed assumption?` },
+            { speaker: "Elena", line: `I'm suggesting we've never seriously questioned it.` },
+          ],
+          check: {
+            question: "What did Elena organise?",
+            options: ["A seminar", "A party", "A holiday"],
+            answer: 0,
+          },
           vocab: [v(0), v(1)],
         },
         {
-          text: `One afternoon, she decided to challenge herself. Using ${v(0)} and ${v(1)}, she approached the subject from an entirely new angle.`,
-          scene: `Person studying and taking notes at a desk`,
-          emoji: emojis[1],
-          vocab: [v(0), v(1), v(2)],
+          text: `The archives revealed something curious: a series of records connecting "${v(1)}" with "${v(2)}" in ways nobody had documented before.`,
+          scene: `The archives — after midnight`,
+          dialogue: [
+            { speaker: "Elena", line: `Look at this. These records contradict everything in the standard literature.` },
+            { speaker: "Rafael", line: `Either that, or the standard literature has been quietly ignoring them.` },
+          ],
+          check: {
+            question: "What did the records do?",
+            options: ["Contradicted accepted ideas", "Confirmed everything", "Proved nothing"],
+            answer: 0,
+          },
+          vocab: [v(1), v(2)],
         },
         {
-          text: `The deeper she explored, the more she discovered. ${v(2)} led her to ${v(3)}, and ${v(3)} opened doors she hadn't expected.`,
-          scene: `Lightbulb moment, person realising connections`,
-          emoji: "💡",
-          vocab: [v(2), v(3)],
+          text: `Rafael, initially sceptical, spent the night verifying her findings. By morning, his scepticism had turned into something closer to alarm.`,
+          scene: `Rafael's office — the next morning`,
+          dialogue: [
+            { speaker: "Rafael", line: `If you publish this, half the department will turn on you.` },
+            { speaker: "Elena", line: `And if I don't, we keep teaching something we know is incomplete.` },
+          ],
+          check: {
+            question: "How did Rafael's attitude change?",
+            options: ["From sceptical to alarmed", "From happy to sad", "It never changed"],
+            answer: 0,
+          },
+          vocab: [v(3)],
         },
         {
-          text: `She consulted colleagues, debated ideas, and tested assumptions. The tension between ${v(4)} and ${v(5)} became the central question of her inquiry.`,
-          scene: `Group discussion in a professional setting`,
-          emoji: emojis[2] ?? "🗣️",
-          vocab: [v(4), v(5)],
+          text: `The presentation provoked exactly the storm Rafael had predicted. Yet amid the objections, drawing on "${v(3)}" and "${v(4)}", Elena defended each point with quiet precision.`,
+          scene: `The faculty meeting — Friday afternoon`,
+          dialogue: [
+            { speaker: "Elena", line: `I'm not asking you to accept my conclusions — only to examine the evidence.` },
+            { speaker: "Rafael", line: `That, colleagues, is precisely what we are supposed to do.` },
+          ],
+          check: {
+            question: "How did Elena defend her work?",
+            options: ["With quiet precision", "By shouting", "She refused to answer"],
+            answer: 0,
+          },
+          vocab: [v(3), v(4)],
         },
         {
-          text: `Weeks later, Elena presented her findings. Her command of the subject — its vocabulary, its subtleties, its contradictions — was unmistakably refined.`,
-          scene: `Person presenting confidently to an audience`,
-          emoji: "🎯",
-          vocab: [v(5), v(6)],
-        },
-        {
-          text: `The journey through ${t} had changed her perspective entirely. She understood not just the what, but the why — and that made all the difference.`,
-          scene: `Person looking satisfied and thoughtful`,
-          emoji: "✨",
-          vocab: [v(6), v(7)].filter(Boolean),
+          text: `In time, the controversy settled into curiosity, and curiosity into genuine research. Elena's question about ${t} remained open — but now, at least, it was being asked.`,
+          scene: `The library — one month later`,
+          dialogue: [
+            { speaker: "Rafael", line: `You realise you've changed how this field thinks?` },
+            { speaker: "Elena", line: `No — I've reminded it how to think. There's a difference.` },
+          ],
+          check: {
+            question: "What happened one month later?",
+            options: ["The controversy became research", "Elena left the university", "Nothing changed"],
+            answer: 0,
+          },
+          vocab: [v(5), v(6)].filter(Boolean),
         },
       ],
     };
   }
 
-  // B1 / B2 default (5 panels)
+  // B1 / B2 default (5 scenes)
   return {
-    title: `A Story About ${t}`,
+    title: `The ${t} Challenge`,
     panels: [
       {
-        text: `Sara had been thinking about ${t} for a long time. She decided it was finally time to do something about it.`,
-        scene: `Person making a decision`,
-        emoji: emojis[0],
+        text: `Sara arrived at work on Monday and found an unexpected email. Her manager wanted her to lead a project about ${t} — in only one week.`,
+        scene: `An office in São Paulo — Monday, 9 a.m.`,
+        dialogue: [
+          { speaker: "Sara", line: `One week? That's impossible — I've never led anything like this.` },
+          { speaker: "Daniel", line: `Relax. If we plan it carefully, we can make it work.` },
+        ],
+        check: {
+          question: "What did the manager ask Sara to do?",
+          options: ["Lead a project", "Take a holiday", "Change jobs"],
+          answer: 0,
+        },
+        vocab: [v(0)],
+      },
+      {
+        text: `They started with "${v(0)}", which turned out to be more complicated than expected. However, Daniel had an idea that changed everything.`,
+        scene: `A meeting room — Tuesday afternoon`,
+        dialogue: [
+          { speaker: "Daniel", line: `What if we try a completely different approach?` },
+          { speaker: "Sara", line: `It's risky... but it might actually work.` },
+        ],
+        check: {
+          question: "How did Sara feel about Daniel's idea?",
+          options: ["Unsure but interested", "Completely against it", "Bored"],
+          answer: 0,
+        },
         vocab: [v(0), v(1)],
       },
       {
-        text: `She started with ${v(0)} — it was harder than expected, but she kept going. ${v(1)} turned out to be the key.`,
-        scene: `Person working through a challenge`,
-        emoji: emojis[1],
-        vocab: [v(0), v(1), v(2)],
+        text: `Just when things were going well, they discovered a serious problem with "${v(1)}". Sara wanted to give up, but Daniel reminded her how far they had come.`,
+        scene: `The office — Wednesday evening`,
+        dialogue: [
+          { speaker: "Sara", line: `Maybe I wasn't the right person for this.` },
+          { speaker: "Daniel", line: `Are you joking? Look at everything you've already done.` },
+        ],
+        check: {
+          question: "What did Sara want to do?",
+          options: ["Give up", "Celebrate", "Ask for a raise"],
+          answer: 0,
+        },
+        vocab: [v(1), v(2)],
       },
       {
-        text: `Along the way, she met different people. Some agreed with her approach to ${v(2)}, others didn't — but everyone had something interesting to say.`,
-        scene: `People having a lively conversation`,
-        emoji: "💬",
+        text: `They worked through the problem step by step, using "${v(2)}" and "${v(3)}". By the end of the day, the solution was finally ready.`,
+        scene: `A café near the office — Thursday morning`,
+        dialogue: [
+          { speaker: "Daniel", line: `I told you we could do it.` },
+          { speaker: "Sara", line: `We're not finished yet — the presentation is tomorrow!` },
+        ],
+        check: {
+          question: "When is the presentation?",
+          options: ["Tomorrow", "Next month", "It was cancelled"],
+          answer: 0,
+        },
         vocab: [v(2), v(3)],
       },
       {
-        text: `There was a difficult moment when ${v(3)} went wrong. But Sara used ${v(4)} to find a solution, and it worked.`,
-        scene: `Person solving a problem with determination`,
-        emoji: emojis[2] ?? "💪",
-        vocab: [v(3), v(4)],
-      },
-      {
-        text: `In the end, Sara felt proud. She had learned that ${v(5)} and ${v(0)} were more connected than she ever realised.`,
-        scene: `Person smiling at the result of their efforts`,
-        emoji: "🌟",
-        vocab: [v(5), v(0)],
+        text: `The presentation was a success. The manager was impressed, and Sara realised something important: the biggest challenge had been her own doubt.`,
+        scene: `The main conference room — Friday`,
+        dialogue: [
+          { speaker: "Sara", line: `I can't believe we actually did it.` },
+          { speaker: "Daniel", line: `Believe it. And next time, you won't doubt yourself.` },
+        ],
+        check: {
+          question: "What was Sara's biggest challenge?",
+          options: ["Her own doubt", "The computer", "The weather"],
+          answer: 0,
+        },
+        vocab: [v(4), v(0)],
       },
     ],
   };
@@ -371,7 +481,7 @@ export function buildMockClass(input: ClassGenInput): GeneratedClass {
     story: buildMockStory(t, input.level, vocabList),
     generatedBy: "mock",
     agenda: [
-      "Story: illustrated comic panels",
+      "Story: interactive scenes with dialogue",
       "Warm-up: 5 questions",
       "Target language: vocabulary + 2 structures",
       "Guided production: frames & role-play",
