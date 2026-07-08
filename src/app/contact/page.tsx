@@ -120,7 +120,7 @@ export default function ContactPage() {
                 </button>
               ))}
             </div>
-            <Link href="https://molen-school.vercel.app/login" style={{ padding: "7px 20px", borderRadius: 999, fontSize: 14, fontWeight: 600, color: P.ink, textDecoration: "none", border: `1px solid ${P.tan}` }}>
+            <Link href="/login" style={{ padding: "7px 20px", borderRadius: 999, fontSize: 14, fontWeight: 600, color: P.ink, textDecoration: "none", border: `1px solid ${P.tan}` }}>
               {s(C.signIn)}
             </Link>
           </div>
