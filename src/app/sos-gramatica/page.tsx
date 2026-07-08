@@ -156,6 +156,32 @@ const GRAMMAR_CLASSES: GrammarClass[] = [
     sentencePt: "Você pode me ajudar? Eu não entendo.",
     sentenceEn: "Can you help me? I don't understand.",
   },
+  {
+    number: 12,
+    ptName: "Verbos Irregulares",
+    enName: "Irregular Verbs",
+    definition:
+      "Verbos que NÃO seguem a regra do -ed no passado. Cada um tem três formas próprias (presente – passado – particípio) que precisam ser memorizadas. São os verbos mais usados do inglês — os 15 abaixo aparecem em quase toda conversa.",
+    examples: [
+      { pt: "ser / estar", en: "be – was/were – been" },
+      { pt: "ter", en: "have – had – had" },
+      { pt: "fazer", en: "do – did – done" },
+      { pt: "dizer", en: "say – said – said" },
+      { pt: "ir", en: "go – went – gone" },
+      { pt: "conseguir / pegar", en: "get – got – gotten" },
+      { pt: "fazer / criar", en: "make – made – made" },
+      { pt: "saber / conhecer", en: "know – knew – known" },
+      { pt: "pensar", en: "think – thought – thought" },
+      { pt: "pegar / levar", en: "take – took – taken" },
+      { pt: "ver", en: "see – saw – seen" },
+      { pt: "vir", en: "come – came – come" },
+      { pt: "dar", en: "give – gave – given" },
+      { pt: "encontrar / achar", en: "find – found – found" },
+      { pt: "contar / dizer", en: "tell – told – told" },
+    ],
+    sentencePt: "Ontem eu fui ao mercado e fiz o jantar.",
+    sentenceEn: "Yesterday I went to the market and made dinner.",
+  },
 ];
 
 const SUMMARY = [
@@ -170,6 +196,7 @@ const SUMMARY = [
   ["Interjeição", "Interjection"],
   ["Numeral", "Numeral"],
   ["Verbo Auxiliar", "Auxiliary Verb"],
+  ["Verbos Irregulares", "Irregular Verbs"],
 ];
 
 export default function SosGramaticaPage() {
