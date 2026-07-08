@@ -70,8 +70,8 @@ const C = {
 
   aboutEyebrow: b("Meet your teacher", "Conheça sua professora"),
   aboutQuote:   b(
-    "Fluency is built, class by class, mistakes by mistakes, conversation by conversation. I'm here to walk every step of that journey with you.",
-    "A fluência é construída aula por aula, erro por erro, conversa por conversa. Estou aqui para caminhar cada passo dessa jornada com você.",
+    "Fluency is built, class by class, mistakes by mistakes, conversation by conversation. I'm here to walk every step of that journey with you. Are you ready to communicate with confidence in a multi-polar world?",
+    "A fluência é construída aula por aula, erro por erro, conversa por conversa. Estou aqui para caminhar cada passo dessa jornada com você. Você está pronto(a) para se comunicar com confiança em um mundo multipolar?",
   ),
   aboutIt:      b("IT background", "Background em TI"),
   aboutItDesc:  b(
