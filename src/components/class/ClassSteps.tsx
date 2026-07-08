@@ -667,8 +667,9 @@ export function FeedbackStepView({ klass }: { klass: GeneratedClass }) {
     <StepShell
       stepNumber={6}
       totalSteps={TOTAL}
-      title="Delayed feedback"
-      preview="Class finished. Now look back at your own speaking — this is self-evaluation, not a new exercise."
+      title="Self-check"
+      preview="The lesson is finished. This is a review of your own speaking — not a new exercise."
+      review
     >
       {/* Debrief banner — visually distinct from class exercises */}
       <div className="flex items-start gap-3 rounded-xl border border-amber-300/60 bg-amber-50 px-4 py-3.5 dark:border-amber-700/40 dark:bg-amber-950/25">

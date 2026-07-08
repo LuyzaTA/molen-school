@@ -35,20 +35,38 @@ export function AgendaPreview({
         <p className="mt-2 text-[15px] text-ink-muted">
           {autistic
             ? "Here is the full plan for today. Every step is listed in order so you know exactly what's coming. You can pass on any speaking prompt."
-            : "Here's the plan. Five steps, all built to get you talking."}
+            : "Here's the plan. Five steps built to get you talking, plus a quick self-check at the end."}
         </p>
       </header>
 
       <Card>
         <ol className="space-y-3">
-          {klass.agenda.map((label, i) => (
-            <li key={i} className="flex items-start gap-4">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent-soft text-sm font-bold text-accent">
-                {i + 1}
-              </span>
-              <span className="pt-1 text-[15px] text-ink">{label}</span>
-            </li>
-          ))}
+          {klass.agenda.map((label, i) => {
+            // The last agenda item is the self-check review, not a lesson step —
+            // mark it with a check icon instead of a number.
+            const isReview = i === klass.agenda.length - 1;
+            return (
+              <li key={i} className="flex items-start gap-4">
+                {isReview ? (
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-amber-400/60 bg-amber-100 text-sm font-bold text-amber-700 dark:border-amber-600/50 dark:bg-amber-900/40 dark:text-amber-400">
+                    ✓
+                  </span>
+                ) : (
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent-soft text-sm font-bold text-accent">
+                    {i + 1}
+                  </span>
+                )}
+                <span className="pt-1 text-[15px] text-ink">
+                  {label}
+                  {isReview && (
+                    <span className="ml-2 rounded-pill border border-amber-400/50 bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-700 dark:border-amber-600/40 dark:bg-amber-900/40 dark:text-amber-400">
+                      review — not a lesson step
+                    </span>
+                  )}
+                </span>
+              </li>
+            );
+          })}
         </ol>
       </Card>
 

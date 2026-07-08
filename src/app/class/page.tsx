@@ -32,7 +32,7 @@ const STEP_LABELS = [
   { label: "Target language" },
   { label: "Guided" },
   { label: "Free" },
-  { label: "Feedback" },
+  { label: "✓ Self-check" },
 ];
 
 export default function ClassPage() {

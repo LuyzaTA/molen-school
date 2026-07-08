@@ -486,7 +486,7 @@ export function buildMockClass(input: ClassGenInput): GeneratedClass {
       "Target language: vocabulary + 2 structures",
       "Guided production: frames & role-play",
       a1Content ? "Vocabulary practice" : "Free production: speak freely",
-      "Feedback: self-check",
+      "Self-check: review your speaking (after the lesson)",
     ],
     warmUp: {
       questions: warmUpQuestions,

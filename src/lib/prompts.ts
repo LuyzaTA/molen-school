@@ -426,7 +426,9 @@ Content requirements:
 - feedback: a short intro, a 4–6 item self-correction checklist, and 3–5 concrete
   common errors Brazilian learners make on this topic to listen for.
 - agenda: 6 short human-readable labels, one per stage (story, warm-up, target
-  language, guided production, free production, feedback), for an at-a-glance preview.
+  language, guided production, free production, self-check), for an at-a-glance
+  preview. The LAST label is the post-lesson self-check review — word it as a
+  review (e.g. "Self-check: review your speaking"), not as another lesson step.
 - grammar: 3–5 named grammar points the class practises (e.g. "Past simple",
   "Possessive pronouns", "Present perfect", "Comparatives"). Short labels only.
 - warmUp.grammarNote: a 2–3 sentence student-friendly explanation of today's grammar
