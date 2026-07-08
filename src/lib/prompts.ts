@@ -355,7 +355,7 @@ Panel count and sentence depth by CEFR level:
   C2 → 6 panels · 5–7 literary-quality sentences each · nuanced expression
 
 For each panel provide:
-  • text  — the panel's story prose at exactly ${level} level
+  • text  — the panel's story prose at exactly ${input.level} level
   • scene — 4–8 words describing what would be illustrated (e.g. "Two friends ordering coffee at a café")
   • emoji — 1–3 emojis that visually represent the scene
   • vocab — list of target vocabulary terms (exact strings from targetLanguage.vocab) that appear in this panel's text
