@@ -59,7 +59,7 @@ const C = {
   heroCta1:     b("Start learning", "Começar"),
   heroCta2:     b("Already a student", "Já sou aluno(a)"),
   heroQuote:    b('"I finally started speaking!" 🎉', '"Finalmente comecei a falar!" 🎉'),
-  heroStat:     b("🇳🇱 #1 English fluency worldwide", "🇳🇱 #1 em fluência de inglês no mundo"),
+  heroStat:     b("#1 English fluency worldwide", "#1 em fluência de inglês no mundo"),
 
   whyEyebrow:   b("Why Molen Works", "Por que a Molen Funciona"),
   whyH2:        b("English is spoken, not memorized.", "Inglês se fala, não se memoriza."),
@@ -120,22 +120,84 @@ function getPillars(lang: Lang) {
   ];
 }
 
+// Flag emojis don't render on Windows (they fall back to letter pairs like
+// "BR"), so flags are drawn as tiny inline SVGs that look the same everywhere.
+type FlagCode = "br" | "pl" | "bg" | "nl" | "us";
+
+const FLAG_ART: Record<FlagCode, React.ReactNode> = {
+  br: (
+    <>
+      <rect width="30" height="21" fill="#009C3B" />
+      <path d="M15 3.2 26 10.5 15 17.8 4 10.5Z" fill="#FEDF00" />
+      <circle cx="15" cy="10.5" r="4" fill="#002776" />
+    </>
+  ),
+  pl: (
+    <>
+      <rect width="30" height="10.5" fill="#FFFFFF" />
+      <rect y="10.5" width="30" height="10.5" fill="#DC143C" />
+    </>
+  ),
+  bg: (
+    <>
+      <rect width="30" height="7" fill="#FFFFFF" />
+      <rect y="7" width="30" height="7" fill="#00966E" />
+      <rect y="14" width="30" height="7" fill="#D62612" />
+    </>
+  ),
+  nl: (
+    <>
+      <rect width="30" height="7" fill="#AE1C28" />
+      <rect y="7" width="30" height="7" fill="#FFFFFF" />
+      <rect y="14" width="30" height="7" fill="#21468B" />
+    </>
+  ),
+  us: (
+    <>
+      <rect width="30" height="21" fill="#FFFFFF" />
+      <rect y="0" width="30" height="3" fill="#B22234" />
+      <rect y="6" width="30" height="3" fill="#B22234" />
+      <rect y="12" width="30" height="3" fill="#B22234" />
+      <rect y="18" width="30" height="3" fill="#B22234" />
+      <rect width="13" height="9" fill="#3C3B6E" />
+    </>
+  ),
+};
+
+function Flag({ code, width = 30 }: { code: FlagCode; width?: number }) {
+  const height = Math.round(width * 0.7);
+  return (
+    <svg
+      width={width}
+      height={height}
+      viewBox="0 0 30 21"
+      aria-hidden
+      style={{ display: "block", borderRadius: 3, boxShadow: "0 0 0 1px rgba(42,45,40,0.15)" }}
+    >
+      <clipPath id={`flag-clip-${code}`}>
+        <rect width="30" height="21" rx="3" />
+      </clipPath>
+      <g clipPath={`url(#flag-clip-${code})`}>{FLAG_ART[code]}</g>
+    </svg>
+  );
+}
+
 function getCountries(lang: Lang) {
   return [
     {
-      flag: "🇧🇷",
+      flags: ["br"] as FlagCode[],
       label: lang === "en" ? "Born & raised in Brazil"                        : "Nascida e criada no Brasil",
       desc:  lang === "en" ? "Where the dream of speaking English fluently began." : "Onde começou o sonho de falar inglês com fluência.",
     },
     {
-      flag: "🇵🇱🇧🇬🇳🇱",
+      flags: ["pl", "bg", "nl"] as FlagCode[],
       label: lang === "en" ? "Poland · Bulgaria · Netherlands — 10 years abroad" : "Polônia · Bulgária · Países Baixos — 10 anos no exterior",
       desc:  lang === "en"
         ? "A decade building an IT career across Europe, with language as the constant thread."
         : "Uma década construindo carreira em TI pela Europa, com o idioma como fio condutor.",
     },
     {
-      flag: "🇺🇸",
+      flags: ["us"] as FlagCode[],
       label: lang === "en" ? "California — English studies"                    : "Califórnia — estudos de inglês",
       desc:  lang === "en"
         ? "Immersive language study in the United States, from classrooms to daily conversations."
@@ -232,7 +294,8 @@ export function LandingClient() {
             <div style={{ position: "absolute", top: 0, right: -16, maxWidth: 168, transform: "rotate(3deg)", backgroundColor: P.cream, color: P.ink, borderRadius: 16, padding: "12px 16px", fontSize: 13, fontWeight: 500, lineHeight: 1.45, boxShadow: "0 8px 32px rgba(0,0,0,0.22)" }}>
               {s(C.heroQuote)}
             </div>
-            <div style={{ position: "absolute", bottom: 0, left: -8, transform: "rotate(-2deg)", backgroundColor: P.gold, color: P.dark, borderRadius: 14, padding: "10px 18px", fontSize: 13, fontWeight: 700, boxShadow: "0 6px 24px rgba(0,0,0,0.25)", whiteSpace: "nowrap" }}>
+            <div style={{ position: "absolute", bottom: 0, left: -8, transform: "rotate(-2deg)", backgroundColor: P.gold, color: P.dark, borderRadius: 14, padding: "10px 18px", fontSize: 13, fontWeight: 700, boxShadow: "0 6px 24px rgba(0,0,0,0.25)", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 8 }}>
+              <Flag code="nl" width={22} />
               {s(C.heroStat)}
             </div>
           </div>
@@ -305,9 +368,13 @@ export function LandingClient() {
 
             {/* Country + IT cards */}
             <div style={{ display: "flex", flexDirection: "column", gap: 16, paddingTop: 8 }}>
-              {countries.map(({ flag, label, desc }) => (
+              {countries.map(({ flags, label, desc }) => (
                 <div key={label} style={{ backgroundColor: P.cream, border: `1px solid ${P.tan}`, borderRadius: 18, padding: "18px 20px", display: "flex", alignItems: "flex-start", gap: 16, boxShadow: "0 1px 2px rgba(42,45,40,0.04)" }}>
-                  <span style={{ fontSize: 28, lineHeight: 1 }}>{flag}</span>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 4, flexShrink: 0, paddingTop: 2 }}>
+                    {flags.map((f) => (
+                      <Flag key={f} code={f} />
+                    ))}
+                  </div>
                   <div>
                     <p style={{ fontSize: 14, fontWeight: 600, color: P.ink }}>{label}</p>
                     <p style={{ fontSize: 13, color: P.inkMuted, marginTop: 3, lineHeight: 1.5 }}>{desc}</p>
