@@ -82,34 +82,6 @@ export function SiteFooter() {
           />
         </div>
 
-        {/* Described guarantees */}
-        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <InfoCard
-            title="You may always pass"
-            desc="No one is ever forced to perform. Every speaking prompt has a clear, judgement-free pass."
-          />
-          <InfoCard
-            title="Predictable structure"
-            desc="The full lesson agenda is previewed up front, and every step says exactly what you'll do."
-          />
-          <InfoCard
-            title="Built-in thinking time"
-            desc="Prompts come in writing as well as speech, with space to process before you respond."
-          />
-          <InfoCard
-            title="Concrete feedback"
-            desc="Specific, literal feedback — never a vague 'good job'. You always know what to repeat or fix."
-          />
-          <InfoCard
-            title="Keyboard & screen-reader friendly"
-            desc="Full keyboard navigation, visible focus rings, semantic markup, and labelled controls throughout."
-          />
-          <InfoCard
-            title="WCAG AA+ contrast"
-            desc="Colour and type meet or exceed AA contrast in every theme, including dark mode."
-          />
-        </div>
-
         {/* Bottom bar */}
         <div className="mt-14 flex flex-col items-center gap-4 border-t border-border/70 pt-8 text-center sm:flex-row sm:justify-between sm:text-left">
           <Logo size={40} />
@@ -180,24 +152,6 @@ function ControlCard({
         {active ? "On" : disabled ? "On (in Calm mode)" : "Tap to turn on"}
       </span>
     </button>
-  );
-}
-
-function InfoCard({ title, desc }: { title: string; desc: string }) {
-  return (
-    <div className="rounded-card border border-border bg-surface/80 p-5">
-      <div className="flex items-start gap-3">
-        <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-green-soft text-green">
-          <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={3}>
-            <path d="m5 13 4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </span>
-        <div>
-          <h3 className="font-semibold text-ink">{title}</h3>
-          <p className="mt-1 text-sm text-ink-muted">{desc}</p>
-        </div>
-      </div>
-    </div>
   );
 }
 
