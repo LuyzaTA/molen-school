@@ -1,4 +1,4 @@
-import type { ClassGenInput, GeneratedClass, VocabItem } from "./types";
+import type { ClassGenInput, GeneratedClass, VocabItem, ClassStory } from "./types";
 import { getCEFRInfo } from "./cefr";
 import { getA1TopicContent } from "./a1TopicMocks";
 
@@ -136,6 +136,189 @@ function buildVocab(topic: string): VocabItem[] {
   ];
 }
 
+// ---- Topic emoji map (best-effort visual matching) ----
+const TOPIC_EMOJI_MAP: [string, string[]][] = [
+  ["greet|introduc",   ["👋", "😊", "🤝"]],
+  ["family|parents",   ["👨‍👩‍👧", "🏠", "❤️"]],
+  ["food|drink|eat|restaurant|café|cafe", ["🍽️", "☕", "🥗"]],
+  ["travel|transport|trip|flight|airport", ["✈️", "🗺️", "🚂"]],
+  ["work|job|office|business|meeting",    ["💼", "📊", "🤝"]],
+  ["school|class|study|learn|education",  ["📚", "✏️", "🎓"]],
+  ["weather|rain|sun|cloud|season",       ["☀️", "🌧️", "🌤️"]],
+  ["sport|exercise|gym|fitness|football", ["⚽", "🏃", "💪"]],
+  ["music|concert|song|band|play",        ["🎵", "🎸", "🎤"]],
+  ["home|house|room|apartment|flat",      ["🏠", "🛋️", "🪟"]],
+  ["technology|tech|computer|phone|internet", ["💻", "📱", "🔧"]],
+  ["health|doctor|hospital|medicine|sick", ["🏥", "💊", "🩺"]],
+  ["animal|pet|dog|cat|zoo",             ["🐕", "🐈", "🦁"]],
+  ["shopping|shop|store|buy|price",      ["🛍️", "💳", "🏪"]],
+  ["colour|color|number|count",          ["🎨", "🔢", "✨"]],
+  ["body|exercise|yoga|stretch",         ["🧘", "💪", "🏃"]],
+  ["clothes|fashion|wear|dress",         ["👗", "👔", "👟"]],
+  ["hobby|read|draw|paint|game",         ["🎮", "📖", "🎨"]],
+];
+
+function topicEmojis(topic: string): string[] {
+  const t = topic.toLowerCase();
+  for (const [pattern, emojis] of TOPIC_EMOJI_MAP) {
+    if (new RegExp(pattern).test(t)) return emojis;
+  }
+  return ["📖", "💡", "🌟", "🎯", "✨", "🗣️"];
+}
+
+function buildMockStory(topic: string, level: string, vocab: VocabItem[]): ClassStory {
+  const t = topic.trim();
+  const terms = vocab.slice(0, 8).map(v => v.term.split("/")[0].trim());
+  const emojis = topicEmojis(t);
+
+  const isA1 = level === "A1";
+  const isA2 = level === "A2";
+  const isAdvanced = level === "C1" || level === "C2";
+  const panelCount = isA1 ? 3 : isA2 ? 4 : isAdvanced ? 6 : 5;
+
+  // Build natural sentences that embed the vocab terms
+  const v = (i: number) => terms[i] ?? t;
+
+  if (isA1) {
+    return {
+      title: `A ${t} Story`,
+      panels: [
+        {
+          text: `This is Ana. She is a student. Today she learns about ${t}.`,
+          scene: `Student at desk with book`,
+          emoji: emojis[0],
+          vocab: terms.slice(0, 2),
+        },
+        {
+          text: `Ana says: "${v(0)}!" She uses ${v(1)}. It is easy and fun.`,
+          scene: `Student speaking and smiling`,
+          emoji: emojis[1],
+          vocab: terms.slice(0, 3),
+        },
+        {
+          text: `At the end, Ana is happy. She says: "${v(2)}!" She practices every day.`,
+          scene: `Happy student giving thumbs up`,
+          emoji: emojis[2] ?? "🌟",
+          vocab: terms.slice(2, 4),
+        },
+      ],
+    };
+  }
+
+  if (isA2) {
+    return {
+      title: `A Story About ${t}`,
+      panels: [
+        {
+          text: `Last week, Marco decided to explore ${t}. He was nervous at first, but he knew it was important.`,
+          scene: `Person thinking about starting something new`,
+          emoji: emojis[0],
+          vocab: [v(0), v(1)],
+        },
+        {
+          text: `He used ${v(0)} and ${v(1)} to get started. It was simpler than he expected.`,
+          scene: `Person actively doing the activity`,
+          emoji: emojis[1],
+          vocab: [v(0), v(1), v(2)],
+        },
+        {
+          text: `Marco made a small mistake with ${v(2)}, but he didn't give up. He tried again.`,
+          scene: `Person overcoming a challenge`,
+          emoji: emojis[2] ?? "💪",
+          vocab: [v(2), v(3)],
+        },
+        {
+          text: `In the end, Marco felt confident. He understood ${v(3)} and ${v(4)} much better now.`,
+          scene: `Person smiling, looking confident`,
+          emoji: "🌟",
+          vocab: [v(3), v(4)],
+        },
+      ],
+    };
+  }
+
+  if (isAdvanced) {
+    return {
+      title: `The Art of ${t}`,
+      panels: [
+        {
+          text: `Elena had always been fascinated by ${t}. She had grown up surrounded by it, absorbing its nuances without ever formally studying them.`,
+          scene: `Person reflecting on a lifelong passion`,
+          emoji: emojis[0],
+          vocab: [v(0), v(1)],
+        },
+        {
+          text: `One afternoon, she decided to challenge herself. Using ${v(0)} and ${v(1)}, she approached the subject from an entirely new angle.`,
+          scene: `Person studying and taking notes at a desk`,
+          emoji: emojis[1],
+          vocab: [v(0), v(1), v(2)],
+        },
+        {
+          text: `The deeper she explored, the more she discovered. ${v(2)} led her to ${v(3)}, and ${v(3)} opened doors she hadn't expected.`,
+          scene: `Lightbulb moment, person realising connections`,
+          emoji: "💡",
+          vocab: [v(2), v(3)],
+        },
+        {
+          text: `She consulted colleagues, debated ideas, and tested assumptions. The tension between ${v(4)} and ${v(5)} became the central question of her inquiry.`,
+          scene: `Group discussion in a professional setting`,
+          emoji: emojis[2] ?? "🗣️",
+          vocab: [v(4), v(5)],
+        },
+        {
+          text: `Weeks later, Elena presented her findings. Her command of the subject — its vocabulary, its subtleties, its contradictions — was unmistakably refined.`,
+          scene: `Person presenting confidently to an audience`,
+          emoji: "🎯",
+          vocab: [v(5), v(6)],
+        },
+        {
+          text: `The journey through ${t} had changed her perspective entirely. She understood not just the what, but the why — and that made all the difference.`,
+          scene: `Person looking satisfied and thoughtful`,
+          emoji: "✨",
+          vocab: [v(6), v(7)].filter(Boolean),
+        },
+      ],
+    };
+  }
+
+  // B1 / B2 default (5 panels)
+  return {
+    title: `A Story About ${t}`,
+    panels: [
+      {
+        text: `Sara had been thinking about ${t} for a long time. She decided it was finally time to do something about it.`,
+        scene: `Person making a decision`,
+        emoji: emojis[0],
+        vocab: [v(0), v(1)],
+      },
+      {
+        text: `She started with ${v(0)} — it was harder than expected, but she kept going. ${v(1)} turned out to be the key.`,
+        scene: `Person working through a challenge`,
+        emoji: emojis[1],
+        vocab: [v(0), v(1), v(2)],
+      },
+      {
+        text: `Along the way, she met different people. Some agreed with her approach to ${v(2)}, others didn't — but everyone had something interesting to say.`,
+        scene: `People having a lively conversation`,
+        emoji: "💬",
+        vocab: [v(2), v(3)],
+      },
+      {
+        text: `There was a difficult moment when ${v(3)} went wrong. But Sara used ${v(4)} to find a solution, and it worked.`,
+        scene: `Person solving a problem with determination`,
+        emoji: emojis[2] ?? "💪",
+        vocab: [v(3), v(4)],
+      },
+      {
+        text: `In the end, Sara felt proud. She had learned that ${v(5)} and ${v(0)} were more connected than she ever realised.`,
+        scene: `Person smiling at the result of their efforts`,
+        emoji: "🌟",
+        vocab: [v(5), v(0)],
+      },
+    ],
+  };
+}
+
 export function buildMockClass(input: ClassGenInput): GeneratedClass {
   const info = getCEFRInfo(input.level);
   const t = input.topic.trim() || "everyday life";
@@ -174,6 +357,9 @@ export function buildMockClass(input: ClassGenInput): GeneratedClass {
         `Quem na sua vida também tem interesse em ${t}?`,
       ];
 
+  // Build the vocab list first so the story can reference real terms.
+  const vocabList = a1Content ? a1Content.vocab : business ? buildBusinessVocab(t) : buildVocab(t);
+
   return {
     topic: t,
     level: input.level,
@@ -182,8 +368,10 @@ export function buildMockClass(input: ClassGenInput): GeneratedClass {
     grammar: a1Content ? a1Content.grammarPoints : buildGrammar(beginner, advanced, business),
     speakingRatio: info.speakingRatio,
     estimatedMinutes: beginner ? 45 : advanced ? 60 : 50,
+    story: buildMockStory(t, input.level, vocabList),
     generatedBy: "mock",
     agenda: [
+      "Story: illustrated comic panels",
       "Warm-up: 5 questions",
       "Target language: vocabulary + 2 structures",
       "Guided production: frames & role-play",
@@ -196,7 +384,7 @@ export function buildMockClass(input: ClassGenInput): GeneratedClass {
       grammarNote: a1Content ? a1Content.grammarNote : buildGrammarNote(beginner, advanced, business),
     },
     targetLanguage: {
-      vocab: a1Content ? a1Content.vocab : business ? buildBusinessVocab(t) : buildVocab(t),
+      vocab: vocabList,
       structures: a1Content
         ? [
             { pattern: "I am / I have ___", example: `I am a student. I have a ${t.split(" ")[0].toLowerCase()}.` },

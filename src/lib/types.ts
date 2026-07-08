@@ -66,6 +66,22 @@ export interface FeedbackStep {
   commonErrors: string[]; // concrete things to listen for
 }
 
+// ---- Story (Step 1 — comic panels) --------------------------------
+
+export interface StoryPanel {
+  text: string;    // panel prose at the learner's CEFR level
+  scene: string;   // 4–8 word visual description of the scene
+  emoji: string;   // 1–3 emojis representing the scene illustration
+  vocab: string[]; // target vocab terms that appear in this panel's text
+}
+
+export interface ClassStory {
+  title: string;
+  panels: StoryPanel[];
+}
+
+// -------------------------------------------------------------------
+
 export interface GeneratedClass {
   topic: string;
   level: CEFRLevel;
@@ -73,6 +89,7 @@ export interface GeneratedClass {
   speakingRatio: number; // 0-1, share of time spent speaking
   estimatedMinutes: number;
   agenda: string[]; // human-readable step labels (for autistic-mode preview)
+  story?: ClassStory; // comic-panel story (Step 1); optional for backwards compat
   warmUp: WarmUpStep;
   targetLanguage: TargetLanguageStep;
   guidedProduction: GuidedProductionStep;

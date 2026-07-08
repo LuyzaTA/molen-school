@@ -12,6 +12,7 @@ import { useProgress } from "@/context/ProgressContext";
 import { TopicPicker } from "@/components/class/TopicPicker";
 import { AgendaPreview } from "@/components/class/AgendaPreview";
 import {
+  StoryStepView,
   WarmUpStepView,
   TargetLanguageStepView,
   GuidedProductionStepView,
@@ -26,6 +27,7 @@ import { Logo } from "@/components/ui/Logo";
 type Phase = "pick" | "loading" | "agenda" | "running" | "done";
 
 const STEP_LABELS = [
+  { label: "Story" },
   { label: "Warm-up" },
   { label: "Target language" },
   { label: "Guided" },
@@ -160,11 +162,12 @@ export default function ClassPage() {
   // ---- Phase: running the stepper ----
   if (phase === "running" && klass) {
     const steps = [
-      <WarmUpStepView key="0" klass={klass} />,
-      <TargetLanguageStepView key="1" klass={klass} />,
-      <GuidedProductionStepView key="2" klass={klass} />,
-      <FreeProductionStepView key="3" klass={klass} />,
-      <FeedbackStepView key="4" klass={klass} />,
+      <StoryStepView key="story" klass={klass} />,
+      <WarmUpStepView key="warmup" klass={klass} />,
+      <TargetLanguageStepView key="target" klass={klass} />,
+      <GuidedProductionStepView key="guided" klass={klass} />,
+      <FreeProductionStepView key="free" klass={klass} />,
+      <FeedbackStepView key="feedback" klass={klass} />,
     ];
     const isLast = stepIndex === steps.length - 1;
 

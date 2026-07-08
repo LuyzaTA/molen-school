@@ -124,6 +124,28 @@ export function buildClassSchema(level: CEFRLevel) {
     speakingRatio: { type: "number" },
     estimatedMinutes: { type: "integer" },
     agenda: { type: "array", items: { type: "string" } },
+    story: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        title: { type: "string" },
+        panels: {
+          type: "array",
+          items: {
+            type: "object",
+            additionalProperties: false,
+            properties: {
+              text: { type: "string" },
+              scene: { type: "string" },
+              emoji: { type: "string" },
+              vocab: { type: "array", items: { type: "string" } },
+            },
+            required: ["text", "scene", "emoji", "vocab"],
+          },
+        },
+      },
+      required: ["title", "panels"],
+    },
     warmUp: {
       type: "object",
       additionalProperties: false,
@@ -208,6 +230,7 @@ export function buildClassSchema(level: CEFRLevel) {
     "speakingRatio",
     "estimatedMinutes",
     "agenda",
+    "story",
     "warmUp",
     "targetLanguage",
     "guidedProduction",
@@ -318,6 +341,31 @@ to the topic name.
 
 Apply this rule at every level: for "Travel experiences" (B1) teach: delayed, depart,
 luggage, customs, book a hotel, recommend, journey — not meta-discussion phrases about travel.
+
+STORY (Step 1 — comic-panel illustrated story):
+Before the warm-up, write a short illustrated story set in the world of the topic.
+The story is shown to the student as comic panels; they click Next to reveal each one.
+
+Panel count and sentence depth by CEFR level:
+  A1 → 3 panels · 1–2 simple sentences each · present simple only · very short words
+  A2 → 4 panels · 2–3 sentences each · past simple + simple present
+  B1 → 5 panels · 3–4 sentences each · varied tenses · linking words
+  B2 → 5 panels · 4–5 sentences each · subordinate clauses · discourse markers
+  C1 → 6 panels · 5–6 sentences each · complex structures · precise vocabulary
+  C2 → 6 panels · 5–7 literary-quality sentences each · nuanced expression
+
+For each panel provide:
+  • text  — the panel's story prose at exactly ${level} level
+  • scene — 4–8 words describing what would be illustrated (e.g. "Two friends ordering coffee at a café")
+  • emoji — 1–3 emojis that visually represent the scene
+  • vocab — list of target vocabulary terms (exact strings from targetLanguage.vocab) that appear in this panel's text
+
+Story rules:
+  - Use at least 6 target vocabulary words spread naturally across all panels
+  - Clear arc: setup → development → resolution
+  - Relatable adult characters in realistic situations matching the topic
+  - Vocabulary must appear in genuine context, never forced
+  - story.title should be a short engaging title for the story
 
 Content requirements:
 - warmUp.questions: exactly 5 personal, easy-to-answer questions to break the ice.
