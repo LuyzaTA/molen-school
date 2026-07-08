@@ -4,6 +4,7 @@
 
 export type PosToken =
   | { kind: "word"; text: string; tag: string }
+  | { kind: "blank"; text: string } // fill-in-the-blank marker (one or more underscores)
   | { kind: "space"; text: string }
   | { kind: "punct"; text: string };
 
@@ -50,15 +51,19 @@ function getTag(raw: string): string {
   return "Noun";
 }
 
-/** Tokenise a sentence into words, spaces and punctuation. */
+/** Tokenise a sentence into words, blanks, spaces and punctuation. */
 export function tokenize(text: string): PosToken[] {
   const tokens: PosToken[] = [];
-  // Match words (with optional apostrophe), whitespace runs, or punctuation
-  const re = /[a-zA-Z][a-zA-Z']*|[^\w\s]+|\s+/g;
+  // Match: blank markers (1+ underscores), words (with optional apostrophe),
+  // whitespace runs, or punctuation. Blanks must come before the generic \w+ so
+  // they are captured as their own kind rather than silently dropped.
+  const re = /_+|[a-zA-Z][a-zA-Z']*|[^\w\s]+|\s+/g;
   let m: RegExpExecArray | null;
   while ((m = re.exec(text)) !== null) {
     const t = m[0];
-    if (/^\s+$/.test(t)) {
+    if (/^_+$/.test(t)) {
+      tokens.push({ kind: "blank", text: t });
+    } else if (/^\s+$/.test(t)) {
       tokens.push({ kind: "space", text: t });
     } else if (/^[a-zA-Z]/.test(t)) {
       tokens.push({ kind: "word", text: t, tag: getTag(t) });

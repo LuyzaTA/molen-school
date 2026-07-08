@@ -326,6 +326,8 @@ Content requirements:
 - targetLanguage.structures: exactly 2 sentence structures/patterns with an example.
 - guidedProduction: a short intro, 4–6 sentence frames the learner completes, one
   role-play (scenario + roles), and 2–3 picture/visualisation prompts.
+  For any fill-in-the-blank slot in sentence frames or prompts, always write
+  ______ (six underscores). Never use a dot (.) as a placeholder.
 - freeProduction: a short intro and 3–5 prompts. For A1: structured vocabulary/sentence-
   building activities (format: vocabulary_practice, sentence_building, or
   picture_description). For A2+: open-ended speaking (format: discussion, debate,

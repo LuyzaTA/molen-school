@@ -45,6 +45,7 @@ export function SpeakPrompt({
               <p className="text-[15px] leading-relaxed text-ink">{translation}</p>
               <p className="mt-1.5 text-sm text-ink-subtle">
                 {tokens.map((tok, i) => {
+                  if (tok.kind === "blank") return <Blank key={i} />;
                   if (tok.kind !== "word") return <span key={i}>{tok.text}</span>;
                   const open = activeWord === i;
                   return (
@@ -74,6 +75,7 @@ export function SpeakPrompt({
           ) : (
             <p className="text-[15px] leading-relaxed text-ink">
               {tokens.map((tok, i) => {
+                if (tok.kind === "blank") return <Blank key={i} />;
                 if (tok.kind !== "word") return <span key={i}>{tok.text}</span>;
                 const open = activeWord === i;
                 return (
@@ -160,5 +162,15 @@ function PassButton({ onPass }: { onPass: () => void }) {
     >
       You may pass
     </button>
+  );
+}
+
+/** Visual fill-in-the-blank slot rendered wherever ___ appears in content. */
+function Blank() {
+  return (
+    <span
+      aria-label="blank"
+      className="mx-0.5 inline-block min-w-[4.5rem] border-b-2 border-accent align-baseline"
+    />
   );
 }
