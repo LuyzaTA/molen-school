@@ -11,12 +11,14 @@ import {
 } from "react";
 import type { UserProfile } from "@/lib/types";
 import { DEFAULT_PROFILE } from "@/lib/storage";
+import { brandName, type TargetLanguage, type SupportLanguage } from "@/lib/language";
 
 export interface AccountMeta {
   userId: string;
   isAdmin: boolean;
   approved: boolean;
   active: boolean;
+  languages: TargetLanguage[]; // courses this account has started
 }
 
 interface SettingsContextValue {
@@ -27,6 +29,8 @@ interface SettingsContextValue {
   update: (patch: Partial<UserProfile>) => void;
   toggleAutistic: () => void;
   refresh: () => Promise<void>;
+  /** Switch course (and optionally the Dutch support language), then reload. */
+  switchLanguage: (language: TargetLanguage, supportLang?: SupportLanguage) => Promise<void>;
 }
 
 const SettingsContext = createContext<SettingsContextValue | null>(null);
@@ -60,6 +64,17 @@ function applyDocumentAttributes(profile: UserProfile) {
     "data-motion",
     profile.motion && !profile.autisticMode ? "on" : "off",
   );
+  root.setAttribute("data-lang", profile.language);
+}
+
+/**
+ * Keep the tab title's brand in step with the chosen course. The static
+ * metadata title is the English one, so only the Dutch course overrides it
+ * (switching course reloads the page, restoring the English title).
+ */
+export function applyBrandTitle(language: TargetLanguage) {
+  if (typeof document === "undefined" || language === "en") return;
+  document.title = brandName(language);
 }
 
 export function SettingsProvider({ children }: { children: ReactNode }) {
@@ -84,6 +99,9 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
                 isAdmin: !!data.account.isAdmin,
                 approved: data.account.approved !== false,
                 active: data.account.active !== false,
+                languages: Array.isArray(data.account.languages)
+                  ? data.account.languages
+                  : ["en"],
               }
             : null,
         );
@@ -125,7 +143,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         void fetch("/api/settings", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ level: next.level, settings }),
+          body: JSON.stringify({ level: next.level, supportLang: next.supportLang, settings }),
         });
       }, 500);
     },
@@ -144,6 +162,20 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     [authenticated, persist],
   );
 
+  const switchLanguage = useCallback(
+    async (language: TargetLanguage, supportLang?: SupportLanguage) => {
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+      await fetch("/api/language", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ language, supportLang }),
+      });
+      // Full reload so progress, homework, and meetings load for the new course.
+      window.location.assign(window.location.pathname.startsWith("/admin") ? window.location.pathname : "/dashboard");
+    },
+    [],
+  );
+
   const toggleAutistic = useCallback(
     () => update({ autisticMode: !profile.autisticMode }),
     [profile.autisticMode, update],
@@ -151,7 +183,16 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
   return (
     <SettingsContext.Provider
-      value={{ profile, account, ready, authenticated, update, toggleAutistic, refresh: load }}
+      value={{
+        profile,
+        account,
+        ready,
+        authenticated,
+        update,
+        toggleAutistic,
+        refresh: load,
+        switchLanguage,
+      }}
     >
       {children}
     </SettingsContext.Provider>

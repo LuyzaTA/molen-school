@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import { getResources } from "@/lib/server/store";
-import { RESOURCES } from "@/lib/mockData";
+import { getLang } from "@/lib/server/lang";
+import { defaultResources } from "@/lib/mockData";
 
 export const runtime = "nodejs";
 
-/** Resource library shown to students. Falls back to the seeded list. */
+/** Resource library for the current course. Falls back to the seeded list. */
 export async function GET() {
-  const stored = await getResources();
-  return NextResponse.json({ resources: stored ?? RESOURCES });
+  const lang = await getLang();
+  return NextResponse.json({ resources: (await getResources(lang)) ?? defaultResources(lang) });
 }

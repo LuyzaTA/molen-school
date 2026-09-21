@@ -6,14 +6,39 @@ import { StepShell } from "./StepShell";
 import { SpeakPrompt } from "./SpeakPrompt";
 import { Badge } from "@/components/ui/Badge";
 import { useSettings } from "@/context/SettingsContext";
+import { ListenButton } from "./ListenButton";
+import { Flag, langFlag, type FlagCode } from "@/components/ui/Flag";
 import { cn } from "@/lib/cn";
 
 const TOTAL = 6;
 
-/** A1 learners with translation on see Portuguese support. */
-function usePt(): boolean {
+interface Gloss {
+  dutch: boolean; // Dutch course: Dutch content + support-language glosses
+  show: boolean; // show the *Pt / translation fields
+  flag: FlagCode; // flag marking the gloss language
+}
+
+/**
+ * English course: A1 learners with the toggle on see Portuguese support.
+ * Dutch course: support-language translations are always shown.
+ */
+function useGloss(klass: GeneratedClass): Gloss {
   const { profile } = useSettings();
-  return profile.level === "A1" && profile.translatePt;
+  const dutch = klass.language === "nl";
+  if (dutch) {
+    return { dutch, show: true, flag: langFlag(klass.supportLang ?? profile.supportLang) };
+  }
+  return { dutch, show: profile.level === "A1" && profile.translatePt, flag: "br" };
+}
+
+/** Small support-language line under Dutch/English content. */
+function GlossLine({ flag, text, className }: { flag: FlagCode; text: string; className?: string }) {
+  return (
+    <p className={cn("flex items-start gap-1.5 text-sm italic text-accent", className)}>
+      <Flag code={flag} width={16} className="mt-[3px]" />
+      <span>{text}</span>
+    </p>
+  );
 }
 
 // ---- Story helpers ------------------------------------------
@@ -47,12 +72,13 @@ function VocabText({
   text,
   vocab,
   lookup,
+  showPt = false,
 }: {
   text: string;
   vocab: string[];
   lookup: Map<string, VocabInfo>;
+  showPt?: boolean;
 }) {
-  const showPt = usePt();
   const [open, setOpen] = useState<number | null>(null);
   const clean = vocab.filter(Boolean);
   if (!clean.length) return <>{text}</>;
@@ -78,7 +104,7 @@ function VocabText({
             {isOpen && info && (
               <span className="pointer-events-none absolute -top-9 left-1/2 z-30 w-max max-w-[240px] -translate-x-1/2 rounded-md bg-ink px-2.5 py-1 text-center text-xs font-medium not-italic text-base shadow-lg">
                 {info.meaning}
-                {showPt && info.meaningPt ? ` · 🇧🇷 ${info.meaningPt}` : ""}
+                {showPt && info.meaningPt ? ` · ${info.meaningPt}` : ""}
               </span>
             )}
           </span>
@@ -106,6 +132,7 @@ export function StoryStepView({ klass }: { klass: GeneratedClass }) {
   const [animDir, setAnimDir] = useState<"fwd" | "back">("fwd");
   const [done, setDone] = useState<Record<number, boolean>>({});
   const story = klass.story;
+  const gloss = useGloss(klass);
 
   if (!story || story.panels.length === 0) {
     return (
@@ -183,9 +210,10 @@ export function StoryStepView({ klass }: { klass: GeneratedClass }) {
       {/* Scene — key forces remount so reveal state resets per scene */}
       <div key={`gn-${idx}`} className={animDir === "fwd" ? "gn-slide-fwd" : "gn-slide-back"}>
         {isFinal ? (
-          <FullStoryPanel story={story} lookup={lookup} />
+          <FullStoryPanel story={story} lookup={lookup} gloss={gloss} />
         ) : (
           <ScenePanel
+            gloss={gloss}
             panel={panels[idx]}
             index={idx}
             total={panels.length}
@@ -237,6 +265,7 @@ export function StoryStepView({ klass }: { klass: GeneratedClass }) {
 }
 
 function ScenePanel({
+  gloss,
   panel,
   index,
   total,
@@ -245,6 +274,7 @@ function ScenePanel({
   initiallyDone,
   onComplete,
 }: {
+  gloss: Gloss;
   panel: StoryPanel;
   index: number;
   total: number;
@@ -258,6 +288,9 @@ function ScenePanel({
   const [shown, setShown] = useState(initiallyDone ? dialogue.length : 0);
   const [wrong, setWrong] = useState<number[]>([]);
   const [solved, setSolved] = useState(initiallyDone);
+  const [showTranslation, setShowTranslation] = useState(false);
+  const hasTranslation =
+    gloss.dutch && (!!panel.textTranslation || dialogue.some((d) => d.translation));
 
   const allShown = shown >= dialogue.length;
 
@@ -294,9 +327,15 @@ function ScenePanel({
 
       <div className="space-y-4 px-5 py-5">
         {/* Narration */}
-        <p className="font-serif text-[16.5px] leading-relaxed text-ink">
-          <VocabText text={panel.text} vocab={panel.vocab} lookup={lookup} />
-        </p>
+        <div className="flex items-start gap-2">
+          <p className="flex-1 font-serif text-[16.5px] leading-relaxed text-ink">
+            <VocabText text={panel.text} vocab={panel.vocab} lookup={lookup} showPt={gloss.show} />
+          </p>
+          {gloss.dutch && <ListenButton text={panel.text} />}
+        </div>
+        {showTranslation && panel.textTranslation && (
+          <GlossLine flag={gloss.flag} text={panel.textTranslation} />
+        )}
 
         {/* Dialogue — revealed line by line */}
         {dialogue.slice(0, shown).map((d, i) => {
@@ -315,13 +354,30 @@ function ScenePanel({
                 <span className={cn("text-[11px] font-bold uppercase tracking-wider", s.name)}>
                   {d.speaker}
                 </span>
-                <p className="mt-0.5 rounded-xl rounded-tl-sm border border-border bg-base/60 px-3.5 py-2 text-[15px] leading-relaxed text-ink">
-                  <VocabText text={d.line} vocab={panel.vocab} lookup={lookup} />
-                </p>
+                <div className="mt-0.5 flex items-start gap-2">
+                  <p className="rounded-xl rounded-tl-sm border border-border bg-base/60 px-3.5 py-2 text-[15px] leading-relaxed text-ink">
+                    <VocabText text={d.line} vocab={panel.vocab} lookup={lookup} showPt={gloss.show} />
+                  </p>
+                  {gloss.dutch && <ListenButton text={d.line} className="mt-1.5" />}
+                </div>
+                {showTranslation && d.translation && (
+                  <GlossLine flag={gloss.flag} text={d.translation} className="mt-1 pl-1" />
+                )}
               </div>
             </div>
           );
         })}
+
+        {hasTranslation && (
+          <button
+            type="button"
+            onClick={() => setShowTranslation((v) => !v)}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-accent hover:underline"
+          >
+            <Flag code={gloss.flag} width={16} />
+            {showTranslation ? "Hide translation" : "Show translation"}
+          </button>
+        )}
 
         {/* Reveal button */}
         {!allShown && (
@@ -384,9 +440,11 @@ function ScenePanel({
 function FullStoryPanel({
   story,
   lookup,
+  gloss,
 }: {
   story: NonNullable<GeneratedClass["story"]>;
   lookup: Map<string, VocabInfo>;
+  gloss: Gloss;
 }) {
   return (
     <div className="space-y-4">
@@ -414,13 +472,13 @@ function FullStoryPanel({
                 Scene {i + 1} — {panel.scene}
               </p>
               <p className="mt-1.5 font-serif text-[15.5px] leading-relaxed text-ink">
-                <VocabText text={panel.text} vocab={panel.vocab} lookup={lookup} />
+                <VocabText text={panel.text} vocab={panel.vocab} lookup={lookup} showPt={gloss.show} />
               </p>
               {(panel.dialogue ?? []).map((d, j) => (
                 <p key={j} className="mt-1 pl-4 text-[15px] leading-relaxed text-ink">
                   <span className="font-bold">{d.speaker}:</span>{" "}
                   <span className="italic">
-                    <VocabText text={d.line} vocab={panel.vocab} lookup={lookup} />
+                    <VocabText text={d.line} vocab={panel.vocab} lookup={lookup} showPt={gloss.show} />
                   </span>
                 </p>
               ))}
@@ -434,7 +492,7 @@ function FullStoryPanel({
 
 // 2 — Warm-up -------------------------------------------------
 export function WarmUpStepView({ klass }: { klass: GeneratedClass }) {
-  const showPt = usePt();
+  const gloss = useGloss(klass);
   const [grammarOpen, setGrammarOpen] = useState(false);
   const { grammarNote } = klass.warmUp;
   const grammarPoints = klass.grammar;
@@ -452,7 +510,9 @@ export function WarmUpStepView({ klass }: { klass: GeneratedClass }) {
           key={i}
           text={q}
           index={i}
-          translation={showPt ? klass.warmUp.questionsPt?.[i] : undefined}
+          translation={gloss.show ? klass.warmUp.questionsPt?.[i] : undefined}
+          dutch={gloss.dutch}
+          glossFlag={gloss.flag}
         />
       ))}
 
@@ -496,7 +556,7 @@ export function WarmUpStepView({ klass }: { klass: GeneratedClass }) {
 
 // 3 — Target language ----------------------------------------
 export function TargetLanguageStepView({ klass }: { klass: GeneratedClass }) {
-  const showPt = usePt();
+  const gloss = useGloss(klass);
   const { vocab, structures } = klass.targetLanguage;
   return (
     <StepShell
@@ -510,13 +570,24 @@ export function TargetLanguageStepView({ klass }: { klass: GeneratedClass }) {
           <div key={i} className="rounded-xl border border-border bg-surface p-4">
             <div className="flex flex-wrap items-center gap-2">
               <span className="font-semibold text-ink">{v.term}</span>
+              {gloss.dutch && <ListenButton text={v.term} />}
               {v.isIdiom && <Badge tone="warning">idiom</Badge>}
             </div>
-            <p className="mt-1 text-sm text-ink-muted">{v.meaning}</p>
-            {showPt && v.meaningPt && (
-              <p className="mt-0.5 text-sm italic text-accent">🇧🇷 {v.meaningPt}</p>
+            {gloss.dutch ? (
+              <GlossLine flag={gloss.flag} text={v.meaning} className="mt-1 not-italic text-ink-muted" />
+            ) : (
+              <p className="mt-1 text-sm text-ink-muted">{v.meaning}</p>
             )}
-            <p className="mt-1.5 text-sm italic text-ink">&ldquo;{v.example}&rdquo;</p>
+            {gloss.show && v.meaningPt && (
+              <GlossLine flag={gloss.flag} text={v.meaningPt} className="mt-0.5" />
+            )}
+            <div className="mt-1.5 flex items-start gap-2">
+              <p className="text-sm italic text-ink">&ldquo;{v.example}&rdquo;</p>
+              {gloss.dutch && <ListenButton text={v.example} className="-mt-1" />}
+            </div>
+            {gloss.dutch && v.exampleTranslation && (
+              <GlossLine flag={gloss.flag} text={v.exampleTranslation} className="mt-0.5 text-ink-subtle" />
+            )}
             {v.isIdiom && v.literalMeaning && (
               <p className="mt-2 rounded-lg bg-warning/10 px-3 py-2 text-xs text-ink-muted">
                 <span className="font-semibold">Literal meaning: </span>
@@ -535,7 +606,10 @@ export function TargetLanguageStepView({ klass }: { klass: GeneratedClass }) {
           {structures.map((s, i) => (
             <div key={i} className="rounded-xl border border-accent/30 bg-accent-soft p-4">
               <p className="font-semibold text-ink">{s.pattern}</p>
-              <p className="mt-1 text-sm italic text-ink-muted">&ldquo;{s.example}&rdquo;</p>
+              <div className="mt-1 flex items-start gap-2">
+                <p className="text-sm italic text-ink-muted">&ldquo;{s.example}&rdquo;</p>
+                {gloss.dutch && <ListenButton text={s.example} className="-mt-1" />}
+              </div>
             </div>
           ))}
         </div>
@@ -546,7 +620,8 @@ export function TargetLanguageStepView({ klass }: { klass: GeneratedClass }) {
 
 // 4 — Guided production --------------------------------------
 export function GuidedProductionStepView({ klass }: { klass: GeneratedClass }) {
-  const showPt = usePt();
+  const gloss = useGloss(klass);
+  const showPt = gloss.show;
   const g = klass.guidedProduction;
   return (
     <StepShell
@@ -572,6 +647,8 @@ export function GuidedProductionStepView({ klass }: { klass: GeneratedClass }) {
             text={f}
             index={i}
             translation={showPt ? g.sentenceFramesPt?.[i] : undefined}
+            dutch={gloss.dutch}
+            glossFlag={gloss.flag}
           />
         ))}
       </div>
@@ -594,7 +671,7 @@ export function GuidedProductionStepView({ klass }: { klass: GeneratedClass }) {
             Picture / visualisation prompts
           </h3>
           {g.picturePrompts.map((p, i) => (
-            <SpeakPrompt key={i} text={p} />
+            <SpeakPrompt key={i} text={p} plain={gloss.dutch} />
           ))}
         </div>
       )}
@@ -612,7 +689,8 @@ const PRACTICE_FORMAT_LABELS: Record<string, string> = {
 };
 
 export function FreeProductionStepView({ klass }: { klass: GeneratedClass }) {
-  const showPt = usePt();
+  const gloss = useGloss(klass);
+  const showPt = gloss.show;
   const f = klass.freeProduction;
   const isA1Practice = A1_PRACTICE_FORMATS.includes(f.format);
   const formatLabel = PRACTICE_FORMAT_LABELS[f.format] ?? f.format;
@@ -646,6 +724,8 @@ export function FreeProductionStepView({ klass }: { klass: GeneratedClass }) {
             text={p}
             index={i}
             translation={showPt ? f.promptsPt?.[i] : undefined}
+            dutch={gloss.dutch}
+            glossFlag={gloss.flag}
           />
         ))}
       </div>

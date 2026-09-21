@@ -1,4 +1,6 @@
 import type { CEFRLevel, WeeklyPlan } from "./types";
+import type { TargetLanguage } from "./language";
+import { getDutchWeeklyPlan } from "./weeklyHomeworkNl";
 
 // ============================================================
 // Curated weekly homework, one plan per CEFR level. Five weekdays,
@@ -319,6 +321,6 @@ const PLANS: Record<CEFRLevel, WeeklyPlan> = {
   },
 };
 
-export function getWeeklyPlan(level: CEFRLevel): WeeklyPlan {
-  return PLANS[level];
+export function getWeeklyPlan(level: CEFRLevel, lang: TargetLanguage = "en"): WeeklyPlan {
+  return lang === "nl" ? getDutchWeeklyPlan(level) : PLANS[level];
 }

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdmin } from "@/lib/server/adminGuard";
 import { getResources, saveResources } from "@/lib/server/store";
-import { RESOURCES } from "@/lib/mockData";
+import { getLang } from "@/lib/server/lang";
+import { defaultResources } from "@/lib/mockData";
 import type { ResourceItem, ResourceCategory } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -11,8 +12,8 @@ const CATEGORIES: ResourceCategory[] = ["podcast", "platform", "community"];
 export async function GET() {
   const admin = await getAdmin();
   if (!admin) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  const stored = await getResources();
-  return NextResponse.json({ resources: stored ?? RESOURCES });
+  const lang = await getLang();
+  return NextResponse.json({ resources: (await getResources(lang)) ?? defaultResources(lang) });
 }
 
 export async function PUT(req: NextRequest) {
@@ -39,6 +40,6 @@ export async function PUT(req: NextRequest) {
       url: String(r.url ?? "").trim(),
     }));
 
-  await saveResources(clean);
+  await saveResources(clean, await getLang());
   return NextResponse.json({ ok: true, resources: clean });
 }

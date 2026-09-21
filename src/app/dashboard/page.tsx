@@ -7,7 +7,8 @@ import { useIsClient } from "@/hooks/useIsClient";
 import { Card } from "@/components/ui/Card";
 import { WindmillMark } from "@/components/ui/WindmillMark";
 import { getCEFRInfo } from "@/lib/cefr";
-import { CONVERSATION_CIRCLES } from "@/lib/mockData";
+import { defaultMeetings } from "@/lib/mockData";
+import { LANGUAGES } from "@/lib/language";
 import { cn } from "@/lib/cn";
 
 export default function DashboardPage() {
@@ -17,7 +18,9 @@ export default function DashboardPage() {
 
   const business = profile.track === "business";
   const info = getCEFRInfo(profile.level);
-  const nextCircle = [...CONVERSATION_CIRCLES].sort(
+  const langName = LANGUAGES[profile.language].name;
+  const dutch = profile.language === "nl";
+  const nextCircle = [...defaultMeetings(profile.language).circles].sort(
     (a, b) => +new Date(a.dateTime) - +new Date(b.dateTime),
   )[0];
 
@@ -49,20 +52,22 @@ export default function DashboardPage() {
               <>
                 Today is a great day
                 <br />
-                to speak Business English.
+                to speak Business {langName}.
               </>
             ) : (
               <>
                 Today is a great day
                 <br />
-                to speak English.
+                to speak {langName}.
               </>
             )}
           </h1>
           <p className="mt-3 max-w-md text-[15px] leading-relaxed text-accent-ink/90">
             {business
               ? "Build confidence for meetings, emails, and negotiations. Pick a work situation and we'll turn it into a speaking class."
-              : "You already understand it. Pick something you love, and we'll build a class that gets the words out of your head and into the air."}
+              : dutch
+                ? "Pick something you love, and we'll build a Dutch class around it — with audio for every word and explanations in your language."
+                : "You already understand it. Pick something you love, and we'll build a class that gets the words out of your head and into the air."}
           </p>
 
           <Link href="/class" className="mt-7 inline-block">
@@ -141,6 +146,24 @@ export default function DashboardPage() {
         </div>
       </section>
 
+      {/* ---- Civic integration exam (Dutch course) ---- */}
+      {dutch && (
+        <Link href="/inburgeren" className="group block">
+          <Card className="flex items-center gap-4 transition-all group-hover:-translate-y-0.5 group-hover:border-accent/60">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gold-soft text-2xl">
+              🏛️
+            </span>
+            <div className="min-w-0 flex-1">
+              <h3 className="font-bold text-ink">Inburgeren — civic integration exam</h3>
+              <p className="mt-0.5 text-sm text-ink-muted">
+                What each exam part looks like, KNM practice, and exam-prep classes.
+              </p>
+            </div>
+            <span className="shrink-0 text-sm font-semibold text-accent">Prepare →</span>
+          </Card>
+        </Link>
+      )}
+
       {/* ---- Grammar reference ---- */}
       <Link href="/sos-gramatica" className="group block">
         <Card className="flex items-center gap-4 transition-all group-hover:-translate-y-0.5 group-hover:border-accent/60">
@@ -150,7 +173,7 @@ export default function DashboardPage() {
           <div className="min-w-0 flex-1">
             <h3 className="font-bold text-ink">SOS Gramática</h3>
             <p className="mt-0.5 text-sm text-ink-muted">
-              Referência rápida: as 10 classes gramaticais em Português → Inglês. Sempre à mão.
+              Referência rápida: as classes gramaticais em Português → {LANGUAGES[profile.language].namePt[0].toUpperCase() + LANGUAGES[profile.language].namePt.slice(1)}. Sempre à mão.
             </p>
           </div>
           <span className="shrink-0 text-sm font-semibold text-accent">Ver guia →</span>

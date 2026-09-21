@@ -1,5 +1,7 @@
 "use client";
 
+import { useSettings } from "@/context/SettingsContext";
+import { LANGUAGES, brandName, type TargetLanguage } from "@/lib/language";
 import { useState, useEffect, useRef } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -116,6 +118,9 @@ const CACHE_KEY = "molen-cert-design-cache";
 
 export default function AdminCertificatesPage() {
   const [tab, setTab] = useState<Tab>("certificate");
+  // Certificates and contracts are worded for the course the admin is viewing.
+  const { profile } = useSettings();
+  const language = profile.language;
 
   // Certificate state
   const [name, setName]       = useState("");
@@ -421,6 +426,7 @@ export default function AdminCertificatesPage() {
             {/* Live preview */}
             <div className="overflow-x-auto">
               <Certificate
+                language={language}
                 name={name}
                 level={level}
                 levelName={levelName}
@@ -563,7 +569,7 @@ export default function AdminCertificatesPage() {
             </Card>
 
             {/* Contract preview */}
-            <ContractDoc form={contractForm} molenInfo={molenInfo} molenAddress={molenAddress} />
+            <ContractDoc language={language} form={contractForm} molenInfo={molenInfo} molenAddress={molenAddress} />
           </>
         )}
       </div>
@@ -590,6 +596,7 @@ function SliderRow({
 
 // ── Certificate component ─────────────────────────────────────────────────────
 interface CertProps {
+  language: TargetLanguage;
   name: string; level: string; levelName: string;
   date: string; teacher: string; pronoun: Pronoun;
   design: Design;
@@ -598,7 +605,7 @@ interface CertProps {
   cefrImg: string | null;
 }
 
-function Certificate({ name, level, levelName, date, teacher, pronoun, design: d, logoImg, sealImg, cefrImg }: CertProps) {
+function Certificate({ language, name, level, levelName, date, teacher, pronoun, design: d, logoImg, sealImg, cefrImg }: CertProps) {
   return (
     <div
       id="certificate"
@@ -623,7 +630,7 @@ function Certificate({ name, level, levelName, date, teacher, pronoun, design: d
           {logoImg
             ? <img src={logoImg} alt="Logo" style={{ height: d.logoSize, width: "auto", objectFit: "contain" }} />
             : /* eslint-disable-next-line @next/next/no-img-element */
-              <img src="/molen-brand.png" alt="Molen English Classes" style={{ height: d.logoSize, width: "auto", mixBlendMode: "multiply" }} />
+              <img src="/molen-brand.png" alt={brandName(language)} style={{ height: d.logoSize, width: "auto", mixBlendMode: "multiply" }} />
           }
         </div>
         <h2 style={{ fontFamily: SERIF, fontWeight: 700, color: C.maroon, fontSize: `${d.titleSize}rem`, margin: `${d.titleMargin}px 0 0` }}>
@@ -637,7 +644,7 @@ function Certificate({ name, level, levelName, date, teacher, pronoun, design: d
           {name.trim() || "Student Name"}
         </div>
         <p style={{ maxWidth: "72%", fontSize: `${d.bodySize}rem`, color: C.ink, margin: `${d.bodyMargin}px 0 0`, lineHeight: 1.6 }}>
-          for {pronoun} outstanding dedication, active participation and excellent performance in English studies.
+          for {pronoun} outstanding dedication, active participation and excellent performance in {LANGUAGES[language].name} studies.
         </p>
         <p style={{ fontFamily: SCRIPT, fontSize: `${d.congratsSize}rem`, color: C.greenInk, margin: `${d.congratsMargin}px 0 0` }}>
           Congratulations on your achievement!
@@ -680,12 +687,14 @@ function Blank({ value, minWidth = 160 }: { value: string; minWidth?: number }) 
 }
 
 interface ContractDocProps {
+  language: TargetLanguage;
   form: ContractForm;
   molenInfo: MolenCompanyInfo | null;
   molenAddress: string;
 }
 
-function ContractDoc({ form, molenInfo, molenAddress }: ContractDocProps) {
+function ContractDoc({ language, form, molenInfo, molenAddress }: ContractDocProps) {
+  const dutch = language === "nl";
   const sh: React.CSSProperties = { fontWeight: 700, fontSize: 13, marginTop: 20, marginBottom: 2, color: C.ink };
   const ch: React.CSSProperties = { fontWeight: 700, fontSize: 13, marginTop: 18, marginBottom: 3, color: C.ink };
   const p: React.CSSProperties  = { margin: "2px 0", color: C.ink };
@@ -721,14 +730,14 @@ function ContractDoc({ form, molenInfo, molenAddress }: ContractDocProps) {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/molen-brand.png"
-              alt="Molen English Classes"
+              alt={brandName(language)}
               style={{ height: 220, width: "auto", mixBlendMode: "multiply" }}
             />
           </div>
           <div style={{ marginTop: 14, fontWeight: 700, fontSize: 14, textTransform: "uppercase", letterSpacing: "0.06em", lineHeight: 1.6, color: C.ink }}>
             Contrato de Presta&ccedil;&atilde;o de Servi&ccedil;os Educacionais
             <br />
-            Aulas de Ingl&ecirc;s
+            {dutch ? "Aulas de Holandês" : "Aulas de Inglês"}
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, justifyContent: "center", marginTop: 14 }}>
             <span style={{ width: 80, height: 1.5, background: C.gold, display: "inline-block" }} />
@@ -758,7 +767,7 @@ function ContractDoc({ form, molenInfo, molenAddress }: ContractDocProps) {
         <p style={p}>Telefone/E-mail: <Blank value={form.studentContact} minWidth={210} /></p>
 
         <p style={ch}>CL&Aacute;USULA 1&ordf; &ndash; DO OBJETO</p>
-        <p style={p}>O presente contrato tem como objeto a presta&ccedil;&atilde;o de servi&ccedil;os de ensino de l&iacute;ngua inglesa, incluindo aulas, acompanhamento pedag&oacute;gico, materiais e atividades relacionadas ao aprendizado do idioma.</p>
+        <p style={p}>O presente contrato tem como objeto a presta&ccedil;&atilde;o de servi&ccedil;os de ensino de l&iacute;ngua {dutch ? "neerlandesa (holandês)" : "inglesa"}, incluindo aulas, acompanhamento pedag&oacute;gico, materiais e atividades relacionadas ao aprendizado do idioma.</p>
 
         <p style={ch}>CL&Aacute;USULA 2&ordf; &ndash; DAS AULAS</p>
         <p style={p}>

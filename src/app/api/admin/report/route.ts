@@ -1,6 +1,15 @@
 import { NextResponse } from "next/server";
 import { getAdmin } from "@/lib/server/adminGuard";
-import { listAccounts, getState, cpfToSub } from "@/lib/server/store";
+import {
+  listAccounts,
+  getState,
+  getSubByUserId,
+  defaultState,
+  levelFor,
+  scheduleFor,
+  studiesLanguage,
+} from "@/lib/server/store";
+import { getLang } from "@/lib/server/lang";
 import { weekKey } from "@/lib/storage";
 import { CEFR_LEVELS } from "@/lib/cefr";
 
@@ -20,19 +29,26 @@ export async function GET() {
   const sunday = new Date(monday);
   sunday.setUTCDate(monday.getUTCDate() + 6);
 
+  const lang = await getLang();
   const accounts = await listAccounts();
-  const students = accounts.filter((a) => !a.isAdmin && a.active !== false);
+  const students = accounts.filter(
+    (a) => !a.isAdmin && a.active !== false && studiesLanguage(a, lang),
+  );
 
   const users = await Promise.all(
     students.map(async (a) => {
-      const state = await getState(cpfToSub(a.cpf));
+      // Accounts are keyed by a random sub (not the CPF hash) — resolve via userId.
+      const sub = a.userId ? await getSubByUserId(a.userId) : null;
+      const state = sub ? await getState(sub, lang) : defaultState();
+      const level = levelFor(a, lang);
+      const schedule = scheduleFor(a, lang);
       const p = state.progress;
       const classDates = (p.history ?? [])
         .filter((h) => dayWeek(h.date) === wk)
         .map((h) => ({ date: h.date, topic: h.topic, level: h.level }));
 
       const weeklyHomeworkDone = Object.entries(state.weeklyDone ?? {}).filter(
-        ([k, v]) => v && k.startsWith(`${a.level}:${wk}:`),
+        ([k, v]) => v && k.startsWith(`${level}:${wk}:`),
       ).length;
 
       const dailyHomeworkDays = Object.values(state.homeworkByDay ?? {}).filter(
@@ -42,13 +58,13 @@ export async function GET() {
       return {
         userId: a.userId ?? "—",
         name: a.name,
-        level: a.level,
+        level,
         track: a.settings?.track ?? "general",
         classesThisWeek: classDates.length,
         classesTotal: p.classesCompleted ?? 0,
         classDates,
-        schedule: a.schedule ?? null,
-        scheduledPerWeek: a.schedule?.days.length ?? 0,
+        schedule,
+        scheduledPerWeek: schedule?.days.length ?? 0,
         weeklyHomeworkDone,
         dailyHomeworkDays,
         meetingsAttended: p.meetingsAttended ?? 0,

@@ -8,6 +8,8 @@ import { Toggle } from "@/components/ui/Toggle";
 import { Button } from "@/components/ui/Button";
 import { PricingSection } from "@/components/admin/PricingSection";
 import { cn } from "@/lib/cn";
+import { Flag, langFlag } from "@/components/ui/Flag";
+import { LANGUAGES, SUPPORT_LANGUAGES } from "@/lib/language";
 
 export default function SettingsPage() {
   const { profile, account, update } = useSettings();
@@ -44,7 +46,9 @@ export default function SettingsPage() {
           className="input-field"
         />
 
-        <p className="mb-2 mt-5 block text-sm font-medium text-ink">CEFR level</p>
+        <p className="mb-2 mt-5 block text-sm font-medium text-ink">
+          CEFR level · {LANGUAGES[profile.language].name}
+        </p>
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
           {CEFR_LEVELS.map((l) => (
             <button
@@ -64,8 +68,38 @@ export default function SettingsPage() {
           ))}
         </div>
         <p className="mt-2 text-xs text-ink-subtle">
-          {CEFR_LEVELS.find((l) => l.level === profile.level)?.canDo}
+          {CEFR_LEVELS.find((l) => l.level === profile.level)?.canDo} Each course keeps its
+          own level — switch course with the flag at the top.
         </p>
+
+        {profile.language === "nl" && (
+          <>
+            <p className="mb-2 mt-5 block text-sm font-medium text-ink">Explanations in</p>
+            <div className="grid grid-cols-2 gap-2">
+              {SUPPORT_LANGUAGES.map((s) => (
+                <button
+                  key={s.code}
+                  type="button"
+                  onClick={() => update({ supportLang: s.code })}
+                  aria-pressed={profile.supportLang === s.code}
+                  className={cn(
+                    "flex items-center justify-center gap-2 rounded-lg border py-2.5 text-sm font-semibold transition-colors",
+                    profile.supportLang === s.code
+                      ? "border-accent bg-accent text-accent-ink"
+                      : "border-border bg-surface text-ink-muted hover:border-accent",
+                  )}
+                >
+                  <Flag code={langFlag(s.code)} width={18} />
+                  {s.label}
+                </button>
+              ))}
+            </div>
+            <p className="mt-2 text-xs text-ink-subtle">
+              Word meanings, grammar notes, translations, and homework instructions in the Dutch
+              course use this language. Applies to your next class.
+            </p>
+          </>
+        )}
       </Card>
 
       {/* Experience */}
@@ -86,7 +120,7 @@ export default function SettingsPage() {
             onChange={(v) => update({ font: v ? "dyslexic" : "inter" })}
           />
           <hr className="border-border" />
-          {profile.level === "A1" && (
+          {profile.level === "A1" && profile.language === "en" && (
             <>
               <Toggle
                 label="Portuguese translations (A1)"

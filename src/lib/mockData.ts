@@ -3,7 +3,9 @@ import type {
   ConversationCircle,
   BookingSlot,
   ResourceItem,
+  MeetingsConfig,
 } from "./types";
+import type { TargetLanguage } from "./language";
 
 // ============================================================
 // Mock data for v1. Replace with API calls when a backend lands.
@@ -291,5 +293,204 @@ export const RESOURCES: ResourceItem[] = [
 ];
 
 export function speakerById(id: string): Speaker | undefined {
-  return SPEAKERS.find((s) => s.id === id);
+  return SPEAKERS.find((s) => s.id === id) ?? DUTCH_SPEAKERS.find((s) => s.id === id);
+}
+
+// ============================================================
+// Dutch course seed data (shown until the admin edits it).
+// ============================================================
+
+export const DUTCH_SPEAKERS: Speaker[] = [
+  {
+    id: "sp-nl-sanne",
+    name: "Sanne de Vries",
+    badge: "Native (NL)",
+    bio: "From Utrecht. Patient with beginners; loves everyday small talk and 'gezellige' conversations.",
+  },
+  {
+    id: "sp-nl-pieter",
+    name: "Pieter Janssens",
+    badge: "Native (BE)",
+    bio: "Flemish, from Ghent. Great for hearing the Belgian side of Dutch and for travel topics.",
+  },
+  {
+    id: "sp-nl-joana",
+    name: "Joana Ribeiro",
+    badge: "Fluent C2 (BR)",
+    bio: "Brazilian living in Amsterdam. Knows exactly where Portuguese speakers get stuck in Dutch.",
+  },
+];
+
+const nlCircle1Date = daysFromNow(10, 19);
+const nlCircle2Date = daysFromNow(24, 20);
+
+export const DUTCH_CONVERSATION_CIRCLES: ConversationCircle[] = [
+  {
+    id: "cc-nl-1",
+    title: "Monthly Conversation Circle — Wonen in Nederland",
+    speaker: DUTCH_SPEAKERS[0],
+    dateTime: nlCircle1Date,
+    format: "Small group (6) · video · slow, clear Dutch",
+    theme: "Housing, neighbours, bikes, and daily life in the Netherlands",
+    levelRange: "A2–B1",
+    prepPackReleasesAt: hoursBefore(nlCircle1Date, 48),
+    prepPack: {
+      phrases: [
+        "Hoe gaat het met je?",
+        "Ik woon in…",
+        "Dat vind ik gezellig",
+        "Ik ga op de fiets",
+        "Mijn buren zijn…",
+        "Het valt mee",
+        "Zullen we…?",
+        "Wat bedoel je?",
+      ],
+      warmUpQuestions: [
+        "Waar woon je?",
+        "Hoe ga je naar je werk of school?",
+        "Wat vind je leuk aan jouw stad?",
+      ],
+    },
+  },
+  {
+    id: "cc-nl-2",
+    title: "Monthly Conversation Circle — Werk & Sollicitaties",
+    speaker: DUTCH_SPEAKERS[2],
+    dateTime: nlCircle2Date,
+    format: "Small group (6) · video · round-robin speaking",
+    theme: "Job interviews, colleagues, and Dutch directness at work",
+    levelRange: "B1–B2",
+    prepPackReleasesAt: hoursBefore(nlCircle2Date, 48),
+    prepPack: {
+      phrases: [
+        "Ik heb ervaring met…",
+        "Mijn sterke punt is…",
+        "Eerlijk gezegd…",
+        "Daar ben ik het (niet) mee eens",
+        "Zou u dat kunnen herhalen?",
+        "een afspraak maken",
+        "overleggen",
+        "Dat klopt",
+      ],
+      warmUpQuestions: [
+        "Wat voor werk doe je?",
+        "Wat is belangrijk voor jou in een baan?",
+        "Hoe is de werkcultuur in Brazilië?",
+      ],
+    },
+  },
+];
+
+export const DUTCH_BOOKING_SLOTS: BookingSlot[] = [
+  { id: "bs-nl-1", speakerId: "sp-nl-sanne", speaker: DUTCH_SPEAKERS[0], dateTime: daysFromNow(2, 18), durationMin: 30, kind: "1:1", capacity: 1, booked: 0 },
+  { id: "bs-nl-2", speakerId: "sp-nl-joana", speaker: DUTCH_SPEAKERS[2], dateTime: daysFromNow(3, 20), durationMin: 45, kind: "small-group", capacity: 4, booked: 1 },
+  { id: "bs-nl-3", speakerId: "sp-nl-pieter", speaker: DUTCH_SPEAKERS[1], dateTime: daysFromNow(5, 19), durationMin: 30, kind: "1:1", capacity: 1, booked: 0 },
+];
+
+export const DUTCH_RESOURCES: ResourceItem[] = [
+  {
+    name: "Oefenen.nl",
+    category: "platform",
+    free: true,
+    featured: true,
+    description: "Free Dutch practice programmes for adult learners — reading, listening, and everyday situations.",
+    url: "https://oefenen.nl/",
+  },
+  {
+    name: "NOS Jeugdjournaal",
+    category: "platform",
+    free: true,
+    featured: true,
+    description: "Short daily news in clear, simple Dutch. Perfect listening practice from A2 up.",
+    url: "https://jeugdjournaal.nl/",
+  },
+  {
+    name: "Easy Dutch",
+    category: "podcast",
+    free: true,
+    description: "Street interviews with real Dutch speakers, subtitled in Dutch and English.",
+    url: "https://www.youtube.com/@EasyDutch",
+  },
+  {
+    name: "Learn Dutch with Bart de Pau",
+    category: "platform",
+    free: true,
+    description: "Clear video lessons on Dutch grammar and pronunciation, from absolute beginner up.",
+    url: "https://www.learndutch.org/",
+  },
+  {
+    name: "DutchPod101",
+    category: "podcast",
+    free: false,
+    description: "Audio and video lessons by level, with transcripts and vocabulary lists.",
+    url: "https://www.dutchpod101.com/",
+  },
+  {
+    name: "Coffee Break Languages",
+    category: "podcast",
+    free: true,
+    description: "Relaxed, structured audio lessons — look for their Dutch course.",
+    url: "https://coffeebreaklanguages.com/",
+  },
+  {
+    name: "NOS",
+    category: "platform",
+    free: true,
+    description: "The main Dutch news site. Read the headlines daily once you reach B1.",
+    url: "https://nos.nl/",
+  },
+  {
+    name: "Dutch Grammar",
+    category: "platform",
+    free: true,
+    description: "A clear reference for Dutch grammar: word order, de/het, verbs, and more.",
+    url: "https://www.dutchgrammar.com/",
+  },
+  {
+    name: "Woordenlijst (Het Groene Boekje)",
+    category: "platform",
+    free: true,
+    description: "The official Dutch spelling list — check spelling and whether a word takes de or het.",
+    url: "https://woordenlijst.org/",
+  },
+  {
+    name: "Forvo — Dutch",
+    category: "platform",
+    free: true,
+    description: "Hear native speakers pronounce almost any Dutch word.",
+    url: "https://forvo.com/languages/nl/",
+  },
+  {
+    name: "r/learndutch",
+    category: "community",
+    free: true,
+    description: "A friendly community of Dutch learners and native speakers answering questions.",
+    url: "https://www.reddit.com/r/learndutch/",
+  },
+  {
+    name: "Tandem",
+    category: "community",
+    free: true,
+    description: "Find Dutch speakers who want to learn Portuguese or English and swap languages.",
+    url: "https://www.tandem.net/",
+  },
+  {
+    name: "HelloTalk",
+    category: "community",
+    free: true,
+    description: "Chat with native Dutch speakers and correct each other in real time.",
+    url: "https://www.hellotalk.com/",
+  },
+];
+
+/** Seed meetings for a course (used until the admin saves their own). */
+export function defaultMeetings(lang: TargetLanguage): MeetingsConfig {
+  return lang === "nl"
+    ? { circles: DUTCH_CONVERSATION_CIRCLES, slots: DUTCH_BOOKING_SLOTS }
+    : { circles: CONVERSATION_CIRCLES, slots: BOOKING_SLOTS };
+}
+
+/** Seed resource list for a course (used until the admin saves their own). */
+export function defaultResources(lang: TargetLanguage): ResourceItem[] {
+  return lang === "nl" ? DUTCH_RESOURCES : RESOURCES;
 }

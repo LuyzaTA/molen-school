@@ -8,6 +8,8 @@ import { Card, SectionHeading } from "@/components/ui/Card";
 import { useSettings } from "@/context/SettingsContext";
 import { getCEFRInfo } from "@/lib/cefr";
 import type { CEFRLevel } from "@/lib/types";
+import { INBURGEREN_TOPICS } from "@/lib/inburgeren";
+import { LANGUAGES } from "@/lib/language";
 
 const LEVEL_TOPICS: Record<CEFRLevel, string[]> = {
   A1: A1_TOPICS,
@@ -38,6 +40,7 @@ export function TopicPicker({
 
   const info = getCEFRInfo(profile.level);
   const business = profile.track === "business";
+  const dutch = profile.language === "nl";
   const topics = business ? BUSINESS_TOPICS : LEVEL_TOPICS[profile.level] ?? A1_TOPICS;
   const chosen = custom.trim() || selected;
 
@@ -53,6 +56,7 @@ export function TopicPicker({
     <div className="mx-auto max-w-content space-y-6">
       <header className="pt-2">
         <p className="text-sm font-medium text-ink-subtle">
+          {dutch ? `${LANGUAGES.nl.name} · ` : ""}
           {business ? "Business Vocabulary" : `${profile.level} · ${info.name}`} · ~
           {Math.round(info.speakingRatio * 100)}% speaking
         </p>
@@ -82,6 +86,28 @@ export function TopicPicker({
             </Chip>
           ))}
         </div>
+
+        {dutch && (
+          <div className="mt-6">
+            <p className="mb-2 text-sm font-semibold text-ink">
+              Inburgeren · exam preparation
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {INBURGEREN_TOPICS.map((t) => (
+                <Chip
+                  key={t}
+                  selected={selected === t && !custom.trim()}
+                  onClick={() => {
+                    setSelected(t);
+                    setCustom("");
+                  }}
+                >
+                  {t.replace(/^Inburgeren — /, "")}
+                </Chip>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="mt-6">
           <label htmlFor="custom-topic" className="mb-2 block text-sm font-medium text-ink">

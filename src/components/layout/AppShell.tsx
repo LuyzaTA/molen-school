@@ -3,12 +3,14 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
-import { NAV_ITEMS } from "./navItems";
+import { NAV_ITEMS, INBURGEREN_ITEM } from "./navItems";
 import { QuickSettings } from "./QuickSettings";
+import { LanguageSwitch } from "./LanguageSwitch";
 import { SiteFooter } from "./SiteFooter";
 import { Logo } from "@/components/ui/Logo";
 import { Card } from "@/components/ui/Card";
-import { useSettings } from "@/context/SettingsContext";
+import { useSettings, applyBrandTitle } from "@/context/SettingsContext";
+import { brandName } from "@/lib/language";
 import { cn } from "@/lib/cn";
 
 // Auth pages render without the app chrome.
@@ -37,13 +39,18 @@ const ADMIN_NAV: NavItem[] = [
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { ready, authenticated, account } = useSettings();
+  const { ready, authenticated, account, profile } = useSettings();
   const [moreOpen, setMoreOpen] = useState(false);
 
   // Close the mobile "More" sheet whenever navigation happens.
   useEffect(() => {
     setMoreOpen(false);
   }, [pathname]);
+
+  // Tab title follows the chosen course ("Molen Dutch Classes").
+  useEffect(() => {
+    if (ready && authenticated) applyBrandTitle(profile.language);
+  }, [ready, authenticated, profile.language, pathname]);
 
   const isBare = BARE_ROUTES.some((p) => p === "/" ? pathname === "/" : pathname === p || pathname.startsWith(p + "/"));
   const isAdminPath = pathname === "/admin" || pathname.startsWith("/admin/");
@@ -81,14 +88,17 @@ export function AppShell({ children }: { children: ReactNode }) {
     return <AccessGate approved={approved} active={active} />;
   }
 
-  const navItems: NavItem[] = isAdmin ? ADMIN_NAV : NAV_ITEMS;
+  // The Dutch course adds the civic integration (inburgering) exam module.
+  const studentNav =
+    profile.language === "nl" ? [...NAV_ITEMS, INBURGEREN_ITEM] : NAV_ITEMS;
+  const navItems: NavItem[] = isAdmin ? ADMIN_NAV : studentNav;
   const homeHref = isAdmin ? "/admin" : "/dashboard";
 
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-40 border-b border-border bg-base/80 backdrop-blur">
         <div className="mx-auto flex h-20 max-w-wide items-center justify-between px-4 sm:px-6">
-          <Link href={homeHref} aria-label="Molen English Classes home" className="flex items-center gap-3">
+          <Link href={homeHref} aria-label={`${brandName(profile.language)} home`} className="flex items-center gap-3">
             <Logo size={52} />
             {isAdmin && (
               <span className="hidden rounded-pill bg-accent-soft px-3 py-1 text-xs font-bold uppercase tracking-wider text-accent sm:inline">
@@ -97,6 +107,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             )}
           </Link>
           <div className="flex items-center gap-2">
+            <LanguageSwitch />
             <QuickSettings />
             <SignOutButton />
           </div>

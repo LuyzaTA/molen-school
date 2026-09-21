@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdmin } from "@/lib/server/adminGuard";
-import { updateAccountByUserId } from "@/lib/server/store";
+import { updateAccountByUserId, setLevelFor, levelFor } from "@/lib/server/store";
+import { getLang } from "@/lib/server/lang";
 import { CEFR_LEVELS } from "@/lib/cefr";
 import type { PaymentMethod } from "@/lib/account";
 
@@ -35,9 +36,13 @@ export async function POST(req: NextRequest) {
   }
   const p = body.patch;
 
+  const lang = await getLang();
   const updated = await updateAccountByUserId(body.userId, (a) => {
     if (typeof p.name === "string" && p.name.trim()) a.name = p.name.trim();
-    if (p.level && VALID_LEVELS.includes(p.level)) a.level = p.level as typeof a.level;
+    // Level edits apply to the course the admin is currently viewing.
+    if (p.level && VALID_LEVELS.includes(p.level)) {
+      setLevelFor(a, lang, p.level as typeof a.level);
+    }
     if (typeof p.rg === "string") a.rg = p.rg.trim();
     if (typeof p.address === "string") a.address = p.address.trim();
     if (typeof p.city === "string") a.city = p.city.trim();
@@ -54,7 +59,7 @@ export async function POST(req: NextRequest) {
     user: {
       userId: updated.userId,
       name: updated.name,
-      level: updated.level,
+      level: levelFor(updated, lang),
       city: updated.city,
       state: updated.state,
       country: updated.country,

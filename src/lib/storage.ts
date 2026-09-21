@@ -4,6 +4,7 @@ import type {
   DailyHomework,
   GeneratedClass,
 } from "./types";
+import type { TargetLanguage } from "./language";
 
 // ============================================================
 // Typed localStorage helpers. All access goes through here so a
@@ -49,6 +50,8 @@ export const DEFAULT_PROFILE: UserProfile = {
   motion: true,
   translatePt: false,
   track: "general",
+  language: "en",
+  supportLang: "pt",
   createdAt: new Date().toISOString(),
   onboarded: false,
 };
@@ -111,26 +114,35 @@ export function saveHomeworkForDay(homework: DailyHomework): void {
 const CLASS_CONTENT_VERSION = "5"; // bumped: story rebuilt as interactive scenes (dialogue + checks)
 const CLASS_VERSION_KEY = "fluentbr.classContentVersion";
 
-export function loadCurrentClass(): GeneratedClass | null {
+// Each course keeps its own in-progress class; English keeps the original key.
+function currentClassKey(lang: TargetLanguage): string {
+  return lang === "en" ? KEYS.currentClass : `${KEYS.currentClass}.${lang}`;
+}
+
+export function loadCurrentClass(lang: TargetLanguage = "en"): GeneratedClass | null {
   if (typeof window === "undefined") return null;
   const savedVersion = window.localStorage.getItem(CLASS_VERSION_KEY);
   if (savedVersion !== CLASS_CONTENT_VERSION) {
-    window.localStorage.removeItem(KEYS.currentClass);
+    window.localStorage.removeItem(currentClassKey("en"));
+    window.localStorage.removeItem(currentClassKey("nl"));
     window.localStorage.setItem(CLASS_VERSION_KEY, CLASS_CONTENT_VERSION);
     return null;
   }
-  return read<GeneratedClass | null>(KEYS.currentClass, null);
+  return read<GeneratedClass | null>(currentClassKey(lang), null);
 }
 
-export function saveCurrentClass(klass: GeneratedClass | null): void {
+export function saveCurrentClass(
+  klass: GeneratedClass | null,
+  lang: TargetLanguage = "en",
+): void {
   if (klass === null) {
-    if (typeof window !== "undefined") window.localStorage.removeItem(KEYS.currentClass);
+    if (typeof window !== "undefined") window.localStorage.removeItem(currentClassKey(lang));
     return;
   }
   if (typeof window !== "undefined") {
     window.localStorage.setItem(CLASS_VERSION_KEY, CLASS_CONTENT_VERSION);
   }
-  write(KEYS.currentClass, klass);
+  write(currentClassKey(lang), klass);
 }
 
 // ---- Weekly homework completion ----------------------------

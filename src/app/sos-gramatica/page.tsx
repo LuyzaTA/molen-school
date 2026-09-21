@@ -1,190 +1,190 @@
-import { Card } from "@/components/ui/Card";
+"use client";
 
-interface GrammarClass {
-  number: number;
-  ptName: string;
-  enName: string;
-  definition: string;
-  examples: { pt: string; en: string }[];
-  sentencePt: string;
-  sentenceEn: string;
-}
+import { Card } from "@/components/ui/Card";
+import { Flag, langFlag } from "@/components/ui/Flag";
+import { useSettings } from "@/context/SettingsContext";
+import { LANGUAGES } from "@/lib/language";
+import {
+  DUTCH_GRAMMAR_CLASSES,
+  DUTCH_GRAMMAR_SUMMARY,
+  type GrammarClass,
+} from "@/lib/grammarNl";
 
 const GRAMMAR_CLASSES: GrammarClass[] = [
   {
     number: 1,
     ptName: "Substantivo",
-    enName: "Noun",
+    targetName: "Noun",
     definition: "Palavra que dá nome a pessoas, lugares, objetos, animais, sentimentos ou ideias.",
     examples: [
-      { pt: "casa", en: "house" },
-      { pt: "amor", en: "love" },
-      { pt: "estudante", en: "student" },
+      { pt: "casa", target: "house" },
+      { pt: "amor", target: "love" },
+      { pt: "estudante", target: "student" },
     ],
     sentencePt: "O estudante comprou um livro.",
-    sentenceEn: "The student bought a book.",
+    sentenceTarget: "The student bought a book.",
   },
   {
     number: 2,
     ptName: "Pronome",
-    enName: "Pronoun",
+    targetName: "Pronoun",
     definition: "Palavra usada no lugar de um substantivo para evitar repetição.",
     examples: [
-      { pt: "eu", en: "I" },
-      { pt: "ele", en: "he" },
-      { pt: "eles", en: "they" },
+      { pt: "eu", target: "I" },
+      { pt: "ele", target: "he" },
+      { pt: "eles", target: "they" },
     ],
     sentencePt: "Maria é minha amiga. Ela é inteligente.",
-    sentenceEn: "Maria is my friend. She is intelligent.",
+    sentenceTarget: "Maria is my friend. She is intelligent.",
   },
   {
     number: 3,
     ptName: "Adjetivo",
-    enName: "Adjective",
+    targetName: "Adjective",
     definition: "Palavra que descreve ou caracteriza um substantivo.",
     examples: [
-      { pt: "bonito", en: "beautiful" },
-      { pt: "grande", en: "big" },
-      { pt: "inteligente", en: "intelligent" },
+      { pt: "bonito", target: "beautiful" },
+      { pt: "grande", target: "big" },
+      { pt: "inteligente", target: "intelligent" },
     ],
     sentencePt: "Ela tem uma casa grande.",
-    sentenceEn: "She has a big house.",
+    sentenceTarget: "She has a big house.",
   },
   {
     number: 4,
     ptName: "Verbo",
-    enName: "Verb",
+    targetName: "Verb",
     definition: "Palavra que indica ação, estado ou acontecimento.",
     examples: [
-      { pt: "correr", en: "run" },
-      { pt: "estudar", en: "study" },
-      { pt: "ser/estar", en: "be" },
+      { pt: "correr", target: "run" },
+      { pt: "estudar", target: "study" },
+      { pt: "ser/estar", target: "be" },
     ],
     sentencePt: "Eu estudo inglês todos os dias.",
-    sentenceEn: "I study English every day.",
+    sentenceTarget: "I study English every day.",
   },
   {
     number: 5,
     ptName: "Advérbio",
-    enName: "Adverb",
+    targetName: "Adverb",
     definition: "Palavra que modifica um verbo, adjetivo ou outro advérbio. Indica como, quando, onde ou intensidade.",
     examples: [
-      { pt: "rapidamente", en: "quickly" },
-      { pt: "sempre", en: "always" },
-      { pt: "muito", en: "very" },
+      { pt: "rapidamente", target: "quickly" },
+      { pt: "sempre", target: "always" },
+      { pt: "muito", target: "very" },
     ],
     sentencePt: "Ela fala inglês muito bem.",
-    sentenceEn: "She speaks English very well.",
+    sentenceTarget: "She speaks English very well.",
   },
   {
     number: 6,
     ptName: "Artigo",
-    enName: "Article",
+    targetName: "Article",
     definition: "Palavra que acompanha o substantivo.",
     examples: [
-      { pt: "o, a, os, as", en: "the" },
-      { pt: "um, uma", en: "a / an" },
+      { pt: "o, a, os, as", target: "the" },
+      { pt: "um, uma", target: "a / an" },
     ],
     sentencePt: "Eu comprei um carro.",
-    sentenceEn: "I bought a car.",
+    sentenceTarget: "I bought a car.",
   },
   {
     number: 7,
     ptName: "Preposição",
-    enName: "Preposition",
+    targetName: "Preposition",
     definition: "Palavra que conecta termos e mostra relações como lugar, tempo ou direção.",
     examples: [
-      { pt: "em", en: "in / on / at" },
-      { pt: "com", en: "with" },
-      { pt: "para", en: "to / for" },
+      { pt: "em", target: "in / on / at" },
+      { pt: "com", target: "with" },
+      { pt: "para", target: "to / for" },
     ],
     sentencePt: "O livro está na mesa.",
-    sentenceEn: "The book is on the table.",
+    sentenceTarget: "The book is on the table.",
   },
   {
     number: 8,
     ptName: "Conjunção",
-    enName: "Conjunction",
+    targetName: "Conjunction",
     definition: "Palavra que liga palavras ou frases.",
     examples: [
-      { pt: "e", en: "and" },
-      { pt: "mas", en: "but" },
-      { pt: "porque", en: "because" },
+      { pt: "e", target: "and" },
+      { pt: "mas", target: "but" },
+      { pt: "porque", target: "because" },
     ],
     sentencePt: "Eu estudo inglês porque gosto de idiomas.",
-    sentenceEn: "I study English because I like languages.",
+    sentenceTarget: "I study English because I like languages.",
   },
   {
     number: 9,
     ptName: "Interjeição",
-    enName: "Interjection",
+    targetName: "Interjection",
     definition: "Palavra que expressa emoção, reação ou sentimento.",
     examples: [
-      { pt: "Uau!", en: "Wow!" },
-      { pt: "Ai!", en: "Ouch!" },
-      { pt: "Olá!", en: "Hello!" },
+      { pt: "Uau!", target: "Wow!" },
+      { pt: "Ai!", target: "Ouch!" },
+      { pt: "Olá!", target: "Hello!" },
     ],
     sentencePt: "Uau! Que lugar bonito!",
-    sentenceEn: "Wow! What a beautiful place!",
+    sentenceTarget: "Wow! What a beautiful place!",
   },
   {
     number: 10,
     ptName: "Numeral",
-    enName: "Numeral",
+    targetName: "Numeral",
     definition: "Palavra que indica quantidade ou ordem.",
     examples: [
-      { pt: "um", en: "one" },
-      { pt: "dois", en: "two" },
-      { pt: "primeiro", en: "first" },
+      { pt: "um", target: "one" },
+      { pt: "dois", target: "two" },
+      { pt: "primeiro", target: "first" },
     ],
     sentencePt: "Tenho dois irmãos.",
-    sentenceEn: "I have two brothers.",
+    sentenceTarget: "I have two brothers.",
   },
   {
     number: 11,
     ptName: "Verbo Auxiliar",
-    enName: "Auxiliary Verb",
+    targetName: "Auxiliary Verb",
     definition: "Verbo que acompanha o verbo principal para formar tempos verbais, perguntas, negações ou expressar modalidade (possibilidade, obrigação, permissão). Em inglês, os auxiliares são essenciais e muito diferentes do português.",
     examples: [
-      { pt: "ser/estar (presente)", en: "am / is / are" },
-      { pt: "ter (passado/perfeito)", en: "have / has / had" },
-      { pt: "fazer (perguntas/negação)", en: "do / does / did" },
-      { pt: "poder / conseguir", en: "can / could" },
-      { pt: "dever / precisar", en: "must / should / need" },
-      { pt: "vou / vai (futuro)", en: "will / shall" },
+      { pt: "ser/estar (presente)", target: "am / is / are" },
+      { pt: "ter (passado/perfeito)", target: "have / has / had" },
+      { pt: "fazer (perguntas/negação)", target: "do / does / did" },
+      { pt: "poder / conseguir", target: "can / could" },
+      { pt: "dever / precisar", target: "must / should / need" },
+      { pt: "vou / vai (futuro)", target: "will / shall" },
     ],
     sentencePt: "Você pode me ajudar? Eu não entendo.",
-    sentenceEn: "Can you help me? I don't understand.",
+    sentenceTarget: "Can you help me? I don't understand.",
   },
   {
     number: 12,
     ptName: "Verbos Irregulares",
-    enName: "Irregular Verbs",
+    targetName: "Irregular Verbs",
     definition:
       "Verbos que NÃO seguem a regra do -ed no passado. Cada um tem três formas próprias (presente – passado – particípio) que precisam ser memorizadas. São os verbos mais usados do inglês — os 15 abaixo aparecem em quase toda conversa.",
     examples: [
-      { pt: "ser / estar", en: "be – was/were – been" },
-      { pt: "ter", en: "have – had – had" },
-      { pt: "fazer", en: "do – did – done" },
-      { pt: "dizer", en: "say – said – said" },
-      { pt: "ir", en: "go – went – gone" },
-      { pt: "conseguir / pegar", en: "get – got – gotten" },
-      { pt: "fazer / criar", en: "make – made – made" },
-      { pt: "saber / conhecer", en: "know – knew – known" },
-      { pt: "pensar", en: "think – thought – thought" },
-      { pt: "pegar / levar", en: "take – took – taken" },
-      { pt: "ver", en: "see – saw – seen" },
-      { pt: "vir", en: "come – came – come" },
-      { pt: "dar", en: "give – gave – given" },
-      { pt: "encontrar / achar", en: "find – found – found" },
-      { pt: "contar / dizer", en: "tell – told – told" },
+      { pt: "ser / estar", target: "be – was/were – been" },
+      { pt: "ter", target: "have – had – had" },
+      { pt: "fazer", target: "do – did – done" },
+      { pt: "dizer", target: "say – said – said" },
+      { pt: "ir", target: "go – went – gone" },
+      { pt: "conseguir / pegar", target: "get – got – gotten" },
+      { pt: "fazer / criar", target: "make – made – made" },
+      { pt: "saber / conhecer", target: "know – knew – known" },
+      { pt: "pensar", target: "think – thought – thought" },
+      { pt: "pegar / levar", target: "take – took – taken" },
+      { pt: "ver", target: "see – saw – seen" },
+      { pt: "vir", target: "come – came – come" },
+      { pt: "dar", target: "give – gave – given" },
+      { pt: "encontrar / achar", target: "find – found – found" },
+      { pt: "contar / dizer", target: "tell – told – told" },
     ],
     sentencePt: "Ontem eu fui ao mercado e fiz o jantar.",
-    sentenceEn: "Yesterday I went to the market and made dinner.",
+    sentenceTarget: "Yesterday I went to the market and made dinner.",
   },
 ];
 
-const SUMMARY = [
+const SUMMARY: [string, string][] = [
   ["Substantivo", "Noun"],
   ["Pronome", "Pronoun"],
   ["Adjetivo", "Adjective"],
@@ -200,18 +200,25 @@ const SUMMARY = [
 ];
 
 export default function SosGramaticaPage() {
+  const { profile } = useSettings();
+  const dutch = profile.language === "nl";
+  const classes = dutch ? DUTCH_GRAMMAR_CLASSES : GRAMMAR_CLASSES;
+  const summary = dutch ? DUTCH_GRAMMAR_SUMMARY : SUMMARY;
+  const langPt = LANGUAGES[profile.language].namePt;
+  const LangPt = langPt[0].toUpperCase() + langPt.slice(1);
+
   return (
     <div className="mx-auto max-w-wide space-y-8">
       <header className="pt-2">
         <p className="text-xs font-semibold uppercase tracking-wider text-accent">Referência rápida</p>
         <h1 className="mt-1 text-2xl font-bold tracking-tight text-ink sm:text-3xl">SOS Gramática</h1>
         <p className="mt-2 text-[15px] text-ink-muted">
-          Principais classes gramaticais do Português → Inglês. Um guia rápido para revisar a estrutura das frases.
+          Principais classes gramaticais do Português → {LangPt}. Um guia rápido para revisar a estrutura das frases.
         </p>
       </header>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        {GRAMMAR_CLASSES.map((g) => (
+        {classes.map((g) => (
           <Card key={g.number} className="space-y-4">
             {/* Header */}
             <div className="flex items-start justify-between gap-2">
@@ -219,7 +226,7 @@ export default function SosGramaticaPage() {
                 <p className="text-xs font-semibold uppercase tracking-wider text-ink-subtle">
                   {g.number}. {g.ptName}
                 </p>
-                <p className="mt-0.5 text-lg font-bold text-accent">{g.enName}</p>
+                <p className="mt-0.5 text-lg font-bold text-accent">{g.targetName}</p>
               </div>
               <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent-soft text-sm font-bold text-accent">
                 {g.number}
@@ -240,7 +247,7 @@ export default function SosGramaticaPage() {
                   <div key={i} className="flex items-center gap-2 text-sm">
                     <span className="text-ink">{ex.pt}</span>
                     <span className="text-ink-subtle">→</span>
-                    <span className="font-semibold text-accent">{ex.en}</span>
+                    <span className="font-semibold text-accent">{ex.target}</span>
                   </div>
                 ))}
               </div>
@@ -248,8 +255,12 @@ export default function SosGramaticaPage() {
 
             {/* Example sentences */}
             <div className="space-y-1 border-t border-border pt-3">
-              <p className="text-sm text-ink-muted">🇧🇷 {g.sentencePt}</p>
-              <p className="text-sm font-medium text-ink">🇬🇧 {g.sentenceEn}</p>
+              <p className="flex items-start gap-1.5 text-sm text-ink-muted">
+                <Flag code="br" width={16} className="mt-[3px]" /> {g.sentencePt}
+              </p>
+              <p className="flex items-start gap-1.5 text-sm font-medium text-ink">
+                <Flag code={langFlag(profile.language)} width={16} className="mt-[3px]" /> {g.sentenceTarget}
+              </p>
             </div>
           </Card>
         ))}
@@ -260,7 +271,7 @@ export default function SosGramaticaPage() {
         <div>
           <h2 className="text-lg font-bold text-ink">Resumo Rápido</h2>
           <p className="mt-1 text-sm text-ink-muted">
-            Para aprender inglês, entender essas classes ajuda a identificar a função de cada palavra dentro da frase.
+            Para aprender {langPt}, entender essas classes ajuda a identificar a função de cada palavra dentro da frase.
           </p>
         </div>
         <div className="overflow-x-auto">
@@ -268,11 +279,11 @@ export default function SosGramaticaPage() {
             <thead>
               <tr className="border-b border-border">
                 <th className="pb-2 text-left font-semibold text-ink">Português</th>
-                <th className="pb-2 text-left font-semibold text-accent">English</th>
+                <th className="pb-2 text-left font-semibold text-accent">{LANGUAGES[profile.language].nativeName}</th>
               </tr>
             </thead>
             <tbody>
-              {SUMMARY.map(([pt, en], i) => (
+              {summary.map(([pt, en], i) => (
                 <tr key={i} className="border-b border-border/50 last:border-0">
                   <td className="py-2 text-ink-muted">{pt}</td>
                   <td className="py-2 font-medium text-ink">{en}</td>

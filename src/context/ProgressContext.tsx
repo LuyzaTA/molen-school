@@ -98,6 +98,9 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
   const authedRef = useRef(false);
   const stateRef = useRef<AppState>(state);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Language the state was loaded for. Saves are pinned to it so a pending
+  // save can't land in the other course after a language switch.
+  const langRef = useRef<string>("en");
 
   stateRef.current = state;
 
@@ -107,8 +110,9 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
       try {
         const res = await fetch("/api/state", { cache: "no-store" });
         if (res.ok) {
-          const data = (await res.json()) as Partial<AppState>;
+          const data = (await res.json()) as Partial<AppState> & { language?: string };
           authedRef.current = true;
+          if (data.language) langRef.current = data.language;
           setState({
             progress: { ...DEFAULT_PROGRESS, ...(data.progress ?? {}) },
             homeworkByDay: data.homeworkByDay ?? {},
@@ -127,7 +131,7 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
     if (!authedRef.current) return;
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => {
-      void fetch("/api/state", {
+      void fetch(`/api/state?lang=${encodeURIComponent(langRef.current)}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(stateRef.current),

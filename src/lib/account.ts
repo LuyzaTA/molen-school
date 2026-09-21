@@ -1,4 +1,5 @@
 import type { CEFRLevel, FontPreference, ThemePreference, LearningTrack } from "./types";
+import type { TargetLanguage, SupportLanguage } from "./language";
 
 // ============================================================
 // Account / registration types shared between client and server.
@@ -11,6 +12,18 @@ export type PaymentMethod = "pix" | "credit_card" | "boleto";
 export interface ClassSchedule {
   days: number[]; // 0=Sun … 6=Sat
   time: string; // "HH:MM"
+}
+
+/**
+ * Per-language learning record for every language except English (whose
+ * level/schedule live at the top level of the account for backwards
+ * compatibility). Created the first time a student picks that language.
+ */
+export interface LanguageTrackRecord {
+  level: CEFRLevel;
+  supportLang: SupportLanguage;
+  schedule: ClassSchedule | null;
+  startedAt: string;
 }
 
 /** Class price per CEFR level (in BRL). Admin-configurable, platform-wide. */
@@ -77,6 +90,8 @@ export interface RegistrationInput {
   password: string;
   repeatPassword: string;
   level: CEFRLevel;
+  language: TargetLanguage; // the course the level above applies to
+  supportLang: SupportLanguage; // Dutch course: language of explanations
   settings: AccountSettings;
 }
 
@@ -122,6 +137,7 @@ export interface AdminUserRow {
   paymentMethod: PaymentMethod;
   createdAt: string;
   schedule: ClassSchedule | null;
+  languages: TargetLanguage[]; // courses this student has started
 }
 
 export const DEFAULT_SETTINGS: AccountSettings = {

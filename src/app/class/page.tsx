@@ -23,6 +23,7 @@ import { Stepper } from "@/components/ui/Stepper";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Logo } from "@/components/ui/Logo";
+import { LANGUAGES } from "@/lib/language";
 
 type Phase = "pick" | "loading" | "agenda" | "running" | "done";
 
@@ -44,14 +45,22 @@ export default function ClassPage() {
   const [stepIndex, setStepIndex] = useState(0);
   const [lastTopic, setLastTopic] = useState<string | null>(null);
 
-  // Restore an in-progress class after a refresh so work isn't lost.
+  // Restore an in-progress class after a refresh so work isn't lost —
+  // unless we were sent here with a topic (e.g. from the Inburgeren page).
   useEffect(() => {
-    const saved = loadCurrentClass();
+    const requested = new URLSearchParams(window.location.search).get("topic");
+    if (requested?.trim()) {
+      window.history.replaceState(null, "", "/class");
+      void runGeneration(requested.trim().slice(0, 200));
+      return;
+    }
+    const saved = loadCurrentClass(profile.language);
     if (saved) {
       setKlass(saved);
       setLastTopic(saved.topic);
       setPhase("agenda");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function runGeneration(topic: string) {
@@ -69,12 +78,14 @@ export default function ClassPage() {
       level: profile.level,
       autisticMode: profile.autisticMode,
       track: profile.track,
+      language: profile.language,
+      supportLang: profile.supportLang,
       knownVocab: allLearnedTerms,
       topicRepeatCount,
       priorTopicVocab: topicRepeatCount > 0 ? allLearnedTerms : undefined,
     });
     setKlass(generated);
-    saveCurrentClass(generated); // survive a refresh
+    saveCurrentClass(generated, profile.language); // survive a refresh
     setStepIndex(0);
     setPhase("agenda");
   }
@@ -83,14 +94,14 @@ export default function ClassPage() {
     if (klass) {
       completeClass(klass);
       // Auto-generate today's homework from this class.
-      saveHomeworkForDay(buildHomework(klass));
+      saveHomeworkForDay(buildHomework(klass, profile.supportLang));
     }
-    saveCurrentClass(null); // class is finished — clear the resume slot
+    saveCurrentClass(null, profile.language); // class is finished — clear the resume slot
     setPhase("done");
   }
 
   function changeTopic() {
-    saveCurrentClass(null);
+    saveCurrentClass(null, profile.language);
     setKlass(null);
     setLastTopic(null);
     setPhase("pick");
@@ -105,7 +116,7 @@ export default function ClassPage() {
       <div className="mx-auto flex max-w-content flex-col items-center justify-center gap-4 py-24 text-center">
         <Logo withWordmark={false} size={56} />
         <p className="animate-pulse text-ink-muted">
-          Building your speaking class…
+          Building your {LANGUAGES[profile.language].name} speaking class…
         </p>
         <p className="text-sm text-ink-subtle">
           Tailoring vocabulary and prompts to {profile.level}.
@@ -181,7 +192,7 @@ export default function ClassPage() {
             showLabels
             onStepClick={(i) => setStepIndex(i)}
           />
-          {profile.level === "A1" && (
+          {profile.level === "A1" && profile.language === "en" && (
             <div className="flex justify-end">
               <PtToggle />
             </div>

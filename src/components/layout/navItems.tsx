@@ -97,3 +97,14 @@ export const NAV_ITEMS: NavItem[] = [
     ),
   },
 ];
+/** Dutch course only: civic integration (inburgering) exam preparation. */
+export const INBURGEREN_ITEM: NavItem = {
+  href: "/inburgeren",
+  label: "Inburgeren",
+  icon: I(
+    <>
+      <path d="M4 21h16M5 21V10l7-5 7 5v11" />
+      <path d="M9 21v-6h6v6M9 12h.01M15 12h.01" />
+    </>,
+  ),
+};

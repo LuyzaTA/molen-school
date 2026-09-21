@@ -15,6 +15,7 @@ import {
   type AccountRecord,
 } from "@/lib/server/store";
 import { CEFR_LEVELS } from "@/lib/cefr";
+import { isTargetLanguage, isSupportLanguage } from "@/lib/language";
 
 export const runtime = "nodejs";
 
@@ -80,6 +81,11 @@ export async function POST(req: NextRequest) {
       userId = await generateUniqueUserId();
     }
 
+    // The level chosen on the form belongs to the course being registered for.
+    const language = isTargetLanguage(body.language) ? body.language : "en";
+    const supportLang = isSupportLanguage(body.supportLang) ? body.supportLang : "pt";
+    const now = new Date().toISOString();
+
     const record: AccountRecord = {
       userId,
       isAdmin,
@@ -96,15 +102,19 @@ export async function POST(req: NextRequest) {
       country: (body.country as string).trim(),
       paymentMethod,
       passwordHash: hashPassword(body.password as string),
-      level,
+      level: language === "en" ? level : "A1",
+      languages: [language],
+      ...(language === "nl"
+        ? { dutch: { level, supportLang, schedule: null, startedAt: now } }
+        : {}),
       registeredTrack: body.settings?.track === "business" ? "business" : "general",
       settings: { ...DEFAULT_SETTINGS, ...(body.settings ?? {}) },
-      createdAt: new Date().toISOString(),
+      createdAt: now,
     };
 
     const sub = randomBytes(16).toString("hex");
     await saveAccount(sub, record);
-    await saveState(sub, defaultState());
+    await saveState(sub, defaultState(), language);
     await reserveUserId(userId, sub);
 
     // Per spec: do NOT auto-login. The client redirects to /login.

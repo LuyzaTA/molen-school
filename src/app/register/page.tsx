@@ -17,6 +17,15 @@ import {
   type AccountSettings,
 } from "@/lib/account";
 import { cn } from "@/lib/cn";
+import { Flag, langFlag } from "@/components/ui/Flag";
+import {
+  LANGUAGES,
+  SUPPORT_LANGUAGES,
+  TARGET_LANGUAGES,
+  brandName,
+  type SupportLanguage,
+  type TargetLanguage,
+} from "@/lib/language";
 
 interface FormState {
   userId: string;
@@ -32,6 +41,8 @@ interface FormState {
   password: string;
   repeatPassword: string;
   level: CEFRLevel;
+  language: TargetLanguage;
+  supportLang: SupportLanguage;
   settings: AccountSettings;
 }
 
@@ -49,6 +60,8 @@ const INITIAL: FormState = {
   password: "",
   repeatPassword: "",
   level: "A1",
+  language: "en",
+  supportLang: "pt",
   settings: { ...DEFAULT_SETTINGS },
 };
 
@@ -130,7 +143,7 @@ export default function RegisterPage() {
   return (
     <div className="mx-auto max-w-2xl px-5 py-10">
       <div className="mb-8 flex items-center justify-between">
-        <Logo size={56} />
+        <Logo size={56} language={form.language} />
         <Link href="/login" className="text-sm font-medium text-accent hover:underline">
           Sign in
         </Link>
@@ -138,7 +151,7 @@ export default function RegisterPage() {
 
       <h1 className="text-3xl font-extrabold tracking-tight text-ink">Create your account</h1>
       <p className="mt-2 text-[15px] text-ink-muted">
-        Register as a Molen English Classes student. Your details are stored securely;
+        Register as a {brandName(form.language)} student. Your details are stored securely;
         your password is never saved in plain text.
       </p>
 
@@ -222,9 +235,53 @@ export default function RegisterPage() {
           {/* Learning path — only shown for non-admin */}
           {!form.isAdmin && (
             <div className="mt-4 space-y-4">
+              <p className="text-sm font-medium text-ink">Course</p>
+              <div className="grid grid-cols-2 gap-2">
+                {TARGET_LANGUAGES.map((code) => (
+                  <button
+                    type="button"
+                    key={code}
+                    onClick={() => set("language", code)}
+                    aria-pressed={form.language === code}
+                    className={cn(
+                      "flex items-center justify-center gap-2 rounded-xl border p-3 text-sm font-semibold transition-colors",
+                      form.language === code ? "border-accent bg-accent-soft text-ink" : "border-border text-ink-muted hover:border-accent/60",
+                    )}
+                  >
+                    <Flag code={langFlag(code)} />
+                    {LANGUAGES[code].name} ({LANGUAGES[code].nativeName})
+                  </button>
+                ))}
+              </div>
+              {form.language === "nl" && (
+                <div>
+                  <p className="mb-1.5 text-sm font-medium text-ink">Explanations in</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {SUPPORT_LANGUAGES.map((sl) => (
+                      <button
+                        type="button"
+                        key={sl.code}
+                        onClick={() => set("supportLang", sl.code)}
+                        aria-pressed={form.supportLang === sl.code}
+                        className={cn(
+                          "flex items-center justify-center gap-2 rounded-xl border p-2.5 text-sm font-medium transition-colors",
+                          form.supportLang === sl.code ? "border-accent bg-accent-soft text-ink" : "border-border text-ink-muted hover:border-accent/60",
+                        )}
+                      >
+                        <Flag code={langFlag(sl.code)} width={18} />
+                        {sl.label}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="mt-1.5 text-xs text-ink-subtle">
+                    You can start the other course later by choosing it on the sign-in screen.
+                  </p>
+                </div>
+              )}
+
               <p className="text-sm font-medium text-ink">Learning path</p>
 
-              <p className="text-xs font-semibold uppercase tracking-wider text-ink-subtle">General English (CEFR)</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-ink-subtle">General {LANGUAGES[form.language].name} (CEFR)</p>
               <div className="grid gap-2 sm:grid-cols-2">
                 {CEFR_LEVELS.map((l) => {
                   const selected = form.settings.track !== "business" && form.level === l.level;

@@ -1,11 +1,25 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Logo } from "@/components/ui/Logo";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { Flag, langFlag } from "@/components/ui/Flag";
+import { cn } from "@/lib/cn";
+import {
+  LANGUAGES,
+  SUPPORT_LANGUAGES,
+  TARGET_LANGUAGES,
+  isSupportLanguage,
+  isTargetLanguage,
+  type SupportLanguage,
+  type TargetLanguage,
+} from "@/lib/language";
+
+// Remembers the last choice on this device so returning students don't re-pick.
+const PICK_KEY = "molen.loginLanguage";
 
 export default function LoginPage() {
   return (
@@ -26,6 +40,18 @@ function LoginInner() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [language, setLanguage] = useState<TargetLanguage>("en");
+  const [supportLang, setSupportLang] = useState<SupportLanguage>("pt");
+
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(window.localStorage.getItem(PICK_KEY) ?? "{}");
+      if (isTargetLanguage(saved.language)) setLanguage(saved.language);
+      if (isSupportLanguage(saved.supportLang)) setSupportLang(saved.supportLang);
+    } catch {
+      /* private mode — keep defaults */
+    }
+  }, []);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -39,13 +65,18 @@ function LoginInner() {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, password }),
+        body: JSON.stringify({ userId, password, language, supportLang }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         setError(data.error || "Could not sign in.");
         setBusy(false);
         return;
+      }
+      try {
+        window.localStorage.setItem(PICK_KEY, JSON.stringify({ language, supportLang }));
+      } catch {
+        /* ignore */
       }
       // Full navigation so the providers re-bootstrap from /api/me & /api/state.
       window.location.assign(next);
@@ -58,7 +89,7 @@ function LoginInner() {
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-5 py-12">
       <div className="mb-8 flex justify-center">
-        <Logo size={64} />
+        <Logo size={64} language={language} />
       </div>
       <Card className="space-y-5">
         <div>
@@ -80,6 +111,61 @@ function LoginInner() {
         )}
 
         <form onSubmit={onSubmit} className="space-y-4">
+          <fieldset>
+            <legend className="mb-1.5 block text-sm font-medium text-ink">
+              I want to learn
+            </legend>
+            <div className="grid grid-cols-2 gap-2">
+              {TARGET_LANGUAGES.map((code) => (
+                <button
+                  key={code}
+                  type="button"
+                  onClick={() => setLanguage(code)}
+                  aria-pressed={language === code}
+                  className={cn(
+                    "flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-semibold transition-colors",
+                    language === code
+                      ? "border-accent bg-accent-soft text-ink"
+                      : "border-border bg-surface text-ink-muted hover:border-accent/60",
+                  )}
+                >
+                  <Flag code={langFlag(code)} />
+                  {LANGUAGES[code].nativeName}
+                </button>
+              ))}
+            </div>
+          </fieldset>
+
+          {language === "nl" && (
+            <fieldset>
+              <legend className="mb-1.5 block text-sm font-medium text-ink">
+                Explanations in
+              </legend>
+              <div className="grid grid-cols-2 gap-2">
+                {SUPPORT_LANGUAGES.map((s) => (
+                  <button
+                    key={s.code}
+                    type="button"
+                    onClick={() => setSupportLang(s.code)}
+                    aria-pressed={supportLang === s.code}
+                    className={cn(
+                      "flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition-colors",
+                      supportLang === s.code
+                        ? "border-accent bg-accent-soft text-ink"
+                        : "border-border bg-surface text-ink-muted hover:border-accent/60",
+                    )}
+                  >
+                    <Flag code={langFlag(s.code)} width={18} />
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+              <p className="mt-1.5 text-xs text-ink-subtle">
+                Word meanings, grammar notes, and translations use this language.
+              </p>
+            </fieldset>
+          )}
+
           <Field label="User ID">
             <input
               className="input-field font-semibold tracking-wide"

@@ -3,6 +3,7 @@ import { getAdmin } from "@/lib/server/adminGuard";
 import { getPricing, savePricing } from "@/lib/server/store";
 import type { PricingMap } from "@/lib/account";
 import { CEFR_LEVELS } from "@/lib/cefr";
+import { getLang } from "@/lib/server/lang";
 
 export const runtime = "nodejs";
 
@@ -11,7 +12,7 @@ const LEVELS = CEFR_LEVELS.map((l) => l.level);
 export async function GET() {
   const admin = await getAdmin();
   if (!admin) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  return NextResponse.json({ pricing: await getPricing() });
+  return NextResponse.json({ pricing: await getPricing(await getLang()) });
 }
 
 export async function PUT(req: NextRequest) {
@@ -25,7 +26,8 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
 
-  const current = await getPricing();
+  const lang = await getLang();
+  const current = await getPricing(lang);
   const next = { ...current } as PricingMap;
   for (const level of LEVELS) {
     const v = body.pricing?.[level];
@@ -33,6 +35,6 @@ export async function PUT(req: NextRequest) {
       next[level] = Math.round(v * 100) / 100;
     }
   }
-  await savePricing(next);
+  await savePricing(next, lang);
   return NextResponse.json({ ok: true, pricing: next });
 }

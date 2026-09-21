@@ -11,7 +11,7 @@ import type {
   SpeakerBadge,
 } from "@/lib/types";
 
-const BADGES: SpeakerBadge[] = ["Native (US)", "Native (UK)", "Fluent C2 (BR)"];
+const BADGES: SpeakerBadge[] = ["Native (US)", "Native (UK)", "Native (NL)", "Native (BE)", "Fluent C2 (BR)"];
 
 function slug(s: string) {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "x";

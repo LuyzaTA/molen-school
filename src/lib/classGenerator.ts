@@ -30,6 +30,8 @@ export async function generateClass(
       topic: input.topic,
       level: input.level,
       autisticMode: input.autisticMode,
+      language: input.language ?? "en",
+      ...(input.language === "nl" ? { supportLang: input.supportLang } : {}),
       generatedBy: data.generatedBy ?? "ai",
     } as GeneratedClass;
   } catch {

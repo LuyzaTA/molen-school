@@ -4,20 +4,33 @@ import { useState } from "react";
 import { cn } from "@/lib/cn";
 import { useSettings } from "@/context/SettingsContext";
 import { tokenize } from "@/lib/posTagger";
+import { ListenButton } from "./ListenButton";
+import { Flag, type FlagCode } from "@/components/ui/Flag";
 
 /**
  * A single speaking prompt. The written prompt is ALWAYS shown (a calm-mode
  * requirement, but good for everyone). "Speak now" reveals built-in thinking
  * time; "You may pass" is always available so no one is forced to perform.
+ *
+ * `dutch` marks a Dutch prompt: the Dutch stays primary with a listen button,
+ * and the support-language translation sits underneath (flagged).
+ * `plain` shows the text without the (English-only) part-of-speech hovers —
+ * used for support-language prompts in the Dutch course.
  */
 export function SpeakPrompt({
   text,
   index,
   translation,
+  dutch,
+  plain,
+  glossFlag = "br",
 }: {
   text: string;
   index?: number;
   translation?: string;
+  dutch?: boolean;
+  plain?: boolean;
+  glossFlag?: FlagCode;
 }) {
   const { profile } = useSettings();
   const [state, setState] = useState<"idle" | "speaking" | "done" | "passed">("idle");
@@ -40,7 +53,24 @@ export function SpeakPrompt({
           </span>
         )}
         <div className="flex-1">
-          {translation ? (
+          {dutch || plain ? (
+            <>
+              <div className="flex items-start gap-2">
+                <p className="flex-1 text-[15px] leading-relaxed text-ink">
+                  {tokens.map((tok, i) =>
+                    tok.kind === "blank" ? <Blank key={i} /> : <span key={i}>{tok.text}</span>,
+                  )}
+                </p>
+                {dutch && <ListenButton text={text} />}
+              </div>
+              {translation && (
+                <p className="mt-1.5 flex items-center gap-1.5 text-sm text-ink-subtle">
+                  <Flag code={glossFlag} width={16} />
+                  <span>{translation}</span>
+                </p>
+              )}
+            </>
+          ) : translation ? (
             <>
               <p className="text-[15px] leading-relaxed text-ink">{translation}</p>
               <p className="mt-1.5 text-sm text-ink-subtle">

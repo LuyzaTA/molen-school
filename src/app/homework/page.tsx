@@ -51,7 +51,7 @@ export default function HomeworkPage() {
               This week
             </TabBtn>
           </div>
-          {profile.level === "A1" && <PtToggle />}
+          {profile.level === "A1" && profile.language === "en" && <PtToggle />}
         </div>
       </header>
 
@@ -245,8 +245,11 @@ function TaskCard({
 function WeeklyHomework() {
   const { profile } = useSettings();
   const { weeklyDone: done, setWeeklyDone } = useProgress();
-  const showPt = profile.level === "A1" && profile.translatePt;
-  const plan = getWeeklyPlan(profile.level);
+  // Dutch course: tasks are shown in the learner's support language.
+  const dutch = profile.language === "nl";
+  const dutchPt = dutch && profile.supportLang === "pt";
+  const showPt = !dutch && profile.level === "A1" && profile.translatePt;
+  const plan = getWeeklyPlan(profile.level, profile.language);
   const wk = weekKey();
 
   const keyFor = (dayIdx: number, taskIdx: number) =>
@@ -269,7 +272,9 @@ function WeeklyHomework() {
         <p className="text-xs font-semibold uppercase tracking-wider text-accent">
           {profile.level} · weekly focus
         </p>
-        <p className="mt-1.5 text-[15px] font-medium text-ink">{plan.focus}</p>
+        <p className="mt-1.5 text-[15px] font-medium text-ink">
+          {dutchPt && plan.focusPt ? plan.focusPt : plan.focus}
+        </p>
         {showPt && plan.focusPt && (
           <p className="mt-1 text-sm italic text-accent">🇧🇷 {plan.focusPt}</p>
         )}
@@ -295,6 +300,7 @@ function WeeklyHomework() {
                   task={task}
                   done={!!done[keyFor(di, ti)]}
                   showPt={showPt}
+                  ptPrimary={dutchPt}
                   onToggle={() => toggle(di, ti)}
                 />
               ))}
@@ -319,11 +325,13 @@ function WeeklyTaskRow({
   task,
   done,
   showPt,
+  ptPrimary = false,
   onToggle,
 }: {
   task: WeeklyTask;
   done: boolean;
   showPt: boolean;
+  ptPrimary?: boolean; // Dutch course with Portuguese support: show detailPt instead
   onToggle: () => void;
 }) {
   return (
@@ -336,7 +344,9 @@ function WeeklyTaskRow({
             {task.title}
           </span>
         </div>
-        <p className="mt-1 text-sm text-ink-muted">{task.detail}</p>
+        <p className="mt-1 text-sm text-ink-muted">
+          {ptPrimary && task.detailPt ? task.detailPt : task.detail}
+        </p>
         {showPt && task.detailPt && (
           <p className="mt-1 text-sm italic text-accent">🇧🇷 {task.detailPt}</p>
         )}

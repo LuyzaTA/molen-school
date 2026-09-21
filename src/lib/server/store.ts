@@ -6,7 +6,9 @@ import type {
   PaymentMethod,
   ClassSchedule,
   PricingMap,
+  LanguageTrackRecord,
 } from "../account";
+import type { TargetLanguage, SupportLanguage } from "../language";
 import { digitsOnly, genUserId, DEFAULT_PRICING } from "../account";
 import type {
   CEFRLevel,
@@ -38,6 +40,93 @@ export interface AccountRecord {
   active: boolean; // admin can deactivate a student
   schedule: ClassSchedule | null; // recurring weekly classes (admin-managed)
   createdAt: string;
+  // Courses started. Absent on legacy accounts, which are English-only.
+  languages?: TargetLanguage[];
+  // Dutch course record (level/schedule/support language). English keeps
+  // using the top-level `level` and `schedule` fields.
+  dutch?: LanguageTrackRecord;
+}
+
+// ---- Per-language account helpers ---------------------------
+
+export function accountLanguages(a: AccountRecord): TargetLanguage[] {
+  return a.languages?.length ? a.languages : ["en"];
+}
+
+export function studiesLanguage(a: AccountRecord, lang: TargetLanguage): boolean {
+  return accountLanguages(a).includes(lang);
+}
+
+export function levelFor(a: AccountRecord, lang: TargetLanguage): CEFRLevel {
+  return lang === "nl" ? a.dutch?.level ?? "A1" : a.level;
+}
+
+export function scheduleFor(a: AccountRecord, lang: TargetLanguage): ClassSchedule | null {
+  return lang === "nl" ? a.dutch?.schedule ?? null : a.schedule ?? null;
+}
+
+export function setLevelFor(a: AccountRecord, lang: TargetLanguage, level: CEFRLevel): void {
+  if (lang === "nl") ensureDutch(a).level = level;
+  else a.level = level;
+}
+
+export function setScheduleFor(
+  a: AccountRecord,
+  lang: TargetLanguage,
+  schedule: ClassSchedule | null,
+): void {
+  if (lang === "nl") ensureDutch(a).schedule = schedule;
+  else a.schedule = schedule;
+}
+
+/** Create the Dutch record on first use. Mutates and returns it. */
+export function ensureDutch(
+  a: AccountRecord,
+  init?: { level?: CEFRLevel; supportLang?: SupportLanguage },
+): LanguageTrackRecord {
+  if (!a.dutch) {
+    a.dutch = {
+      level: init?.level ?? "A1",
+      supportLang: init?.supportLang ?? "pt",
+      schedule: null,
+      startedAt: new Date().toISOString(),
+    };
+  }
+  return a.dutch;
+}
+
+/**
+ * Make `lang` an active course on the account (creating its record on first
+ * use) and apply a new Dutch support language if given. Mutates the account;
+ * returns true when it needs saving.
+ */
+export function startCourse(
+  a: AccountRecord,
+  lang: TargetLanguage,
+  supportLang?: SupportLanguage,
+): boolean {
+  let changed = addLanguage(a, lang);
+  if (lang === "nl") {
+    const hadDutch = !!a.dutch;
+    const dutch = ensureDutch(a, { supportLang });
+    if (!hadDutch) changed = true;
+    else if (supportLang && dutch.supportLang !== supportLang) {
+      dutch.supportLang = supportLang;
+      changed = true;
+    }
+  }
+  return changed;
+}
+
+/** Record that the student has started a course. Returns true if it changed. */
+export function addLanguage(a: AccountRecord, lang: TargetLanguage): boolean {
+  const langs = accountLanguages(a);
+  if (langs.includes(lang)) {
+    if (!a.languages) a.languages = langs;
+    return false;
+  }
+  a.languages = [...langs, lang];
+  return true;
 }
 
 /** Per-user platform data (progress + homework). Persisted in Blob. */
@@ -74,7 +163,11 @@ export function cpfToSub(cpf: string): string {
 }
 
 const userKey = (sub: string) => `users/${sub}`;
-const stateKey = (sub: string) => `state/${sub}`;
+// English keeps the original prefixes so existing data is untouched.
+const statePrefix = (lang: TargetLanguage) => (lang === "en" ? "state/" : `state-${lang}/`);
+const stateKey = (sub: string, lang: TargetLanguage) => `${statePrefix(lang)}${sub}`;
+const configKey = (name: string, lang: TargetLanguage) =>
+  lang === "en" ? `config/${name}` : `config/${lang}/${name}`;
 const userIdKey = (userId: string) => `userid/${userId}`;
 
 // ---- User ID (M######) uniqueness --------------------------
@@ -151,61 +244,66 @@ export async function deleteAccountByUserId(userId: string): Promise<boolean> {
   const sub = await getSubByUserId(userId);
   if (!sub) return false;
   await kvDelete(userKey(sub));
-  await kvDelete(stateKey(sub));
+  await kvDelete(stateKey(sub, "en"));
+  await kvDelete(stateKey(sub, "nl"));
   await kvDelete(userIdKey(userId));
   return true;
 }
 
 // ---- Per-user state ---------------------------------------
 
-export async function getState(sub: string): Promise<AppState> {
-  return (await kvGet<AppState>(stateKey(sub))) ?? defaultState();
+export async function getState(sub: string, lang: TargetLanguage = "en"): Promise<AppState> {
+  return (await kvGet<AppState>(stateKey(sub, lang))) ?? defaultState();
 }
 
-export async function saveState(sub: string, state: AppState): Promise<void> {
-  await kvSet(stateKey(sub), state);
+export async function saveState(
+  sub: string,
+  state: AppState,
+  lang: TargetLanguage = "en",
+): Promise<void> {
+  await kvSet(stateKey(sub, lang), state);
 }
 
-/** Every user's state (admin analytics only). */
-export async function listAllStates(): Promise<AppState[]> {
-  return kvList<AppState>("state/");
+/** Every user's state for one language (admin analytics only). */
+export async function listAllStates(lang: TargetLanguage = "en"): Promise<AppState[]> {
+  return kvList<AppState>(statePrefix(lang));
 }
 
 // ---- Class pricing (platform-wide config) ------------------
 
-const PRICING_KEY = "config/pricing";
-
-export async function getPricing(): Promise<PricingMap> {
-  const stored = await kvGet<Partial<PricingMap>>(PRICING_KEY);
+export async function getPricing(lang: TargetLanguage = "en"): Promise<PricingMap> {
+  const stored = await kvGet<Partial<PricingMap>>(configKey("pricing", lang));
   return { ...DEFAULT_PRICING, ...(stored ?? {}) };
 }
 
-export async function savePricing(pricing: PricingMap): Promise<void> {
-  await kvSet(PRICING_KEY, pricing);
+export async function savePricing(pricing: PricingMap, lang: TargetLanguage = "en"): Promise<void> {
+  await kvSet(configKey("pricing", lang), pricing);
 }
 
 // ---- Meetings (admin-managed; shown to students) -----------
 
-const MEETINGS_KEY = "config/meetings";
-
-export async function getMeetings(): Promise<MeetingsConfig | null> {
-  return kvGet<MeetingsConfig>(MEETINGS_KEY);
+export async function getMeetings(lang: TargetLanguage = "en"): Promise<MeetingsConfig | null> {
+  return kvGet<MeetingsConfig>(configKey("meetings", lang));
 }
 
-export async function saveMeetings(meetings: MeetingsConfig): Promise<void> {
-  await kvSet(MEETINGS_KEY, meetings);
+export async function saveMeetings(
+  meetings: MeetingsConfig,
+  lang: TargetLanguage = "en",
+): Promise<void> {
+  await kvSet(configKey("meetings", lang), meetings);
 }
 
 // ---- Resources (admin-managed; shown to students) ----------
 
-const RESOURCES_KEY = "config/resources";
-
-export async function getResources(): Promise<ResourceItem[] | null> {
-  return kvGet<ResourceItem[]>(RESOURCES_KEY);
+export async function getResources(lang: TargetLanguage = "en"): Promise<ResourceItem[] | null> {
+  return kvGet<ResourceItem[]>(configKey("resources", lang));
 }
 
-export async function saveResources(resources: ResourceItem[]): Promise<void> {
-  await kvSet(RESOURCES_KEY, resources);
+export async function saveResources(
+  resources: ResourceItem[],
+  lang: TargetLanguage = "en",
+): Promise<void> {
+  await kvSet(configKey("resources", lang), resources);
 }
 
 // ---- Certificate design (admin-managed; platform-wide) -----

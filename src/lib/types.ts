@@ -1,3 +1,5 @@
+import type { TargetLanguage, SupportLanguage } from "./language";
+
 // ============================================================
 // Shared types for Molen English School. These define the contract between
 // the AI class generator, localStorage, and the UI.
@@ -20,11 +22,19 @@ export interface UserProfile {
   translatePt: boolean;
   // Active learning track: general CEFR English or Business Vocabulary.
   track: LearningTrack;
+  // Language chosen at sign-in. Level/progress above belong to this language.
+  language: TargetLanguage;
+  // Dutch course only: language used for explanations and translations.
+  supportLang: SupportLanguage;
   createdAt: string; // ISO date
   onboarded: boolean;
 }
 
 // ---- Generated class content (returned by the AI) ----------
+//
+// Fields suffixed "Pt" hold a support-language gloss: Brazilian Portuguese
+// in the English course (A1 only), or the learner's support language
+// (English or Portuguese) in the Dutch course, at every level.
 
 export interface WarmUpStep {
   questions: string[]; // 3 personal questions
@@ -39,6 +49,7 @@ export interface VocabItem {
   isIdiom?: boolean; // flagged + explained literally in autistic mode
   literalMeaning?: string; // for idioms
   meaningPt?: string; // A1: Brazilian-Portuguese translation of the meaning
+  exampleTranslation?: string; // Dutch course: example in the support language
 }
 
 export interface TargetLanguageStep {
@@ -75,6 +86,7 @@ export interface FeedbackStep {
 export interface StoryDialogueLine {
   speaker: string; // character name, consistent across the story
   line: string;    // spoken line at the learner's CEFR level
+  translation?: string; // Dutch course (A1–A2): line in the support language
 }
 
 export interface StoryCheck {
@@ -89,6 +101,7 @@ export interface StoryPanel {
   dialogue?: StoryDialogueLine[]; // character conversation, revealed line by line
   check?: StoryCheck;             // gate to the next scene
   vocab: string[];   // target vocab terms appearing in this scene
+  textTranslation?: string; // Dutch course (A1–A2): narration in the support language
 }
 
 export interface ClassStory {
@@ -113,6 +126,8 @@ export interface GeneratedClass {
   feedback: FeedbackStep;
   grammar: string[]; // named grammar points practised (e.g. "Possessive pronouns")
   track?: LearningTrack; // "general" (CEFR) or "business" vocabulary focus
+  language?: TargetLanguage; // absent on legacy classes = "en"
+  supportLang?: SupportLanguage; // Dutch course only
   generatedBy: "ai" | "mock"; // provenance, so UI can flag offline fallback
 }
 
@@ -123,6 +138,8 @@ export interface ClassGenInput {
   level: CEFRLevel;
   autisticMode: boolean;
   track?: LearningTrack;
+  language?: TargetLanguage; // default "en"
+  supportLang?: SupportLanguage; // Dutch course: language of explanations
   knownVocab?: string[]; // spiral review: surface earlier vocab
   priorTopicVocab?: string[]; // words already learned — avoid repeating them
   topicRepeatCount?: number; // 0 = first time studying this topic, 1 = second, etc.
@@ -196,7 +213,12 @@ export interface ClassHistoryEntry {
 
 // ---- Meetings (mock data in v1) ---------------------------
 
-export type SpeakerBadge = "Native (US)" | "Native (UK)" | "Fluent C2 (BR)";
+export type SpeakerBadge =
+  | "Native (US)"
+  | "Native (UK)"
+  | "Fluent C2 (BR)"
+  | "Native (NL)"
+  | "Native (BE)";
 
 export interface Speaker {
   id: string;

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdmin } from "@/lib/server/adminGuard";
-import { updateAccountByUserId } from "@/lib/server/store";
+import { updateAccountByUserId, setScheduleFor, scheduleFor } from "@/lib/server/store";
+import { getLang } from "@/lib/server/lang";
 
 export const runtime = "nodejs";
 
@@ -25,10 +26,11 @@ export async function PUT(req: NextRequest) {
     : [];
   const time = body.time && TIME_RE.test(body.time) ? body.time : "18:00";
 
+  const lang = await getLang();
   const updated = await updateAccountByUserId(body.userId, (a) => {
-    a.schedule = days.length ? { days, time } : null;
+    setScheduleFor(a, lang, days.length ? { days, time } : null);
   });
 
   if (!updated) return NextResponse.json({ error: "User not found" }, { status: 404 });
-  return NextResponse.json({ ok: true, schedule: updated.schedule });
+  return NextResponse.json({ ok: true, schedule: scheduleFor(updated, lang) });
 }

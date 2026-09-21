@@ -7,6 +7,7 @@ import {
   buildClassSchema,
 } from "@/lib/prompts";
 import { buildMockClass } from "@/lib/mockClass";
+import { isSupportLanguage } from "@/lib/language";
 import { getCEFRInfo } from "@/lib/cefr";
 
 export const runtime = "nodejs";
@@ -33,6 +34,8 @@ export async function POST(req: NextRequest) {
       level: body.level,
       autisticMode: !!body.autisticMode,
       track: body.track === "business" ? "business" : "general",
+      language: body.language === "nl" ? "nl" : "en",
+      supportLang: isSupportLanguage(body.supportLang) ? body.supportLang : "pt",
       knownVocab: Array.isArray(body.knownVocab)
         ? (body.knownVocab as string[]).slice(0, 40)
         : [],
@@ -51,7 +54,8 @@ export async function POST(req: NextRequest) {
 
     const response = await client.messages.create({
       model: MODEL,
-      max_tokens: 4000,
+      // Dutch classes carry support-language translations, so they need more room.
+      max_tokens: input.language === "nl" ? 12000 : 4000,
       system: buildSystemPrompt(input),
       messages: [{ role: "user", content: buildUserPrompt(input) }],
       // Structured output: guarantees the first text block is valid JSON
@@ -59,7 +63,7 @@ export async function POST(req: NextRequest) {
       // installed SDK's static types in some versions.
       ...({
         output_config: {
-          format: { type: "json_schema", schema: buildClassSchema(input.level) },
+          format: { type: "json_schema", schema: buildClassSchema(input.level, input.language) },
         },
       } as Record<string, unknown>),
     });
@@ -78,6 +82,7 @@ export async function POST(req: NextRequest) {
       speakingRatio: parsed.speakingRatio ?? getCEFRInfo(input.level).speakingRatio,
       estimatedMinutes: parsed.estimatedMinutes ?? 50,
       agenda: parsed.agenda ?? [],
+      story: parsed.story,
       warmUp: parsed.warmUp!,
       targetLanguage: parsed.targetLanguage!,
       guidedProduction: parsed.guidedProduction!,
@@ -85,6 +90,8 @@ export async function POST(req: NextRequest) {
       feedback: parsed.feedback!,
       grammar: parsed.grammar ?? [],
       track: input.track ?? "general",
+      language: input.language,
+      ...(input.language === "nl" ? { supportLang: input.supportLang } : {}),
       generatedBy: "ai",
     };
 

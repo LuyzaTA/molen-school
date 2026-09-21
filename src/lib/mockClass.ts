@@ -1,6 +1,7 @@
 import type { ClassGenInput, GeneratedClass, VocabItem, ClassStory } from "./types";
 import { getCEFRInfo } from "./cefr";
 import { getA1TopicContent } from "./a1TopicMocks";
+import { buildDutchMockClass } from "./mockClassNl";
 
 // ============================================================
 // Deterministic offline fallback. Used when the AI endpoint is
@@ -430,6 +431,7 @@ function buildMockStory(topic: string, level: string, vocab: VocabItem[]): Class
 }
 
 export function buildMockClass(input: ClassGenInput): GeneratedClass {
+  if (input.language === "nl") return buildDutchMockClass(input);
   const info = getCEFRInfo(input.level);
   const t = input.topic.trim() || "everyday life";
   const beginner = isBeginner(input.level);

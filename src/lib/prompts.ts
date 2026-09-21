@@ -1,5 +1,7 @@
 import type { ClassGenInput, CEFRLevel } from "./types";
+import type { TargetLanguage } from "./language";
 import { getCEFRInfo } from "./cefr";
+import { buildDutchSystemPrompt, buildDutchUserPrompt, dutchStoryTranslated } from "./promptsNl";
 
 function levelCurriculum(level: CEFRLevel): string {
   switch (level) {
@@ -88,11 +90,24 @@ C2 CEFR CURRICULUM:
 
 /**
  * JSON Schema passed to the Messages API (output_config.format).
- * A1 learners get extra Portuguese fields (meaningPt / questionsPt);
- * every other level is English-only.
+ *
+ * English course: A1 learners get extra Portuguese fields (meaningPt /
+ * questionsPt …); every other level is English-only.
+ *
+ * Dutch course: every level gets support-language translations of the
+ * Dutch the learner says (questionsPt, sentenceFramesPt, promptsPt) plus
+ * exampleTranslation; A1–A2 stories also carry line-by-line translations.
+ * Explanations (meaning, intro, feedback…) are written in the support
+ * language directly, so meaningPt / introPt are not requested.
  */
-export function buildClassSchema(level: CEFRLevel) {
+export function buildClassSchema(level: CEFRLevel, language: TargetLanguage = "en") {
+  const nl = language === "nl";
   const a1 = level === "A1";
+  // Parallel translations of the prompts the learner speaks.
+  const glossPrompts = a1 || nl;
+  // Translations of explanatory intros (Dutch writes these in the support language).
+  const glossIntros = a1 && !nl;
+  const storyTranslated = nl && dutchStoryTranslated(level);
 
   const vocabProps: Record<string, unknown> = {
     term: { type: "string" },
@@ -102,9 +117,13 @@ export function buildClassSchema(level: CEFRLevel) {
     literalMeaning: { type: "string" },
   };
   const vocabRequired = ["term", "meaning", "example", "isIdiom", "literalMeaning"];
-  if (a1) {
+  if (glossIntros) {
     vocabProps.meaningPt = { type: "string" };
     vocabRequired.push("meaningPt");
+  }
+  if (nl) {
+    vocabProps.exampleTranslation = { type: "string" };
+    vocabRequired.push("exampleTranslation");
   }
 
   const warmUpProps: Record<string, unknown> = {
@@ -112,9 +131,26 @@ export function buildClassSchema(level: CEFRLevel) {
     grammarNote: { type: "string" },
   };
   const warmUpRequired = ["questions", "grammarNote"];
-  if (a1) {
+  if (glossPrompts) {
     warmUpProps.questionsPt = { type: "array", items: { type: "string" } };
     warmUpRequired.push("questionsPt");
+  }
+
+  const dialogueProps: Record<string, unknown> = {
+    speaker: { type: "string" },
+    line: { type: "string" },
+  };
+  const dialogueRequired = ["speaker", "line"];
+  const panelProps: Record<string, unknown> = {
+    text: { type: "string" },
+    scene: { type: "string" },
+  };
+  const panelRequired = ["text", "scene", "dialogue", "check", "vocab"];
+  if (storyTranslated) {
+    dialogueProps.translation = { type: "string" };
+    dialogueRequired.push("translation");
+    panelProps.textTranslation = { type: "string" };
+    panelRequired.push("textTranslation");
   }
 
   return {
@@ -135,18 +171,14 @@ export function buildClassSchema(level: CEFRLevel) {
             type: "object",
             additionalProperties: false,
             properties: {
-              text: { type: "string" },
-              scene: { type: "string" },
+              ...panelProps,
               dialogue: {
                 type: "array",
                 items: {
                   type: "object",
                   additionalProperties: false,
-                  properties: {
-                    speaker: { type: "string" },
-                    line: { type: "string" },
-                  },
-                  required: ["speaker", "line"],
+                  properties: dialogueProps,
+                  required: dialogueRequired,
                 },
               },
               check: {
@@ -161,7 +193,7 @@ export function buildClassSchema(level: CEFRLevel) {
               },
               vocab: { type: "array", items: { type: "string" } },
             },
-            required: ["text", "scene", "dialogue", "check", "vocab"],
+            required: panelRequired,
           },
         },
       },
@@ -206,9 +238,9 @@ export function buildClassSchema(level: CEFRLevel) {
       additionalProperties: false,
       properties: {
         intro: { type: "string" },
-        ...(a1 ? { introPt: { type: "string" } } : {}),
+        ...(glossIntros ? { introPt: { type: "string" } } : {}),
         sentenceFrames: { type: "array", items: { type: "string" } },
-        ...(a1 ? { sentenceFramesPt: { type: "array", items: { type: "string" } } } : {}),
+        ...(glossPrompts ? { sentenceFramesPt: { type: "array", items: { type: "string" } } } : {}),
         rolePlay: {
           type: "object",
           additionalProperties: false,
@@ -220,16 +252,23 @@ export function buildClassSchema(level: CEFRLevel) {
         },
         picturePrompts: { type: "array", items: { type: "string" } },
       },
-      required: ["intro", "sentenceFrames", "rolePlay", "picturePrompts", ...(a1 ? ["introPt", "sentenceFramesPt"] : [])],
+      required: [
+        "intro",
+        "sentenceFrames",
+        "rolePlay",
+        "picturePrompts",
+        ...(glossIntros ? ["introPt"] : []),
+        ...(glossPrompts ? ["sentenceFramesPt"] : []),
+      ],
     },
     freeProduction: {
       type: "object",
       additionalProperties: false,
       properties: {
         intro: { type: "string" },
-        ...(a1 ? { introPt: { type: "string" } } : {}),
+        ...(glossIntros ? { introPt: { type: "string" } } : {}),
         prompts: { type: "array", items: { type: "string" } },
-        ...(a1 ? { promptsPt: { type: "array", items: { type: "string" } } } : {}),
+        ...(glossPrompts ? { promptsPt: { type: "array", items: { type: "string" } } } : {}),
         format: {
           type: "string",
           enum: a1
@@ -237,7 +276,13 @@ export function buildClassSchema(level: CEFRLevel) {
             : ["discussion", "debate", "storytelling"],
         },
       },
-      required: ["intro", "prompts", "format", ...(a1 ? ["introPt", "promptsPt"] : [])],
+      required: [
+        "intro",
+        "prompts",
+        "format",
+        ...(glossIntros ? ["introPt"] : []),
+        ...(glossPrompts ? ["promptsPt"] : []),
+      ],
     },
     feedback: {
       type: "object",
@@ -266,13 +311,14 @@ export function buildClassSchema(level: CEFRLevel) {
   } as const;
 }
 
-function ordinal(n: number): string {
+export function ordinal(n: number): string {
   const s = ["th", "st", "nd", "rd"];
   const v = n % 100;
   return n + (s[(v - 20) % 10] ?? s[v] ?? s[0]);
 }
 
 export function buildSystemPrompt(input: ClassGenInput): string {
+  if (input.language === "nl") return buildDutchSystemPrompt(input);
   const info = getCEFRInfo(input.level);
   const speakingPct = Math.round(info.speakingRatio * 100);
 
@@ -439,6 +485,7 @@ Return ONLY the structured JSON. Be encouraging, practical, and concrete.`;
 }
 
 export function buildUserPrompt(input: ClassGenInput): string {
+  if (input.language === "nl") return buildDutchUserPrompt(input);
   return `Create today's speaking class. Topic: "${input.topic}". Level: ${input.level}.
 Teach the actual language content OF this topic — the words and phrases a student says and hears in "${input.topic}" situations. Do NOT use generic discussion phrases adapted to the topic name.`;
 }
