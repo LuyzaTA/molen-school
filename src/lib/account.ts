@@ -129,6 +129,8 @@ export interface AdminUserRow {
   userId: string;
   name: string;
   cpfMasked: string;
+  rg: string;
+  address: string;
   level: CEFRLevel;
   isAdmin: boolean;
   approved: boolean;

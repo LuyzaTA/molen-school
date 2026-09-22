@@ -23,6 +23,8 @@ export async function GET() {
     userId: a.userId ?? "—",
     name: a.name,
     cpfMasked: maskCPF(a.cpf),
+    rg: a.rg ?? "",
+    address: a.address ?? "",
     level: levelFor(a, lang),
     isAdmin: a.isAdmin === true,
     approved: a.approved !== false,

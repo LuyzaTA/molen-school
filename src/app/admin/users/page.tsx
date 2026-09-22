@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-import { PAYMENT_METHODS, type AdminUserRow, type PaymentMethod } from "@/lib/account";
+import { PAYMENT_METHODS, formatRG, type AdminUserRow, type PaymentMethod } from "@/lib/account";
 import { CEFR_LEVELS } from "@/lib/cefr";
 import type { CEFRLevel } from "@/lib/types";
 import { cn } from "@/lib/cn";
@@ -13,6 +13,8 @@ type Action = "approve" | "revoke" | "activate" | "deactivate";
 
 interface EditDraft {
   name: string;
+  rg: string;
+  address: string;
   city: string;
   state: string;
   country: string;
@@ -80,6 +82,8 @@ export default function AdminUsersPage() {
     setEditId(u.userId);
     setDraft({
       name: u.name,
+      rg: u.rg,
+      address: u.address,
       city: u.city,
       state: u.state,
       country: u.country,
@@ -221,7 +225,14 @@ export default function AdminUsersPage() {
                   )}
                 </div>
 
-                {!u.isAdmin && (
+                {/* Admins can edit their own details; access actions are student-only. */}
+                {u.isAdmin ? (
+                  <div className="flex shrink-0 flex-wrap gap-2">
+                    <Button size="sm" variant="ghost" onClick={() => (editId === u.userId ? setEditId(null) : startEdit(u))}>
+                      {editId === u.userId ? "Close" : "Edit details"}
+                    </Button>
+                  </div>
+                ) : (
                   <div className="flex shrink-0 flex-wrap gap-2">
                     {!u.approved ? (
                       <Button size="sm" disabled={busyId === u.userId} onClick={() => act(u.userId, "approve")}>
@@ -256,6 +267,12 @@ export default function AdminUsersPage() {
                 <div className="grid gap-3 rounded-xl border border-border bg-base/50 p-4 sm:grid-cols-2">
                   <EditField label="Name">
                     <input className="input-field" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
+                  </EditField>
+                  <EditField label="RG">
+                    <input className="input-field" value={draft.rg} onChange={(e) => setDraft({ ...draft, rg: formatRG(e.target.value) })} />
+                  </EditField>
+                  <EditField label="Address">
+                    <input className="input-field" value={draft.address} onChange={(e) => setDraft({ ...draft, address: e.target.value })} />
                   </EditField>
                   <EditField label="City">
                     <input className="input-field" value={draft.city} onChange={(e) => setDraft({ ...draft, city: e.target.value })} />
