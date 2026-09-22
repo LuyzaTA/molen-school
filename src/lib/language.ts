@@ -58,3 +58,12 @@ export function isSupportLanguage(v: unknown): v is SupportLanguage {
 export function brandName(lang: TargetLanguage): string {
   return `Molen ${LANGUAGES[lang].brand}`;
 }
+
+/**
+ * Name of the grammar guide, in the language its explanations use: English
+ * for the Dutch course with English support, Portuguese otherwise (the
+ * English course's guide is a Portuguese → English reference).
+ */
+export function grammarGuideName(language: TargetLanguage, supportLang: SupportLanguage): string {
+  return language === "nl" && supportLang === "en" ? "SOS Grammar" : "SOS Gramática";
+}

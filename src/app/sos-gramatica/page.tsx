@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/Card";
 import { Flag, langFlag } from "@/components/ui/Flag";
 import { ListenButton } from "@/components/class/ListenButton";
 import { useSettings } from "@/context/SettingsContext";
+import { grammarGuideName } from "@/lib/language";
 import {
   DUTCH_GRAMMAR_CLASSES,
   DUTCH_GRAMMAR_COPY,
@@ -305,12 +306,13 @@ function DutchGrammar() {
   const sl = profile.supportLang;
   const tr = (b: Bi) => (sl === "pt" ? b.pt : b.en);
   const c = DUTCH_GRAMMAR_COPY;
+  const title = grammarGuideName("nl", sl);
 
   return (
     <div className="mx-auto max-w-wide space-y-8">
       <header className="pt-2">
         <p className="text-xs font-semibold uppercase tracking-wider text-accent">{tr(c.eyebrow)}</p>
-        <h1 className="mt-1 text-2xl font-bold tracking-tight text-ink sm:text-3xl">SOS Gramática</h1>
+        <h1 className="mt-1 text-2xl font-bold tracking-tight text-ink sm:text-3xl">{title}</h1>
         <p className="mt-2 text-[15px] text-ink-muted">{tr(c.intro)}</p>
       </header>
 

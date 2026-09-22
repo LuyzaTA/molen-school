@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/Card";
 import { WindmillMark } from "@/components/ui/WindmillMark";
 import { getCEFRInfo } from "@/lib/cefr";
 import { defaultMeetings } from "@/lib/mockData";
-import { LANGUAGES } from "@/lib/language";
+import { LANGUAGES, grammarGuideName } from "@/lib/language";
 import { cn } from "@/lib/cn";
 
 export default function DashboardPage() {
@@ -171,12 +171,18 @@ export default function DashboardPage() {
             📖
           </span>
           <div className="min-w-0 flex-1">
-            <h3 className="font-bold text-ink">SOS Gramática</h3>
+            <h3 className="font-bold text-ink">
+              {grammarGuideName(profile.language, profile.supportLang)}
+            </h3>
             <p className="mt-0.5 text-sm text-ink-muted">
-              Referência rápida: as classes gramaticais em Português → {LANGUAGES[profile.language].namePt[0].toUpperCase() + LANGUAGES[profile.language].namePt.slice(1)}. Sempre à mão.
+              {dutch && profile.supportLang === "en"
+                ? "Quick reference: the word classes, English → Dutch. Always at hand."
+                : `Referência rápida: as classes gramaticais em Português → ${LANGUAGES[profile.language].namePt[0].toUpperCase() + LANGUAGES[profile.language].namePt.slice(1)}. Sempre à mão.`}
             </p>
           </div>
-          <span className="shrink-0 text-sm font-semibold text-accent">Ver guia →</span>
+          <span className="shrink-0 text-sm font-semibold text-accent">
+            {dutch && profile.supportLang === "en" ? "Open guide →" : "Ver guia →"}
+          </span>
         </Card>
       </Link>
 

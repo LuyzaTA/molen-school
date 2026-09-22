@@ -11,7 +11,7 @@ import { SiteFooter } from "./SiteFooter";
 import { Logo } from "@/components/ui/Logo";
 import { Card } from "@/components/ui/Card";
 import { useSettings, applyBrandTitle } from "@/context/SettingsContext";
-import { brandName } from "@/lib/language";
+import { brandName, grammarGuideName } from "@/lib/language";
 import { cn } from "@/lib/cn";
 
 // Auth pages render without the app chrome.
@@ -86,12 +86,20 @@ export function AppShell({ children }: { children: ReactNode }) {
   // Student access gate (pending approval or deactivated).
   // Grammar reference is always accessible so students can study while waiting.
   if (!isAdmin && (!approved || !active) && !isGrammarRef) {
-    return <AccessGate approved={approved} active={active} />;
+    return (
+      <AccessGate
+        approved={approved}
+        active={active}
+        guideName={grammarGuideName(profile.language, profile.supportLang)}
+      />
+    );
   }
 
   // The Dutch course adds the civic integration (inburgering) exam module.
-  const studentNav =
-    profile.language === "nl" ? [...NAV_ITEMS, INBURGEREN_ITEM] : NAV_ITEMS;
+  const guideName = grammarGuideName(profile.language, profile.supportLang);
+  const studentNav = (
+    profile.language === "nl" ? [...NAV_ITEMS, INBURGEREN_ITEM] : NAV_ITEMS
+  ).map((item) => (item.href === "/sos-gramatica" ? { ...item, label: guideName } : item));
   const navItems: NavItem[] = isAdmin ? ADMIN_NAV : studentNav;
   const homeHref = isAdmin ? "/admin" : "/dashboard";
 
@@ -280,7 +288,15 @@ function MobileNav({
   );
 }
 
-function AccessGate({ approved, active }: { approved: boolean; active: boolean }) {
+function AccessGate({
+  approved,
+  active,
+  guideName,
+}: {
+  approved: boolean;
+  active: boolean;
+  guideName: string;
+}) {
   const pending = !approved;
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-5 text-center">
@@ -302,7 +318,7 @@ function AccessGate({ approved, active }: { approved: boolean; active: boolean }
           href="/sos-gramatica"
           className="mt-5 inline-flex items-center gap-2 rounded-xl border border-accent/40 bg-accent-soft px-5 py-3 text-sm font-semibold text-accent transition-colors hover:bg-accent/10"
         >
-          📖 Study while you wait — SOS Gramática
+          📖 Study while you wait — {guideName}
           <span aria-hidden>→</span>
         </Link>
       )}
