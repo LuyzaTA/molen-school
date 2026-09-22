@@ -50,6 +50,8 @@ export const DEFAULT_PROFILE: UserProfile = {
   motion: true,
   translatePt: false,
   track: "general",
+  autoSave: true,
+  ttsSpeed: 1,
   language: "en",
   supportLang: "pt",
   createdAt: new Date().toISOString(),
@@ -136,13 +138,26 @@ export function saveCurrentClass(
   lang: TargetLanguage = "en",
 ): void {
   if (klass === null) {
-    if (typeof window !== "undefined") window.localStorage.removeItem(currentClassKey(lang));
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem(currentClassKey(lang));
+      window.localStorage.removeItem(`${currentClassKey(lang)}.step`);
+    }
     return;
   }
   if (typeof window !== "undefined") {
     window.localStorage.setItem(CLASS_VERSION_KEY, CLASS_CONTENT_VERSION);
   }
   write(currentClassKey(lang), klass);
+}
+
+/** Step the learner was on in the in-progress class (resumes there). */
+export function loadCurrentStep(lang: TargetLanguage = "en"): number {
+  const n = read<number>(`${currentClassKey(lang)}.step`, 0);
+  return Number.isInteger(n) && n >= 0 ? n : 0;
+}
+
+export function saveCurrentStep(step: number, lang: TargetLanguage = "en"): void {
+  write(`${currentClassKey(lang)}.step`, step);
 }
 
 // ---- Weekly homework completion ----------------------------

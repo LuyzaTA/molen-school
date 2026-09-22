@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useSettings } from "@/context/SettingsContext";
+import { useProgress } from "@/context/ProgressContext";
+import { SaveProgressButton } from "./SaveProgress";
 import { Toggle } from "@/components/ui/Toggle";
 import { cn } from "@/lib/cn";
 
@@ -11,7 +13,9 @@ import { cn } from "@/lib/cn";
  * toggle lives here (and in Settings) so it's always one tap away.
  */
 export function QuickSettings() {
-  const { profile, update, toggleAutistic } = useSettings();
+  const { profile, update, toggleAutistic, account } = useSettings();
+  const { saveStatus } = useProgress();
+  const isStudent = !account?.isAdmin;
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -64,7 +68,7 @@ export function QuickSettings() {
           <div className="space-y-4">
             <Toggle
               label="Autistic / Calm mode"
-              description="Single-task screens, no animation, literal language, predictable order."
+              description="Single-task screens, no animation, literal language, predictable order, slower audio."
               checked={profile.autisticMode}
               onChange={toggleAutistic}
             />
@@ -84,6 +88,22 @@ export function QuickSettings() {
                 checked={profile.motion}
                 onChange={(v) => update({ motion: v })}
               />
+            )}
+            {isStudent && (
+              <>
+                <hr className="border-border" />
+                <Toggle
+                  label="Auto-Save Progress"
+                  description={
+                    profile.autoSave
+                      ? "Classes, homework, and streaks save automatically."
+                      : "Nothing is saved until you press Save progress."
+                  }
+                  checked={profile.autoSave}
+                  onChange={(v) => update({ autoSave: v })}
+                />
+                <SaveProgressButton status={saveStatus} block />
+              </>
             )}
           </div>
           <Link

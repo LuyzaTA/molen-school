@@ -22,6 +22,10 @@ export interface UserProfile {
   translatePt: boolean;
   // Active learning track: general CEFR English or Business Vocabulary.
   track: LearningTrack;
+  // Save progress to the server automatically (off = manual "Save progress").
+  autoSave: boolean;
+  // Audio speed multiplier for listen buttons (1 = normal). Calm mode slows it further.
+  ttsSpeed: number;
   // Language chosen at sign-in. Level/progress above belong to this language.
   language: TargetLanguage;
   // Dutch course only: language used for explanations and translations.

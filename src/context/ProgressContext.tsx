@@ -16,6 +16,7 @@ import type {
   DailyHomework,
 } from "@/lib/types";
 import { dayKey } from "@/lib/storage";
+import { useSettings } from "./SettingsContext";
 
 // ============================================================
 // Server-backed app state: progress + homework + weekly completion.
@@ -57,7 +58,13 @@ interface ProgressContextValue {
   saveHomeworkForDay: (hw: DailyHomework) => void;
   weeklyDone: Record<string, boolean>;
   setWeeklyDone: (key: string, done: boolean) => void;
+  /** "unsaved" only happens with auto-save off (or while a save is pending). */
+  saveStatus: SaveStatus;
+  /** Save to the server now (the manual "Save progress" button). */
+  saveNow: () => Promise<boolean>;
 }
+
+export type SaveStatus = "saved" | "unsaved" | "saving" | "error";
 
 const ProgressContext = createContext<ProgressContextValue | null>(null);
 
@@ -93,6 +100,12 @@ function mergeVocab(existing: VocabItem[], incoming: VocabItem[]): VocabItem[] {
 }
 
 export function ProgressProvider({ children }: { children: ReactNode }) {
+  const { profile } = useSettings();
+  const autoSave = profile.autoSave !== false;
+  const autoSaveRef = useRef(autoSave);
+  autoSaveRef.current = autoSave;
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>("saved");
+  const dirtyRef = useRef(false);
   const [state, setState] = useState<AppState>(DEFAULT_STATE);
   const [ready, setReady] = useState(false);
   const authedRef = useRef(false);
@@ -127,16 +140,57 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
     })();
   }, []);
 
-  const scheduleSave = useCallback(() => {
-    if (!authedRef.current) return;
+  const saveNow = useCallback(async (): Promise<boolean> => {
+    if (!authedRef.current) return false;
     if (saveTimer.current) clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(() => {
-      void fetch(`/api/state?lang=${encodeURIComponent(langRef.current)}`, {
+    saveTimer.current = null;
+    const snapshot = stateRef.current;
+    setSaveStatus("saving");
+    try {
+      const res = await fetch(`/api/state?lang=${encodeURIComponent(langRef.current)}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(stateRef.current),
+        body: JSON.stringify(snapshot),
       });
-    }, 600);
+      if (!res.ok) throw new Error(String(res.status));
+      // Changes made while this save was in flight are still unsaved.
+      dirtyRef.current = stateRef.current !== snapshot;
+      setSaveStatus(dirtyRef.current ? "unsaved" : "saved");
+      if (dirtyRef.current && autoSaveRef.current) scheduleSaveRef.current();
+      return true;
+    } catch {
+      setSaveStatus("error");
+      return false;
+    }
+  }, []);
+
+  // With auto-save on, save shortly after each change; otherwise just mark
+  // the state as unsaved until the student presses "Save progress".
+  const scheduleSaveRef = useRef<() => void>(() => {});
+  const scheduleSave = useCallback(() => {
+    if (!authedRef.current) return;
+    dirtyRef.current = true;
+    setSaveStatus("unsaved");
+    if (!autoSaveRef.current) return;
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => void saveNow(), 600);
+  }, [saveNow]);
+  scheduleSaveRef.current = scheduleSave;
+
+  // Turning auto-save back on saves anything left unsaved.
+  useEffect(() => {
+    if (autoSave && dirtyRef.current) void saveNow();
+  }, [autoSave, saveNow]);
+
+  // Warn before leaving with unsaved progress.
+  useEffect(() => {
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (!dirtyRef.current) return;
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
   }, []);
 
   const mutate = useCallback(
@@ -249,6 +303,8 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
         saveHomeworkForDay,
         weeklyDone: state.weeklyDone,
         setWeeklyDone,
+        saveStatus,
+        saveNow,
       }}
     >
       {children}

@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useSettings } from "@/context/SettingsContext";
 import { cn } from "@/lib/cn";
+import { CALM_TTS_FACTOR } from "@/lib/account";
+import type { UserProfile } from "@/lib/types";
 
 // ============================================================
 // "Listen" button for Dutch text. Audio comes from Google Cloud TTS
@@ -16,6 +18,18 @@ let current: HTMLAudioElement | null = null;
 let serverTtsUnavailable = false;
 // Bumped on every click so a newer click stops an older playlist.
 let playSession = 0;
+
+/**
+ * Playback rate for a learner: beginners hear Dutch a little slower, the
+ * Settings speed multiplies that, and Calm mode slows it down further.
+ * Rounded so the server/browser caches reuse the same audio.
+ */
+export function ttsRate(profile: UserProfile): number {
+  const base = profile.level === "A1" || profile.level === "A2" ? 0.85 : 1;
+  const calm = profile.autisticMode ? CALM_TTS_FACTOR : 1;
+  const rate = base * (profile.ttsSpeed || 1) * calm;
+  return Math.round(Math.min(1.5, Math.max(0.5, rate)) * 100) / 100;
+}
 
 /** Fill-in blanks ("______") read badly — speak them as a pause. */
 function speakable(text: string): string {
@@ -87,8 +101,7 @@ export function ListenButton({
 }) {
   const { profile } = useSettings();
   const [state, setState] = useState<"idle" | "loading" | "playing">("idle");
-  // Beginners hear Dutch a little slower.
-  const rate = profile.level === "A1" || profile.level === "A2" ? 0.85 : 1;
+  const rate = ttsRate(profile);
 
   async function onClick(e: React.MouseEvent) {
     e.stopPropagation();

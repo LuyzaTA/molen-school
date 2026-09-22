@@ -42,6 +42,8 @@ const SETTING_KEYS = [
   "motion",
   "translatePt",
   "track",
+  "autoSave",
+  "ttsSpeed",
 ] as const;
 
 /**

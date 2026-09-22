@@ -5,7 +5,12 @@ import Link from "next/link";
 import type { GeneratedClass } from "@/lib/types";
 import { generateClass } from "@/lib/classGenerator";
 import { buildHomework } from "@/lib/homework";
-import { loadCurrentClass, saveCurrentClass } from "@/lib/storage";
+import {
+  loadCurrentClass,
+  saveCurrentClass,
+  loadCurrentStep,
+  saveCurrentStep,
+} from "@/lib/storage";
 import { PtToggle } from "@/components/ui/PtToggle";
 import { useSettings } from "@/context/SettingsContext";
 import { useProgress } from "@/context/ProgressContext";
@@ -58,10 +63,16 @@ export default function ClassPage() {
     if (saved) {
       setKlass(saved);
       setLastTopic(saved.topic);
+      setStepIndex(Math.min(loadCurrentStep(profile.language), STEP_LABELS.length - 1));
       setPhase("agenda");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Remember the current step so a refresh or return resumes the class there.
+  useEffect(() => {
+    if (klass && phase === "running") saveCurrentStep(stepIndex, profile.language);
+  }, [klass, phase, stepIndex, profile.language]);
 
   async function runGeneration(topic: string) {
     setLastTopic(topic);
@@ -132,6 +143,7 @@ export default function ClassPage() {
         klass={klass}
         autistic={profile.autisticMode}
         onStart={() => setPhase("running")}
+        resumeStep={stepIndex}
         onRegenerate={lastTopic ? () => runGeneration(lastTopic) : undefined}
         onChangeTopic={changeTopic}
       />

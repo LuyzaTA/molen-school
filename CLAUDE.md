@@ -38,7 +38,8 @@ The README describes the original localStorage-only v1. The app has since gained
 
 ### Client state
 - `SettingsContext` holds the profile/settings, loaded from `/api/me` and saved to `/api/settings`. It applies theme, Calm ("autistic") mode, font and motion as `data-theme`, `data-autistic`, `data-font` and `data-motion` attributes on `<html>`. Styling reacts to those attributes through CSS variables in `globals.css`, so a new visual mode should be a data attribute and CSS variables, not conditional classNames.
-- `ProgressContext` loads `/api/state` once and saves it back with a debounce. Progress and homework live on the server.
+- `ProgressContext` loads `/api/state` once and saves it back with a debounce. Progress and homework live on the server. With the `autoSave` setting off, changes stay local (`saveStatus: "unsaved"`) until `saveNow()` (the "Save progress" button in Quick Settings, Settings, and the header); leaving the page with unsaved progress triggers a browser warning.
+- Audio speed: `ttsRate(profile)` in `ListenButton` combines level (A1–A2 slower), the `ttsSpeed` setting, and Calm mode (`CALM_TTS_FACTOR`).
 - `src/lib/storage.ts` (localStorage, `fluentbr.*` keys) is now mainly used for the in-progress class. Bump `CLASS_CONTENT_VERSION` when the `GeneratedClass` shape changes, so stale saved classes get discarded.
 
 ### AI class generation

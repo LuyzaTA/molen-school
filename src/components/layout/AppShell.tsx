@@ -6,6 +6,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { NAV_ITEMS, INBURGEREN_ITEM } from "./navItems";
 import { QuickSettings } from "./QuickSettings";
 import { LanguageSwitch } from "./LanguageSwitch";
+import { HeaderSaveIndicator } from "./SaveProgress";
 import { SiteFooter } from "./SiteFooter";
 import { Logo } from "@/components/ui/Logo";
 import { Card } from "@/components/ui/Card";
@@ -107,6 +108,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             )}
           </Link>
           <div className="flex items-center gap-2">
+            <HeaderSaveIndicator />
             <LanguageSwitch />
             <QuickSettings />
             <SignOutButton />

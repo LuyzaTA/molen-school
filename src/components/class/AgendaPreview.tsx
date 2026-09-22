@@ -13,12 +13,15 @@ import { Badge } from "@/components/ui/Badge";
 export function AgendaPreview({
   klass,
   onStart,
+  resumeStep = 0,
   autistic,
   onRegenerate,
   onChangeTopic,
 }: {
   klass: GeneratedClass;
   onStart: () => void;
+  /** Saved step (0-based) of an in-progress class; > 0 shows "Continue". */
+  resumeStep?: number;
   autistic: boolean;
   onRegenerate?: () => void;
   onChangeTopic?: () => void;
@@ -78,7 +81,7 @@ export function AgendaPreview({
       )}
 
       <Button size="lg" block onClick={onStart}>
-        Start step 1 →
+        {resumeStep > 0 ? `Continue at step ${resumeStep + 1} →` : "Start step 1 →"}
       </Button>
 
       {(onRegenerate || onChangeTopic) && (

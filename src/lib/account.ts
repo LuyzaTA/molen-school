@@ -73,6 +73,8 @@ export interface AccountSettings {
   motion: boolean;
   translatePt: boolean;
   track: LearningTrack;
+  autoSave?: boolean; // absent on older accounts = true
+  ttsSpeed?: number; // absent on older accounts = 1
 }
 
 /** Personal data collected at registration (sent to the server). */
@@ -147,7 +149,20 @@ export const DEFAULT_SETTINGS: AccountSettings = {
   motion: true,
   translatePt: false,
   track: "general",
+  autoSave: true,
+  ttsSpeed: 1,
 };
+
+/** Audio speed choices offered in Settings. */
+export const TTS_SPEEDS: { value: number; label: string }[] = [
+  { value: 0.7, label: "Very slow" },
+  { value: 0.85, label: "Slow" },
+  { value: 1, label: "Normal" },
+  { value: 1.15, label: "Fast" },
+];
+
+/** Calm mode plays audio a little slower. */
+export const CALM_TTS_FACTOR = 0.8;
 
 // ---- Validation helpers (shared) ---------------------------
 

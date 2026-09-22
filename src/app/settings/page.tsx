@@ -10,9 +10,14 @@ import { PricingSection } from "@/components/admin/PricingSection";
 import { cn } from "@/lib/cn";
 import { Flag, langFlag } from "@/components/ui/Flag";
 import { LANGUAGES, SUPPORT_LANGUAGES } from "@/lib/language";
+import { TTS_SPEEDS, CALM_TTS_FACTOR } from "@/lib/account";
+import { useProgress } from "@/context/ProgressContext";
+import { SaveProgressButton } from "@/components/layout/SaveProgress";
+import { ListenButton, ttsRate } from "@/components/class/ListenButton";
 
 export default function SettingsPage() {
   const { profile, account, update } = useSettings();
+  const { saveStatus } = useProgress();
 
   async function signOut() {
     try {
@@ -128,6 +133,55 @@ export default function SettingsPage() {
                 checked={profile.translatePt}
                 onChange={(v) => update({ translatePt: v })}
               />
+              <hr className="border-border" />
+            </>
+          )}
+          {profile.language === "nl" && (
+            <>
+              <div>
+                <p className="text-[15px] font-medium text-ink">Audio speed</p>
+                <p className="mt-0.5 text-sm text-ink-muted">
+                  How fast the Dutch listen buttons speak.
+                  {profile.autisticMode &&
+                    ` Calm mode is on, so audio plays ${Math.round((1 - CALM_TTS_FACTOR) * 100)}% slower than this.`}
+                </p>
+                <div className="mt-2.5 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {TTS_SPEEDS.map((s) => (
+                    <button
+                      key={s.value}
+                      type="button"
+                      onClick={() => update({ ttsSpeed: s.value })}
+                      aria-pressed={profile.ttsSpeed === s.value}
+                      className={cn(
+                        "rounded-lg border py-2.5 text-sm font-medium transition-colors",
+                        profile.ttsSpeed === s.value
+                          ? "border-accent bg-accent-soft text-ink"
+                          : "border-border bg-surface text-ink-muted hover:border-accent",
+                      )}
+                    >
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
+                <div className="mt-2.5 flex items-center gap-2 text-sm text-ink-muted">
+                  <ListenButton text="Hallo! Ik leer elke dag een beetje Nederlands." label="Try it" />
+                  <span>Try it · playback rate {ttsRate(profile).toFixed(2)}×</span>
+                </div>
+              </div>
+              <hr className="border-border" />
+            </>
+          )}
+          {!account?.isAdmin && (
+            <>
+              <div className="space-y-3">
+                <Toggle
+                  label="Auto-Save Progress"
+                  description="Save classes, homework, and streaks automatically. Turn it off to save only when you press Save progress."
+                  checked={profile.autoSave}
+                  onChange={(v) => update({ autoSave: v })}
+                />
+                <SaveProgressButton status={saveStatus} />
+              </div>
               <hr className="border-border" />
             </>
           )}

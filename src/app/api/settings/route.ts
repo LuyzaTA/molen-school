@@ -35,6 +35,11 @@ export async function PUT(req: NextRequest) {
   if (body.settings && typeof body.settings === "object") {
     // track is registration-only — strip it so settings updates can never overwrite it
     const { track: _track, ...rest } = body.settings;
+    if ("autoSave" in rest) rest.autoSave = rest.autoSave !== false;
+    if ("ttsSpeed" in rest) {
+      const n = Number(rest.ttsSpeed);
+      rest.ttsSpeed = n >= 0.5 && n <= 1.5 ? n : 1;
+    }
     account.settings = { ...account.settings, ...rest };
   }
   await saveAccount(session.sub, account);
