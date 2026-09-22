@@ -121,6 +121,8 @@ export function AppShell({ children }: { children: ReactNode }) {
           {navItems.map((item) => (
             <NavLink key={item.href} item={item} active={isActive(pathname, item.href)} />
           ))}
+          {/* Signed-in user, pinned to the bottom above Settings. */}
+          <UserCard name={profile.name} userId={account?.userId} className="mt-auto" />
           {!isAdmin && <SettingsNavLink active={pathname === "/settings"} />}
         </nav>
 
@@ -140,6 +142,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         pathname={pathname}
         moreOpen={moreOpen}
         onToggleMore={() => setMoreOpen((o) => !o)}
+        user={{ name: profile.name, userId: account?.userId }}
       />
     </div>
   );
@@ -174,7 +177,9 @@ function MobileNav({
   pathname,
   moreOpen,
   onToggleMore,
+  user,
 }: {
+  user?: { name: string; userId?: string };
   items: NavItem[];
   isAdmin: boolean;
   pathname: string;
@@ -205,6 +210,7 @@ function MobileNav({
             className="fixed inset-x-0 bottom-[3.75rem] z-50 animate-fade-in rounded-t-2xl border-t border-border bg-surface p-3 pb-2 shadow-2xl md:hidden"
           >
             <div className="mx-auto mb-2 h-1 w-10 rounded-full bg-border" aria-hidden />
+            {user && <UserCard name={user.name} userId={user.userId} className="mb-2" />}
             <ul className="grid grid-cols-3 gap-1">
               {overflow.map((item) => {
                 const active = isActive(pathname, item.href);
@@ -346,13 +352,43 @@ function NavLink({ item, active }: { item: NavItem; active: boolean }) {
   );
 }
 
+function UserCard({
+  name,
+  userId,
+  className,
+}: {
+  name: string;
+  userId?: string;
+  className?: string;
+}) {
+  const initial = (name.trim()[0] ?? "?").toUpperCase();
+  return (
+    <div
+      className={cn("mb-1 flex items-center gap-3 rounded-xl border border-border bg-surface px-3 py-2.5", className)}
+      aria-label={`Signed in as ${name}${userId ? `, ${userId}` : ""}`}
+    >
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-bold text-accent-ink">
+        {initial}
+      </span>
+      <span className="min-w-0">
+        <span className="block truncate text-sm font-semibold text-ink" title={name}>
+          {name || "Student"}
+        </span>
+        {userId && (
+          <span className="block text-xs font-medium tracking-wide text-ink-subtle">{userId}</span>
+        )}
+      </span>
+    </div>
+  );
+}
+
 function SettingsNavLink({ active }: { active: boolean }) {
   return (
     <Link
       href="/settings"
       aria-current={active ? "page" : undefined}
       className={cn(
-        "mt-auto flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] font-medium transition-colors",
+        "flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] font-medium transition-colors",
         active ? "bg-accent-soft text-ink" : "text-ink-muted hover:bg-accent-soft/60 hover:text-ink",
       )}
     >
