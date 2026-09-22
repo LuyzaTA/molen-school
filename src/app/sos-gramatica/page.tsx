@@ -2,11 +2,12 @@
 
 import { Card } from "@/components/ui/Card";
 import { Flag, langFlag } from "@/components/ui/Flag";
+import { ListenButton } from "@/components/class/ListenButton";
 import { useSettings } from "@/context/SettingsContext";
-import { LANGUAGES } from "@/lib/language";
 import {
   DUTCH_GRAMMAR_CLASSES,
-  DUTCH_GRAMMAR_SUMMARY,
+  DUTCH_GRAMMAR_COPY,
+  type Bi,
   type GrammarClass,
 } from "@/lib/grammarNl";
 
@@ -201,24 +202,24 @@ const SUMMARY: [string, string][] = [
 
 export default function SosGramaticaPage() {
   const { profile } = useSettings();
-  const dutch = profile.language === "nl";
-  const classes = dutch ? DUTCH_GRAMMAR_CLASSES : GRAMMAR_CLASSES;
-  const summary = dutch ? DUTCH_GRAMMAR_SUMMARY : SUMMARY;
-  const langPt = LANGUAGES[profile.language].namePt;
-  const LangPt = langPt[0].toUpperCase() + langPt.slice(1);
+  if (profile.language === "nl") return <DutchGrammar />;
+  return <EnglishGrammar />;
+}
 
+/** English course: Portuguese → English reference (explanations in Portuguese). */
+function EnglishGrammar() {
   return (
     <div className="mx-auto max-w-wide space-y-8">
       <header className="pt-2">
         <p className="text-xs font-semibold uppercase tracking-wider text-accent">Referência rápida</p>
         <h1 className="mt-1 text-2xl font-bold tracking-tight text-ink sm:text-3xl">SOS Gramática</h1>
         <p className="mt-2 text-[15px] text-ink-muted">
-          Principais classes gramaticais do Português → {LangPt}. Um guia rápido para revisar a estrutura das frases.
+          Principais classes gramaticais do Português → Inglês. Um guia rápido para revisar a estrutura das frases.
         </p>
       </header>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        {classes.map((g) => (
+        {GRAMMAR_CLASSES.map((g) => (
           <Card key={g.number} className="space-y-4">
             {/* Header */}
             <div className="flex items-start justify-between gap-2">
@@ -228,9 +229,7 @@ export default function SosGramaticaPage() {
                 </p>
                 <p className="mt-0.5 text-lg font-bold text-accent">{g.targetName}</p>
               </div>
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent-soft text-sm font-bold text-accent">
-                {g.number}
-              </span>
+              <NumberBadge n={g.number} />
             </div>
 
             {/* Definition */}
@@ -259,7 +258,7 @@ export default function SosGramaticaPage() {
                 <Flag code="br" width={16} className="mt-[3px]" /> {g.sentencePt}
               </p>
               <p className="flex items-start gap-1.5 text-sm font-medium text-ink">
-                <Flag code={langFlag(profile.language)} width={16} className="mt-[3px]" /> {g.sentenceTarget}
+                <Flag code="gb" width={16} className="mt-[3px]" /> {g.sentenceTarget}
               </p>
             </div>
           </Card>
@@ -271,7 +270,7 @@ export default function SosGramaticaPage() {
         <div>
           <h2 className="text-lg font-bold text-ink">Resumo Rápido</h2>
           <p className="mt-1 text-sm text-ink-muted">
-            Para aprender {langPt}, entender essas classes ajuda a identificar a função de cada palavra dentro da frase.
+            Para aprender inglês, entender essas classes ajuda a identificar a função de cada palavra dentro da frase.
           </p>
         </div>
         <div className="overflow-x-auto">
@@ -279,11 +278,11 @@ export default function SosGramaticaPage() {
             <thead>
               <tr className="border-b border-border">
                 <th className="pb-2 text-left font-semibold text-ink">Português</th>
-                <th className="pb-2 text-left font-semibold text-accent">{LANGUAGES[profile.language].nativeName}</th>
+                <th className="pb-2 text-left font-semibold text-accent">English</th>
               </tr>
             </thead>
             <tbody>
-              {summary.map(([pt, en], i) => (
+              {SUMMARY.map(([pt, en], i) => (
                 <tr key={i} className="border-b border-border/50 last:border-0">
                   <td className="py-2 text-ink-muted">{pt}</td>
                   <td className="py-2 font-medium text-ink">{en}</td>
@@ -294,5 +293,120 @@ export default function SosGramaticaPage() {
         </div>
       </Card>
     </div>
+  );
+}
+
+/**
+ * Dutch course: explanations in the support language chosen at sign-in
+ * (English or Portuguese); only the Dutch words and sentences get audio.
+ */
+function DutchGrammar() {
+  const { profile } = useSettings();
+  const sl = profile.supportLang;
+  const tr = (b: Bi) => (sl === "pt" ? b.pt : b.en);
+  const c = DUTCH_GRAMMAR_COPY;
+
+  return (
+    <div className="mx-auto max-w-wide space-y-8">
+      <header className="pt-2">
+        <p className="text-xs font-semibold uppercase tracking-wider text-accent">{tr(c.eyebrow)}</p>
+        <h1 className="mt-1 text-2xl font-bold tracking-tight text-ink sm:text-3xl">SOS Gramática</h1>
+        <p className="mt-2 text-[15px] text-ink-muted">{tr(c.intro)}</p>
+      </header>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        {DUTCH_GRAMMAR_CLASSES.map((g) => (
+          <Card key={g.number} className="space-y-4">
+            {/* Header */}
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-ink-subtle">
+                  {g.number}. {tr(g.name)}
+                </p>
+                <p className="mt-0.5 flex items-center gap-2 text-lg font-bold text-accent">
+                  {g.nl}
+                  <ListenButton text={g.nl} />
+                </p>
+              </div>
+              <NumberBadge n={g.number} />
+            </div>
+
+            {/* Definition */}
+            <p className="text-sm text-ink-muted">
+              <span className="font-semibold text-ink">{tr(c.whatIs)}</span>
+              {tr(g.definition)}
+            </p>
+
+            {/* Examples */}
+            <div className="rounded-lg border border-border bg-base/50 px-3 py-2">
+              <p className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-ink-subtle">
+                {tr(c.examples)}
+              </p>
+              <div className="space-y-1">
+                {g.examples.map((ex, i) => (
+                  <div key={i} className="flex items-center gap-2 text-sm">
+                    <span className="text-ink">{tr(ex.source)}</span>
+                    <span className="text-ink-subtle">→</span>
+                    <span className="font-semibold text-accent">{ex.nl}</span>
+                    <ListenButton text={ex.nl} className="h-6 w-6" />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Example sentences */}
+            <div className="space-y-1 border-t border-border pt-3">
+              <p className="flex items-start gap-1.5 text-sm text-ink-muted">
+                <Flag code={langFlag(sl)} width={16} className="mt-[3px]" /> {tr(g.sentence)}
+              </p>
+              <div className="flex items-start gap-1.5 text-sm font-medium text-ink">
+                <Flag code="nl" width={16} className="mt-[3px]" />
+                <span className="flex-1">{g.sentenceNl}</span>
+                <ListenButton text={g.sentenceNl} className="-mt-1" />
+              </div>
+            </div>
+          </Card>
+        ))}
+      </div>
+
+      {/* Summary table */}
+      <Card className="space-y-4">
+        <div>
+          <h2 className="text-lg font-bold text-ink">{tr(c.summaryTitle)}</h2>
+          <p className="mt-1 text-sm text-ink-muted">{tr(c.summaryText)}</p>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="pb-2 text-left font-semibold text-ink">{tr(c.sourceColumn)}</th>
+                <th className="pb-2 text-left font-semibold text-accent">Nederlands</th>
+              </tr>
+            </thead>
+            <tbody>
+              {DUTCH_GRAMMAR_CLASSES.map((g) => (
+                <tr key={g.number} className="border-b border-border/50 last:border-0">
+                  <td className="py-2 text-ink-muted">{tr(g.name)}</td>
+                  <td className="py-2 font-medium text-ink">
+                    <span className="inline-flex items-center gap-2">
+                      {g.nl}
+                      <ListenButton text={g.nl} className="h-6 w-6" />
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+function NumberBadge({ n }: { n: number }) {
+  return (
+    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent-soft text-sm font-bold text-accent">
+      {n}
+    </span>
   );
 }

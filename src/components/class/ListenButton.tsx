@@ -14,6 +14,8 @@ import { cn } from "@/lib/cn";
 const audioCache = new Map<string, string>(); // cache key -> object URL
 let current: HTMLAudioElement | null = null;
 let serverTtsUnavailable = false;
+// Bumped on every click so a newer click stops an older playlist.
+let playSession = 0;
 
 /** Fill-in blanks ("______") read badly — speak them as a pause. */
 function speakable(text: string): string {
@@ -68,12 +70,18 @@ async function play(text: string, rate: number, onStart: () => void): Promise<vo
   });
 }
 
+/**
+ * `text` plays one phrase. `texts` plays several in order (e.g. a whole
+ * story) and shows `label` next to the icon; any other listen click stops it.
+ */
 export function ListenButton({
   text,
+  texts,
   className,
   label = "Listen",
 }: {
-  text: string;
+  text?: string;
+  texts?: string[];
   className?: string;
   label?: string;
 }) {
@@ -85,19 +93,27 @@ export function ListenButton({
   async function onClick(e: React.MouseEvent) {
     e.stopPropagation();
     if (state !== "idle") return;
+    const queue = (texts ?? (text ? [text] : [])).map(speakable).filter(Boolean);
+    const session = ++playSession;
     setState("loading");
-    await play(speakable(text), rate, () => setState("playing"));
+    for (const t of queue) {
+      if (session !== playSession) break;
+      await play(t, rate, () => setState("playing"));
+    }
     setState("idle");
   }
+
+  const playlist = !!texts;
 
   return (
     <button
       type="button"
       onClick={onClick}
-      aria-label={`${label}: ${text}`}
+      aria-label={playlist ? label : `${label}: ${text}`}
       title={label}
       className={cn(
-        "inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border bg-surface align-middle text-ink-muted transition-colors hover:border-accent hover:text-accent",
+        "inline-flex shrink-0 items-center justify-center rounded-full border border-border bg-surface align-middle text-ink-muted transition-colors hover:border-accent hover:text-accent",
+        playlist ? "h-8 gap-1.5 px-3 text-sm font-semibold" : "h-7 w-7",
         state !== "idle" && "border-accent text-accent",
         className,
       )}
@@ -114,6 +130,7 @@ export function ListenButton({
           )}
         </svg>
       )}
+      {playlist && <span>{label}</span>}
     </button>
   );
 }

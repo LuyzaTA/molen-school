@@ -1,7 +1,9 @@
 // ============================================================
-// SOS Gramática data. `target` fields hold the course language:
-// English in the English course, Dutch in the Dutch course.
-// Explanations stay in Portuguese (it's a PT → target reference).
+// SOS Gramática data. `target` fields hold the course language.
+//
+// English course: explanations in Portuguese (a PT → English reference).
+// Dutch course: every explanation exists in both support languages
+// (`pt` / `en`), and the page shows the one the learner chose.
 // ============================================================
 
 export interface GrammarClass {
@@ -14,198 +16,250 @@ export interface GrammarClass {
   sentenceTarget: string;
 }
 
-export const DUTCH_GRAMMAR_CLASSES: GrammarClass[] = [
+/** Text in both support languages of the Dutch course. */
+export interface Bi {
+  pt: string;
+  en: string;
+}
+
+export interface DutchGrammarClass {
+  number: number;
+  name: Bi; // the word class, in the support language
+  nl: string; // Dutch term
+  definition: Bi;
+  examples: { source: Bi; nl: string }[];
+  sentence: Bi;
+  sentenceNl: string;
+}
+
+export const DUTCH_GRAMMAR_CLASSES: DutchGrammarClass[] = [
   {
     number: 1,
-    ptName: "Substantivo",
-    targetName: "Zelfstandig naamwoord",
-    definition:
-      "Palavra que dá nome a pessoas, lugares, objetos, animais, sentimentos ou ideias. Em holandês, todo substantivo tem artigo: de ou het — aprenda sempre os dois juntos.",
+    name: { pt: "Substantivo", en: "Noun" },
+    nl: "Zelfstandig naamwoord",
+    definition: {
+      pt: "Palavra que dá nome a pessoas, lugares, objetos, animais, sentimentos ou ideias. Em holandês, todo substantivo tem artigo: de ou het — aprenda sempre os dois juntos.",
+      en: "A word that names people, places, things, animals, feelings or ideas. In Dutch every noun has an article, de or het — always learn them together.",
+    },
     examples: [
-      { pt: "a casa", target: "het huis" },
-      { pt: "o amor", target: "de liefde" },
-      { pt: "o estudante", target: "de student" },
+      { source: { pt: "a casa", en: "the house" }, nl: "het huis" },
+      { source: { pt: "o amor", en: "love" }, nl: "de liefde" },
+      { source: { pt: "o estudante", en: "the student" }, nl: "de student" },
     ],
-    sentencePt: "O estudante comprou um livro.",
-    sentenceTarget: "De student kocht een boek.",
+    sentence: { pt: "O estudante comprou um livro.", en: "The student bought a book." },
+    sentenceNl: "De student kocht een boek.",
   },
   {
     number: 2,
-    ptName: "Pronome",
-    targetName: "Voornaamwoord",
-    definition: "Palavra usada no lugar de um substantivo para evitar repetição.",
+    name: { pt: "Pronome", en: "Pronoun" },
+    nl: "Voornaamwoord",
+    definition: {
+      pt: "Palavra usada no lugar de um substantivo para evitar repetição.",
+      en: "A word used instead of a noun, to avoid repeating it.",
+    },
     examples: [
-      { pt: "eu", target: "ik" },
-      { pt: "ele", target: "hij" },
-      { pt: "eles / elas", target: "zij / ze" },
+      { source: { pt: "eu", en: "I" }, nl: "ik" },
+      { source: { pt: "ele", en: "he" }, nl: "hij" },
+      { source: { pt: "eles / elas", en: "they" }, nl: "zij / ze" },
     ],
-    sentencePt: "Maria é minha amiga. Ela é inteligente.",
-    sentenceTarget: "Maria is mijn vriendin. Ze is slim.",
+    sentence: { pt: "Maria é minha amiga. Ela é inteligente.", en: "Maria is my friend. She is clever." },
+    sentenceNl: "Maria is mijn vriendin. Ze is slim.",
   },
   {
     number: 3,
-    ptName: "Adjetivo",
-    targetName: "Bijvoeglijk naamwoord",
-    definition:
-      "Palavra que descreve um substantivo. Antes do substantivo ganha -e (de grote stad), exceto com palavras 'het' no singular com 'een' (een groot huis).",
+    name: { pt: "Adjetivo", en: "Adjective" },
+    nl: "Bijvoeglijk naamwoord",
+    definition: {
+      pt: "Palavra que descreve um substantivo. Antes do substantivo ganha -e (de grote stad), exceto com palavras 'het' no singular com 'een' (een groot huis).",
+      en: "A word that describes a noun. Before the noun it takes -e (de grote stad), except with singular 'het' words after 'een' (een groot huis).",
+    },
     examples: [
-      { pt: "bonito", target: "mooi" },
-      { pt: "grande", target: "groot" },
-      { pt: "inteligente", target: "slim" },
+      { source: { pt: "bonito", en: "beautiful" }, nl: "mooi" },
+      { source: { pt: "grande", en: "big" }, nl: "groot" },
+      { source: { pt: "inteligente", en: "clever" }, nl: "slim" },
     ],
-    sentencePt: "Ela tem uma casa grande.",
-    sentenceTarget: "Ze heeft een groot huis.",
+    sentence: { pt: "Ela tem uma casa grande.", en: "She has a big house." },
+    sentenceNl: "Ze heeft een groot huis.",
   },
   {
     number: 4,
-    ptName: "Verbo",
-    targetName: "Werkwoord",
-    definition:
-      "Palavra que indica ação, estado ou acontecimento. Na frase principal, o verbo conjugado fica SEMPRE na segunda posição.",
+    name: { pt: "Verbo", en: "Verb" },
+    nl: "Werkwoord",
+    definition: {
+      pt: "Palavra que indica ação, estado ou acontecimento. Na frase principal, o verbo conjugado fica SEMPRE na segunda posição.",
+      en: "A word for an action, state or event. In a main clause the conjugated verb ALWAYS comes in second position.",
+    },
     examples: [
-      { pt: "correr", target: "rennen" },
-      { pt: "estudar / aprender", target: "leren" },
-      { pt: "ser / estar", target: "zijn" },
+      { source: { pt: "correr", en: "to run" }, nl: "rennen" },
+      { source: { pt: "estudar / aprender", en: "to study / to learn" }, nl: "leren" },
+      { source: { pt: "ser / estar", en: "to be" }, nl: "zijn" },
     ],
-    sentencePt: "Eu estudo holandês todos os dias.",
-    sentenceTarget: "Ik leer elke dag Nederlands.",
+    sentence: { pt: "Eu estudo holandês todos os dias.", en: "I study Dutch every day." },
+    sentenceNl: "Ik leer elke dag Nederlands.",
   },
   {
     number: 5,
-    ptName: "Advérbio",
-    targetName: "Bijwoord",
-    definition:
-      "Palavra que modifica um verbo, adjetivo ou outro advérbio. Se a frase começa com um advérbio, o verbo vem logo depois (inversão): Morgen ga ik…",
+    name: { pt: "Advérbio", en: "Adverb" },
+    nl: "Bijwoord",
+    definition: {
+      pt: "Palavra que modifica um verbo, adjetivo ou outro advérbio. Se a frase começa com um advérbio, o verbo vem logo depois (inversão): Morgen ga ik…",
+      en: "A word that modifies a verb, adjective or another adverb. If a sentence starts with an adverb, the verb comes straight after it (inversion): Morgen ga ik…",
+    },
     examples: [
-      { pt: "rapidamente", target: "snel" },
-      { pt: "sempre", target: "altijd" },
-      { pt: "muito", target: "heel / erg" },
+      { source: { pt: "rapidamente", en: "quickly" }, nl: "snel" },
+      { source: { pt: "sempre", en: "always" }, nl: "altijd" },
+      { source: { pt: "muito", en: "very" }, nl: "heel / erg" },
     ],
-    sentencePt: "Ela fala holandês muito bem.",
-    sentenceTarget: "Ze spreekt heel goed Nederlands.",
+    sentence: { pt: "Ela fala holandês muito bem.", en: "She speaks Dutch very well." },
+    sentenceNl: "Ze spreekt heel goed Nederlands.",
   },
   {
     number: 6,
-    ptName: "Artigo",
-    targetName: "Lidwoord",
-    definition:
-      "Palavra que acompanha o substantivo. Holandês tem dois artigos definidos: de e het. No plural é sempre de.",
+    name: { pt: "Artigo", en: "Article" },
+    nl: "Lidwoord",
+    definition: {
+      pt: "Palavra que acompanha o substantivo. Holandês tem dois artigos definidos: de e het. No plural é sempre de.",
+      en: "A word that goes with a noun. Dutch has two definite articles, de and het. In the plural it is always de.",
+    },
     examples: [
-      { pt: "o, a, os, as", target: "de / het" },
-      { pt: "um, uma", target: "een" },
+      { source: { pt: "o, a, os, as", en: "the" }, nl: "de / het" },
+      { source: { pt: "um, uma", en: "a / an" }, nl: "een" },
     ],
-    sentencePt: "Eu comprei um carro.",
-    sentenceTarget: "Ik heb een auto gekocht.",
+    sentence: { pt: "Eu comprei um carro.", en: "I bought a car." },
+    sentenceNl: "Ik heb een auto gekocht.",
   },
   {
     number: 7,
-    ptName: "Preposição",
-    targetName: "Voorzetsel",
-    definition: "Palavra que conecta termos e mostra relações como lugar, tempo ou direção.",
+    name: { pt: "Preposição", en: "Preposition" },
+    nl: "Voorzetsel",
+    definition: {
+      pt: "Palavra que conecta termos e mostra relações como lugar, tempo ou direção.",
+      en: "A word that links words and shows relations such as place, time or direction.",
+    },
     examples: [
-      { pt: "em", target: "in / op" },
-      { pt: "com", target: "met" },
-      { pt: "para", target: "naar / voor" },
+      { source: { pt: "em", en: "in / on" }, nl: "in / op" },
+      { source: { pt: "com", en: "with" }, nl: "met" },
+      { source: { pt: "para", en: "to / for" }, nl: "naar / voor" },
     ],
-    sentencePt: "O livro está na mesa.",
-    sentenceTarget: "Het boek ligt op de tafel.",
+    sentence: { pt: "O livro está na mesa.", en: "The book is on the table." },
+    sentenceNl: "Het boek ligt op de tafel.",
   },
   {
     number: 8,
-    ptName: "Conjunção",
-    targetName: "Voegwoord",
-    definition:
-      "Palavra que liga palavras ou frases. Atenção: depois de omdat, dat, als e toen o verbo vai para o FINAL da frase.",
+    name: { pt: "Conjunção", en: "Conjunction" },
+    nl: "Voegwoord",
+    definition: {
+      pt: "Palavra que liga palavras ou frases. Atenção: depois de omdat, dat, als e toen o verbo vai para o FINAL da frase.",
+      en: "A word that joins words or clauses. Watch out: after omdat, dat, als and toen the verb goes to the END of the clause.",
+    },
     examples: [
-      { pt: "e", target: "en" },
-      { pt: "mas", target: "maar" },
-      { pt: "porque", target: "omdat / want" },
+      { source: { pt: "e", en: "and" }, nl: "en" },
+      { source: { pt: "mas", en: "but" }, nl: "maar" },
+      { source: { pt: "porque", en: "because" }, nl: "omdat / want" },
     ],
-    sentencePt: "Eu estudo holandês porque gosto de idiomas.",
-    sentenceTarget: "Ik leer Nederlands omdat ik talen leuk vind.",
+    sentence: {
+      pt: "Eu estudo holandês porque gosto de idiomas.",
+      en: "I study Dutch because I like languages.",
+    },
+    sentenceNl: "Ik leer Nederlands omdat ik talen leuk vind.",
   },
   {
     number: 9,
-    ptName: "Interjeição",
-    targetName: "Tussenwerpsel",
-    definition: "Palavra que expressa emoção, reação ou sentimento.",
+    name: { pt: "Interjeição", en: "Interjection" },
+    nl: "Tussenwerpsel",
+    definition: {
+      pt: "Palavra que expressa emoção, reação ou sentimento.",
+      en: "A word that expresses emotion, reaction or feeling.",
+    },
     examples: [
-      { pt: "Uau!", target: "Wauw!" },
-      { pt: "Ai!", target: "Au!" },
-      { pt: "Olá!", target: "Hallo!" },
+      { source: { pt: "Uau!", en: "Wow!" }, nl: "Wauw!" },
+      { source: { pt: "Ai!", en: "Ouch!" }, nl: "Au!" },
+      { source: { pt: "Olá!", en: "Hello!" }, nl: "Hallo!" },
     ],
-    sentencePt: "Uau! Que lugar bonito!",
-    sentenceTarget: "Wauw! Wat een mooie plek!",
+    sentence: { pt: "Uau! Que lugar bonito!", en: "Wow! What a beautiful place!" },
+    sentenceNl: "Wauw! Wat een mooie plek!",
   },
   {
     number: 10,
-    ptName: "Numeral",
-    targetName: "Telwoord",
-    definition: "Palavra que indica quantidade ou ordem.",
+    name: { pt: "Numeral", en: "Numeral" },
+    nl: "Telwoord",
+    definition: {
+      pt: "Palavra que indica quantidade ou ordem.",
+      en: "A word that shows quantity or order.",
+    },
     examples: [
-      { pt: "um", target: "één" },
-      { pt: "dois", target: "twee" },
-      { pt: "primeiro", target: "eerste" },
+      { source: { pt: "um", en: "one" }, nl: "één" },
+      { source: { pt: "dois", en: "two" }, nl: "twee" },
+      { source: { pt: "primeiro", en: "first" }, nl: "eerste" },
     ],
-    sentencePt: "Tenho dois irmãos.",
-    sentenceTarget: "Ik heb twee broers.",
+    sentence: { pt: "Tenho dois irmãos.", en: "I have two brothers." },
+    sentenceNl: "Ik heb twee broers.",
   },
   {
     number: 11,
-    ptName: "Verbo Auxiliar",
-    targetName: "Hulpwerkwoord",
-    definition:
-      "Verbo que acompanha o verbo principal. Hebben e zijn formam o passado composto (ik heb gewerkt, ik ben gegaan). Os modais (kunnen, moeten, willen, mogen) mandam o outro verbo para o final no infinitivo.",
+    name: { pt: "Verbo Auxiliar", en: "Auxiliary Verb" },
+    nl: "Hulpwerkwoord",
+    definition: {
+      pt: "Verbo que acompanha o verbo principal. Hebben e zijn formam o passado composto (ik heb gewerkt, ik ben gegaan). Os modais (kunnen, moeten, willen, mogen) mandam o outro verbo para o final no infinitivo.",
+      en: "A verb that goes with the main verb. Hebben and zijn form the perfect tense (ik heb gewerkt, ik ben gegaan). Modal verbs (kunnen, moeten, willen, mogen) send the other verb to the end as an infinitive.",
+    },
     examples: [
-      { pt: "ter (passado composto)", target: "hebben" },
-      { pt: "ser (passado de movimento/mudança)", target: "zijn" },
-      { pt: "poder / conseguir", target: "kunnen" },
-      { pt: "dever / precisar", target: "moeten" },
-      { pt: "querer", target: "willen" },
-      { pt: "vou / vai (futuro)", target: "gaan / zullen" },
+      { source: { pt: "ter (passado composto)", en: "to have (perfect tense)" }, nl: "hebben" },
+      { source: { pt: "ser (passado de movimento/mudança)", en: "to be (perfect of movement/change)" }, nl: "zijn" },
+      { source: { pt: "poder / conseguir", en: "can / to be able to" }, nl: "kunnen" },
+      { source: { pt: "dever / precisar", en: "must / to have to" }, nl: "moeten" },
+      { source: { pt: "querer", en: "to want" }, nl: "willen" },
+      { source: { pt: "vou / vai (futuro)", en: "going to / will (future)" }, nl: "gaan / zullen" },
     ],
-    sentencePt: "Você pode me ajudar? Eu não entendo.",
-    sentenceTarget: "Kun je me helpen? Ik begrijp het niet.",
+    sentence: { pt: "Você pode me ajudar? Eu não entendo.", en: "Can you help me? I don't understand." },
+    sentenceNl: "Kun je me helpen? Ik begrijp het niet.",
   },
   {
     number: 12,
-    ptName: "Verbos Irregulares",
-    targetName: "Onregelmatige werkwoorden",
-    definition:
-      "Verbos que NÃO seguem a regra do passado com -te/-de. Cada um tem três formas próprias (infinitivo – passado – particípio) que precisam ser memorizadas. Os 15 abaixo aparecem em quase toda conversa.",
+    name: { pt: "Verbos Irregulares", en: "Irregular Verbs" },
+    nl: "Onregelmatige werkwoorden",
+    definition: {
+      pt: "Verbos que NÃO seguem a regra do passado com -te/-de. Cada um tem três formas próprias (infinitivo – passado – particípio) que precisam ser memorizadas. Os 15 abaixo aparecem em quase toda conversa.",
+      en: "Verbs that DON'T follow the -te/-de past-tense rule. Each has three forms of its own (infinitive – past – participle) to memorise. The 15 below come up in almost every conversation.",
+    },
     examples: [
-      { pt: "ser / estar", target: "zijn – was/waren – geweest" },
-      { pt: "ter", target: "hebben – had/hadden – gehad" },
-      { pt: "ir", target: "gaan – ging – gegaan" },
-      { pt: "vir", target: "komen – kwam – gekomen" },
-      { pt: "fazer", target: "doen – deed – gedaan" },
-      { pt: "ver", target: "zien – zag – gezien" },
-      { pt: "comer", target: "eten – at – gegeten" },
-      { pt: "beber", target: "drinken – dronk – gedronken" },
-      { pt: "dar", target: "geven – gaf – gegeven" },
-      { pt: "pegar / levar", target: "nemen – nam – genomen" },
-      { pt: "falar", target: "spreken – sprak – gesproken" },
-      { pt: "ler", target: "lezen – las – gelezen" },
-      { pt: "escrever", target: "schrijven – schreef – geschreven" },
-      { pt: "encontrar / achar", target: "vinden – vond – gevonden" },
-      { pt: "saber", target: "weten – wist – geweten" },
+      { source: { pt: "ser / estar", en: "to be" }, nl: "zijn – was/waren – geweest" },
+      { source: { pt: "ter", en: "to have" }, nl: "hebben – had/hadden – gehad" },
+      { source: { pt: "ir", en: "to go" }, nl: "gaan – ging – gegaan" },
+      { source: { pt: "vir", en: "to come" }, nl: "komen – kwam – gekomen" },
+      { source: { pt: "fazer", en: "to do" }, nl: "doen – deed – gedaan" },
+      { source: { pt: "ver", en: "to see" }, nl: "zien – zag – gezien" },
+      { source: { pt: "comer", en: "to eat" }, nl: "eten – at – gegeten" },
+      { source: { pt: "beber", en: "to drink" }, nl: "drinken – dronk – gedronken" },
+      { source: { pt: "dar", en: "to give" }, nl: "geven – gaf – gegeven" },
+      { source: { pt: "pegar / levar", en: "to take" }, nl: "nemen – nam – genomen" },
+      { source: { pt: "falar", en: "to speak" }, nl: "spreken – sprak – gesproken" },
+      { source: { pt: "ler", en: "to read" }, nl: "lezen – las – gelezen" },
+      { source: { pt: "escrever", en: "to write" }, nl: "schrijven – schreef – geschreven" },
+      { source: { pt: "encontrar / achar", en: "to find" }, nl: "vinden – vond – gevonden" },
+      { source: { pt: "saber", en: "to know" }, nl: "weten – wist – geweten" },
     ],
-    sentencePt: "Ontem eu fui ao mercado e fiz o jantar.",
-    sentenceTarget: "Gisteren ging ik naar de markt en maakte ik het avondeten.",
+    sentence: {
+      pt: "Ontem eu fui ao mercado e fiz o jantar.",
+      en: "Yesterday I went to the market and made dinner.",
+    },
+    sentenceNl: "Gisteren ging ik naar de markt en maakte ik het avondeten.",
   },
 ];
 
-export const DUTCH_GRAMMAR_SUMMARY: [string, string][] = [
-  ["Substantivo", "Zelfstandig naamwoord"],
-  ["Pronome", "Voornaamwoord"],
-  ["Adjetivo", "Bijvoeglijk naamwoord"],
-  ["Verbo", "Werkwoord"],
-  ["Advérbio", "Bijwoord"],
-  ["Artigo", "Lidwoord"],
-  ["Preposição", "Voorzetsel"],
-  ["Conjunção", "Voegwoord"],
-  ["Interjeição", "Tussenwerpsel"],
-  ["Numeral", "Telwoord"],
-  ["Verbo Auxiliar", "Hulpwerkwoord"],
-  ["Verbos Irregulares", "Onregelmatige werkwoorden"],
-];
+/** Page copy for the Dutch version, in both support languages. */
+export const DUTCH_GRAMMAR_COPY = {
+  eyebrow: { pt: "Referência rápida", en: "Quick reference" },
+  intro: {
+    pt: "Principais classes gramaticais do Português → Holandês. Um guia rápido para revisar a estrutura das frases. Toque em 🔊 para ouvir o holandês.",
+    en: "The main word classes, English → Dutch. A quick guide to review sentence structure. Tap 🔊 to hear the Dutch.",
+  },
+  whatIs: { pt: "O que é: ", en: "What it is: " },
+  examples: { pt: "Exemplos", en: "Examples" },
+  summaryTitle: { pt: "Resumo Rápido", en: "Quick Summary" },
+  summaryText: {
+    pt: "Para aprender holandês, entender essas classes ajuda a identificar a função de cada palavra dentro da frase.",
+    en: "When learning Dutch, knowing these classes helps you see what each word does in a sentence.",
+  },
+  sourceColumn: { pt: "Português", en: "English" },
+} satisfies Record<string, Bi>;

@@ -465,22 +465,39 @@ function FullStoryPanel({
           <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-base/60">The full story</p>
           <p className="mt-0.5 text-[16px] font-black text-base">{story.title}</p>
         </div>
+        {gloss.dutch && (
+          <div className="flex justify-center border-b border-border px-5 py-3">
+            <ListenButton
+              label="Listen to the whole story"
+              texts={[
+                story.title,
+                ...story.panels.flatMap((p) => [p.text, ...(p.dialogue ?? []).map((d) => d.line)]),
+              ]}
+            />
+          </div>
+        )}
         <div className="space-y-5 px-5 py-5">
           {story.panels.map((panel, i) => (
             <div key={i}>
               <p className="text-[11px] font-bold uppercase tracking-wider text-ink-subtle">
                 Scene {i + 1} — {panel.scene}
               </p>
-              <p className="mt-1.5 font-serif text-[15.5px] leading-relaxed text-ink">
-                <VocabText text={panel.text} vocab={panel.vocab} lookup={lookup} showPt={gloss.show} />
-              </p>
-              {(panel.dialogue ?? []).map((d, j) => (
-                <p key={j} className="mt-1 pl-4 text-[15px] leading-relaxed text-ink">
-                  <span className="font-bold">{d.speaker}:</span>{" "}
-                  <span className="italic">
-                    <VocabText text={d.line} vocab={panel.vocab} lookup={lookup} showPt={gloss.show} />
-                  </span>
+              <div className="mt-1.5 flex items-start gap-2">
+                <p className="flex-1 font-serif text-[15.5px] leading-relaxed text-ink">
+                  <VocabText text={panel.text} vocab={panel.vocab} lookup={lookup} showPt={gloss.show} />
                 </p>
+                {gloss.dutch && <ListenButton text={panel.text} />}
+              </div>
+              {(panel.dialogue ?? []).map((d, j) => (
+                <div key={j} className="mt-1 flex items-start gap-2 pl-4">
+                  <p className="flex-1 text-[15px] leading-relaxed text-ink">
+                    <span className="font-bold">{d.speaker}:</span>{" "}
+                    <span className="italic">
+                      <VocabText text={d.line} vocab={panel.vocab} lookup={lookup} showPt={gloss.show} />
+                    </span>
+                  </p>
+                  {gloss.dutch && <ListenButton text={d.line} />}
+                </div>
               ))}
             </div>
           ))}
