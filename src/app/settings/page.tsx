@@ -101,7 +101,8 @@ export default function SettingsPage() {
             </div>
             <p className="mt-2 text-xs text-ink-subtle">
               Word meanings, grammar notes, translations, and homework instructions in the Dutch
-              course use this language. Applies to your next class.
+              course use this language. It applies from your next class — a class still in
+              progress is dropped, since it was built in the other language.
             </p>
           </>
         )}

@@ -1,5 +1,5 @@
 import type { ClassGenInput, CEFRLevel } from "./types";
-import type { TargetLanguage } from "./language";
+import type { SupportLanguage, TargetLanguage } from "./language";
 import { getCEFRInfo } from "./cefr";
 import { buildDutchSystemPrompt, buildDutchUserPrompt, dutchStoryTranslated } from "./promptsNl";
 
@@ -100,8 +100,17 @@ C2 CEFR CURRICULUM:
  * Explanations (meaning, intro, feedback…) are written in the support
  * language directly, so meaningPt / introPt are not requested.
  */
-export function buildClassSchema(level: CEFRLevel, language: TargetLanguage = "en") {
+export function buildClassSchema(
+  level: CEFRLevel,
+  language: TargetLanguage = "en",
+  supportLang: SupportLanguage = "pt",
+) {
   const nl = language === "nl";
+  // The *Pt field names are historical (the English course glosses in
+  // Portuguese). In the Dutch course they hold the learner's support
+  // language, so every one of them says which language that is.
+  const glossLang = nl ? (supportLang === "en" ? "English" : "Brazilian Portuguese") : "Brazilian Portuguese";
+  const inGloss = (what: string) => ({ description: `${what} — written in ${glossLang}` });
   const a1 = level === "A1";
   // Parallel translations of the prompts the learner speaks.
   const glossPrompts = a1 || nl;
@@ -111,28 +120,36 @@ export function buildClassSchema(level: CEFRLevel, language: TargetLanguage = "e
 
   const vocabProps: Record<string, unknown> = {
     term: { type: "string" },
-    meaning: { type: "string" },
+    meaning: nl ? { type: "string", ...inGloss("what the term means") } : { type: "string" },
     example: { type: "string" },
     isIdiom: { type: "boolean" },
-    literalMeaning: { type: "string" },
+    literalMeaning: nl
+      ? { type: "string", ...inGloss("literal explanation of an idiom (empty when not an idiom)") }
+      : { type: "string" },
   };
   const vocabRequired = ["term", "meaning", "example", "isIdiom", "literalMeaning"];
   if (glossIntros) {
-    vocabProps.meaningPt = { type: "string" };
+    vocabProps.meaningPt = { type: "string", ...inGloss("translation of the meaning") };
     vocabRequired.push("meaningPt");
   }
   if (nl) {
-    vocabProps.exampleTranslation = { type: "string" };
+    vocabProps.exampleTranslation = { type: "string", ...inGloss("translation of the example sentence") };
     vocabRequired.push("exampleTranslation");
   }
 
   const warmUpProps: Record<string, unknown> = {
     questions: { type: "array", items: { type: "string" } },
-    grammarNote: { type: "string" },
+    grammarNote: nl
+      ? { type: "string", ...inGloss("explanation of today's grammar focus") }
+      : { type: "string" },
   };
   const warmUpRequired = ["questions", "grammarNote"];
   if (glossPrompts) {
-    warmUpProps.questionsPt = { type: "array", items: { type: "string" } };
+    warmUpProps.questionsPt = {
+      type: "array",
+      items: { type: "string" },
+      ...inGloss("translation of each warm-up question, same order"),
+    };
     warmUpRequired.push("questionsPt");
   }
 
@@ -147,9 +164,9 @@ export function buildClassSchema(level: CEFRLevel, language: TargetLanguage = "e
   };
   const panelRequired = ["text", "scene", "dialogue", "check", "vocab"];
   if (storyTranslated) {
-    dialogueProps.translation = { type: "string" };
+    dialogueProps.translation = { type: "string", ...inGloss("translation of the line") };
     dialogueRequired.push("translation");
-    panelProps.textTranslation = { type: "string" };
+    panelProps.textTranslation = { type: "string", ...inGloss("translation of the narration") };
     panelRequired.push("textTranslation");
   }
 
@@ -159,7 +176,9 @@ export function buildClassSchema(level: CEFRLevel, language: TargetLanguage = "e
   properties: {
     speakingRatio: { type: "number" },
     estimatedMinutes: { type: "integer" },
-    agenda: { type: "array", items: { type: "string" } },
+    agenda: nl
+      ? { type: "array", items: { type: "string" }, ...inGloss("six stage labels") }
+      : { type: "array", items: { type: "string" } },
     story: {
       type: "object",
       additionalProperties: false,
@@ -237,20 +256,32 @@ export function buildClassSchema(level: CEFRLevel, language: TargetLanguage = "e
       type: "object",
       additionalProperties: false,
       properties: {
-        intro: { type: "string" },
-        ...(glossIntros ? { introPt: { type: "string" } } : {}),
+        intro: nl ? { type: "string", ...inGloss("short intro to the activity") } : { type: "string" },
+        ...(glossIntros ? { introPt: { type: "string", ...inGloss("translation of the intro") } } : {}),
         sentenceFrames: { type: "array", items: { type: "string" } },
-        ...(glossPrompts ? { sentenceFramesPt: { type: "array", items: { type: "string" } } } : {}),
+        ...(glossPrompts
+          ? {
+              sentenceFramesPt: {
+                type: "array",
+                items: { type: "string" },
+                ...inGloss("translation of each sentence frame, same order"),
+              },
+            }
+          : {}),
         rolePlay: {
           type: "object",
           additionalProperties: false,
           properties: {
-            scenario: { type: "string" },
-            roles: { type: "array", items: { type: "string" } },
+            scenario: nl ? { type: "string", ...inGloss("the role-play situation") } : { type: "string" },
+            roles: nl
+              ? { type: "array", items: { type: "string" }, ...inGloss("the roles") }
+              : { type: "array", items: { type: "string" } },
           },
           required: ["scenario", "roles"],
         },
-        picturePrompts: { type: "array", items: { type: "string" } },
+        picturePrompts: nl
+          ? { type: "array", items: { type: "string" }, ...inGloss("visualisation prompts") }
+          : { type: "array", items: { type: "string" } },
       },
       required: [
         "intro",
@@ -265,10 +296,18 @@ export function buildClassSchema(level: CEFRLevel, language: TargetLanguage = "e
       type: "object",
       additionalProperties: false,
       properties: {
-        intro: { type: "string" },
-        ...(glossIntros ? { introPt: { type: "string" } } : {}),
+        intro: nl ? { type: "string", ...inGloss("short intro to the activity") } : { type: "string" },
+        ...(glossIntros ? { introPt: { type: "string", ...inGloss("translation of the intro") } } : {}),
         prompts: { type: "array", items: { type: "string" } },
-        ...(glossPrompts ? { promptsPt: { type: "array", items: { type: "string" } } } : {}),
+        ...(glossPrompts
+          ? {
+              promptsPt: {
+                type: "array",
+                items: { type: "string" },
+                ...inGloss("translation of each prompt, same order"),
+              },
+            }
+          : {}),
         format: {
           type: "string",
           enum: a1
@@ -288,13 +327,19 @@ export function buildClassSchema(level: CEFRLevel, language: TargetLanguage = "e
       type: "object",
       additionalProperties: false,
       properties: {
-        intro: { type: "string" },
-        checklist: { type: "array", items: { type: "string" } },
-        commonErrors: { type: "array", items: { type: "string" } },
+        intro: nl ? { type: "string", ...inGloss("short intro to the self-check") } : { type: "string" },
+        checklist: nl
+          ? { type: "array", items: { type: "string" }, ...inGloss("self-correction checklist") }
+          : { type: "array", items: { type: "string" } },
+        commonErrors: nl
+          ? { type: "array", items: { type: "string" }, ...inGloss("common errors to watch for") }
+          : { type: "array", items: { type: "string" } },
       },
       required: ["intro", "checklist", "commonErrors"],
     },
-    grammar: { type: "array", items: { type: "string" } },
+    grammar: nl
+      ? { type: "array", items: { type: "string" }, ...inGloss("grammar labels, Dutch term in brackets") }
+      : { type: "array", items: { type: "string" } },
   },
   required: [
     "speakingRatio",

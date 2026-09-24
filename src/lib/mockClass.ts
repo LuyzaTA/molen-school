@@ -481,6 +481,7 @@ export function buildMockClass(input: ClassGenInput): GeneratedClass {
     speakingRatio: info.speakingRatio,
     estimatedMinutes: beginner ? 45 : advanced ? 60 : 50,
     story: buildMockStory(t, input.level, vocabList),
+    language: "en",
     generatedBy: "mock",
     agenda: [
       "Story: interactive scenes with dialogue",

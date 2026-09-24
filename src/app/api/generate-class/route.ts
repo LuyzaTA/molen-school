@@ -9,6 +9,9 @@ import {
 import { buildMockClass } from "@/lib/mockClass";
 import { isSupportLanguage } from "@/lib/language";
 import { getCEFRInfo } from "@/lib/cefr";
+import { getSession } from "@/lib/server/auth";
+import { getAccount } from "@/lib/server/store";
+import { getLang } from "@/lib/server/lang";
 
 export const runtime = "nodejs";
 
@@ -44,8 +47,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Bad request" }, { status: 400 });
   }
 
-  // No key configured → return the deterministic mock. The app still works.
-  if (!process.env.ANTHROPIC_API_KEY) {
+  // The course and (for Dutch) the language explanations are written in are
+  // configured at sign-in and in Settings. Take them from the session, never
+  // from the client: a stale client would otherwise generate a class in the
+  // wrong explanation language.
+  const session = await getSession();
+  if (session) {
+    input.language = await getLang();
+    if (input.language === "nl") {
+      const account = await getAccount(session.sub);
+      if (account?.dutch?.supportLang) input.supportLang = account.dutch.supportLang;
+    }
+  }
+
+  // No key configured, or nobody signed in → the deterministic mock. The app
+  // still works, and the API key is never spent on anonymous callers.
+  if (!process.env.ANTHROPIC_API_KEY || !session) {
     return NextResponse.json(buildMockClass(input));
   }
 
@@ -63,7 +80,7 @@ export async function POST(req: NextRequest) {
       // installed SDK's static types in some versions.
       ...({
         output_config: {
-          format: { type: "json_schema", schema: buildClassSchema(input.level, input.language) },
+          format: { type: "json_schema", schema: buildClassSchema(input.level, input.language, input.supportLang) },
         },
       } as Record<string, unknown>),
     });

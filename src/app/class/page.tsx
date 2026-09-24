@@ -60,6 +60,13 @@ export default function ClassPage() {
       return;
     }
     const saved = loadCurrentClass(profile.language);
+    // A class built before the learner changed course or support language
+    // still carries the old explanation language — drop it and let them
+    // start a fresh one rather than show the wrong language.
+    if (saved && !matchesProfile(saved)) {
+      saveCurrentClass(null, profile.language);
+      return;
+    }
     if (saved) {
       setKlass(saved);
       setLastTopic(saved.topic);
@@ -73,6 +80,13 @@ export default function ClassPage() {
   useEffect(() => {
     if (klass && phase === "running") saveCurrentStep(stepIndex, profile.language);
   }, [klass, phase, stepIndex, profile.language]);
+
+  /** True when a saved class was built for the course and support language in use now. */
+  function matchesProfile(saved: GeneratedClass): boolean {
+    if ((saved.language ?? "en") !== profile.language) return false;
+    if (profile.language !== "nl") return true;
+    return (saved.supportLang ?? "pt") === profile.supportLang;
+  }
 
   async function runGeneration(topic: string) {
     setLastTopic(topic);

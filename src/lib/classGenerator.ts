@@ -25,13 +25,19 @@ export async function generateClass(
     if (!data || !data.targetLanguage || !data.warmUp) {
       throw new Error("malformed class payload");
     }
+    // The course and its support language come back from the route, which
+    // resolves them from the signed-in account — they win over the values
+    // this client sent, which may be stale.
+    const language = data.language ?? input.language ?? "en";
     return {
       ...data,
       topic: input.topic,
       level: input.level,
       autisticMode: input.autisticMode,
-      language: input.language ?? "en",
-      ...(input.language === "nl" ? { supportLang: input.supportLang } : {}),
+      language,
+      ...(language === "nl"
+        ? { supportLang: data.supportLang ?? input.supportLang }
+        : {}),
       generatedBy: data.generatedBy ?? "ai",
     } as GeneratedClass;
   } catch {

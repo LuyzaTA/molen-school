@@ -103,7 +103,9 @@ C2 DUTCH CURRICULUM:
 export function buildDutchSystemPrompt(input: ClassGenInput): string {
   const info = getCEFRInfo(input.level);
   const speakingPct = Math.round(info.speakingRatio * 100);
-  const support = supportName(input.supportLang ?? "pt");
+  const sl: SupportLanguage = input.supportLang ?? "pt";
+  const support = supportName(sl);
+  const pt = sl === "pt";
   const translatedStory = dutchStoryTranslated(input.level);
 
   const autisticGuidance = input.autisticMode
@@ -163,6 +165,11 @@ Rules for this class:
 - Story checks may look like exam questions (short situation → 3 options).`
     : "";
 
+  // Portuguese interference errors only make sense for the PT support language.
+  const ptErrors = pt
+    ? '\nInclude errors caused by Portuguese, such as "ik heb 30 jaar" instead of "ik ben 30 jaar".'
+    : "";
+
   const businessFocus =
     input.track === "business"
       ? `
@@ -171,7 +178,7 @@ in Dutch-speaking workplaces (vergaderingen, e-mails, afspraken, presentaties, o
       : "";
 
   return `You are an expert teacher of Dutch as a foreign language (NT2) who designs
-SPEAKING-FIRST classes for Brazilian learners. Your learners freeze when speaking, so every
+SPEAKING-FIRST classes${pt ? " for Brazilian learners" : ""}. Your learners freeze when speaking, so every
 class is built around getting them to talk — in Dutch.
 
 Design a single 45–60 minute speaking class on the learner's topic.
@@ -181,7 +188,14 @@ Target speaking ratio: about ${speakingPct}% of class time is the learner speaki
 Set the "speakingRatio" field to ${info.speakingRatio}.
 
 LANGUAGE RULES — FOLLOW EXACTLY:
-The learner's support language is ${support}.
+The learner's support language is ${support}. This is the ONLY language you explain in.
+${
+  pt
+    ? "Never write English explanations; everything that is not Dutch is in Brazilian Portuguese."
+    : `NEVER WRITE PORTUGUESE ANYWHERE IN THIS CLASS. The learner does not read Portuguese.
+Some JSON field names end in "Pt" (questionsPt, sentenceFramesPt, promptsPt) for historical
+reasons — the name is meaningless here: fill them with ENGLISH, like every other explanation.`
+}
 - Write in standard Netherlands Dutch (ABN): every vocab "term", every "example", both
   structure "pattern"s and "example"s, the whole story (narration "text", "scene", dialogue
   "line"s, the check "question" and "options"), every warm-up question, every sentence
@@ -191,12 +205,12 @@ The learner's support language is ${support}.
   rolePlay.scenario and rolePlay.roles, picturePrompts, freeProduction.intro, the whole
   feedback object, every agenda label, and every grammar label.
 - Grammar labels: the ${support} name with the Dutch term in brackets, e.g.
-  ${input.supportLang === "en" ? '"Verb-second word order (inversie)", "Perfect tense (voltooide tijd)"' : '"Ordem verbo-segundo (inversie)", "Pretérito perfeito (voltooide tijd)"'}.
+  ${pt ? '"Ordem verbo-segundo (inversie)", "Pretérito perfeito (voltooide tijd)"' : '"Verb-second word order (inversie)", "Perfect tense (voltooide tijd)"'}.
 - Vocab terms: give nouns WITH their article (de fiets, het huis) and separable verbs in
   the infinitive (opstaan). Never mix languages inside a Dutch sentence.
 - Parallel translation arrays: warmUp.questionsPt, guidedProduction.sentenceFramesPt and
   freeProduction.promptsPt hold the ${support} translation of each Dutch item, in the same
-  order and the same count.${
+  order and the same count (the "Pt" in those names does NOT mean Portuguese).${
     translatedStory
       ? `
 - Story translations: fill every panel's "textTranslation" with the ${support} translation
@@ -232,7 +246,7 @@ For each panel provide:
   • scene    — a short Dutch setting line: place + moment, e.g. "Een bakkerij in Utrecht — zaterdagochtend"
   • dialogue — the characters' spoken Dutch lines (speaker + line). Use the SAME 2–3 named
                adult characters across the story. Settings in the Netherlands or Belgium are
-               welcome; a Brazilian character adapting to Dutch life is a great fit.
+               welcome;${pt ? " a Brazilian character adapting to Dutch life is a great fit." : " a newcomer adapting to Dutch life is a great fit."}
   • check    — ONE quick comprehension question in simple Dutch about THIS scene, 2–3 short
                Dutch options (1–5 words each), and the zero-based index of the correct option.
   • vocab    — target vocab terms (exact strings from targetLanguage.vocab) that appear in
@@ -261,10 +275,9 @@ Content requirements:
   format vocabulary_practice, sentence_building, or picture_description. For A2+: discussion,
   debate, or storytelling appropriate to the level.
 - feedback (in ${support}): a short intro, a 4–6 item self-correction checklist, and 3–5
-  concrete errors Brazilian learners make in Dutch on this topic — e.g. verb-second word
+  concrete errors learners make in Dutch on this topic — e.g. verb-second word
   order after a time word, the verb at the end of subordinate clauses, de/het, niet vs geen,
-  splitting separable verbs, the sounds g/ch, ui, eu, ij, and Portuguese-influenced
-  structures such as "ik heb 30 jaar" instead of "ik ben 30 jaar".
+  splitting separable verbs, and the sounds g/ch, ui, eu, ij.${ptErrors}
 - agenda: 6 short ${support} labels, one per stage (story, warm-up, target language, guided
   production, free production, self-check). The LAST label is the post-lesson self-check
   review — word it as a review, not as another lesson step.
@@ -277,7 +290,10 @@ Return ONLY the structured JSON. Be encouraging, practical, and concrete.`;
 }
 
 export function buildDutchUserPrompt(input: ClassGenInput): string {
+  const sl: SupportLanguage = input.supportLang ?? "pt";
   return `Create today's Dutch speaking class. Topic: "${input.topic}". Level: ${input.level}.
-Support language: ${supportName(input.supportLang ?? "pt")}.
+Support language: ${supportName(sl)} — write every explanation and translation in ${supportName(sl)}${
+    sl === "en" ? ", never in Portuguese" : ""
+  }.
 Teach the actual Dutch the student says and hears in "${input.topic}" situations.`;
 }
